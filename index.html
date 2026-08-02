@@ -34,6 +34,31 @@
       max-width: 440px;
       margin: 0 auto;
       overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Стили для падающего снега */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      background: #ffffff;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1500;
+      opacity: 0.8;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-10px) translateX(0);
+      }
+      50% {
+        transform: translateY(50vh) translateX(15px);
+      }
+      100% {
+        transform: translateY(105vh) translateX(-15px);
+      }
     }
 
     .screen {
@@ -244,6 +269,7 @@
     .btn-green { background: rgba(48, 209, 88, 0.18); color: #30d158; border: 1px solid rgba(48, 209, 88, 0.3); }
     .btn-red { background: rgba(255, 69, 58, 0.12); color: #ff453a; border: 1px solid rgba(255, 69, 58, 0.2); }
     .btn-orange { background: var(--accent-orange); color: #ffffff; }
+    .btn-purple { background: rgba(191, 90, 242, 0.2); color: var(--accent-purple); border: 1px solid rgba(191, 90, 242, 0.35); }
 
     .toast {
       position: fixed;
@@ -352,7 +378,6 @@
       font-weight: 600;
     }
 
-    /* Модальное окно */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -410,7 +435,6 @@
 
     .option-btn.selected { border-color: var(--accent-blue); background: rgba(10, 132, 255, 0.15); color: var(--accent-blue); }
 
-    /* Заметки */
     .note-item {
       display: flex;
       align-items: center;
@@ -419,7 +443,7 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
     .note-item:last-child { border-bottom: none; }
-    .note-left { display: flex; items-align: center; gap: 10px; }
+    .note-left { display: flex; align-items: center; gap: 10px; }
     .checkbox {
       width: 22px;
       height: 22px;
@@ -435,7 +459,6 @@
     .note-text { font-size: 15px; }
     .note-text.done { text-decoration: line-through; color: var(--text-sec); }
 
-    /* Калькулятор сдачи */
     .quick-cash {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -463,17 +486,6 @@
     }
     .change-val { font-size: 32px; font-weight: 700; color: var(--accent-green); margin-top: 4px; }
 
-    /* Таймер */
-    .timer-display {
-      font-size: 48px;
-      font-weight: 700;
-      font-family: "SF Mono", monospace;
-      text-align: center;
-      margin: 15px 0;
-    }
-    .timer-controls { display: flex; gap: 10px; }
-
-    /* Статистика */
     .stat-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -485,6 +497,60 @@
       border-radius: 12px;
     }
     .stat-num { font-size: 20px; font-weight: 700; color: var(--accent-blue); margin-top: 4px; }
+    .archive-item {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .archive-item:last-child { border-bottom: none; }
+
+    /* Календарь на месяц */
+    .cal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .cal-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+    .cal-weekday {
+      font-size: 11px;
+      color: var(--text-sec);
+      font-weight: 600;
+      padding-bottom: 4px;
+    }
+    .cal-day {
+      aspect-ratio: 1;
+      background: var(--card-inner);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.04);
+      transition: transform 0.1s ease, background 0.15s ease;
+      user-select: none;
+    }
+    .cal-day:active { transform: scale(0.9); }
+    .cal-day.empty { background: transparent; border: none; cursor: default; }
+    .cal-day.active-shift {
+      background: rgba(48, 209, 88, 0.2);
+      border-color: rgba(48, 209, 88, 0.4);
+      color: var(--accent-green);
+      font-weight: 700;
+    }
   </style>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -504,6 +570,26 @@
       <div class="header-title">
         <h1>Мультитул</h1>
         <p>Рабочий набор</p>
+      </div>
+      <div style="position: relative;">
+        <div class="icon-btn" onclick="toggleGlobalMenu(event)">
+          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        </div>
+        <!-- Мини-меню настроек -->
+        <div id="globalDropdown" style="display: none; position: absolute; right: 0; top: 44px; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 6px; width: 170px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+          <div onclick="openScreen('screenMyShifts'); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+            <svg style="width:16px; height:16px; fill:var(--accent-green);" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+            Мои смены
+          </div>
+          <div onclick="toggleSnow(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+            <svg style="width:16px; height:16px; fill:var(--accent-blue);" viewBox="0 0 24 24"><path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/></svg>
+            Снег
+          </div>
+          <div onclick="openAccountModal(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+            <svg style="width:16px; height:16px; fill:var(--accent-purple);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            Аккаунт
+          </div>
+        </div>
       </div>
     </div>
 
@@ -546,27 +632,14 @@
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
 
-    <div class="menu-item" onclick="openScreen('screenTimer')">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-purple">
-          <svg viewBox="0 0 24 24"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Таймер / Секундомер</h3>
-          <p>Засечь перерыв</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
-    </div>
-
     <div class="menu-item" onclick="openScreen('screenStats')">
       <div class="menu-item-left">
         <div class="menu-icon icon-blue">
           <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
         </div>
         <div class="menu-text">
-          <h3>Статистика</h3>
-          <p>Итоги по сменам</p>
+          <h3>Статистика и архив</h3>
+          <p>Итоги и прошлые недели</p>
         </div>
       </div>
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
@@ -603,7 +676,7 @@
     <div class="card" id="shiftsListCard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
         <div class="card-title" style="margin:0;">Смены</div>
-        <span class="badge" id="counterBadge">0/5</span>
+        <span class="badge" id="counterBadge">1/5</span>
       </div>
       <div id="shiftsContainer"></div>
     </div>
@@ -612,7 +685,30 @@
       <div class="card-title">Текст для Telegram</div>
       <div class="report-box" id="reportText"></div>
       <button class="btn btn-green" onclick="copyReport()">Скопировать отчет</button>
-      <button class="btn btn-red" onclick="resetWeek()">Сбросить неделю</button>
+      <button class="btn btn-orange" onclick="archiveWeek()">Завершить неделю и в архив</button>
+      <button class="btn btn-red" onclick="resetWeek()">Сбросить без сохранения</button>
+    </div>
+  </div>
+
+  <!-- МОИ СМЕНЫ (Календарь на месяц) -->
+  <div id="screenMyShifts" class="screen">
+    <div class="back-btn" onclick="openScreen('screenMenu')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Мои смены</h1>
+        <p>График на месяц</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cal-header">
+        <div class="icon-btn" onclick="changeMonth(-1)"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg></div>
+        <div class="cal-title" id="calMonthTitle">Август 2026</div>
+        <div class="icon-btn" onclick="changeMonth(1)"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
     </div>
   </div>
 
@@ -659,31 +755,16 @@
     </div>
   </div>
 
-  <!-- 4. ТАЙМЕР -->
-  <div id="screenTimer" class="screen">
-    <div class="back-btn" onclick="openScreen('screenMenu')">
-      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
-    </div>
-    <div class="header"><div class="header-title"><h1>Таймер</h1><p>Засечь перерыв</p></div></div>
-    <div class="card">
-      <div class="timer-display" id="timerDisplay">00:00</div>
-      <div class="timer-controls">
-        <button class="btn btn-green" id="timerStartBtn" onclick="toggleTimer()">Старт</button>
-        <button class="btn btn-red-soft" onclick="resetTimer()">Сброс</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 5. СТАТИСТИКА -->
+  <!-- 5. СТАТИСТИКА И АРХИВ -->
   <div id="screenStats" class="screen">
     <div class="back-btn" onclick="openScreen('screenMenu')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
     </div>
-    <div class="header"><div class="header-title"><h1>Статистика</h1><p>Общий итог смен</p></div></div>
+    <div class="header"><div class="header-title"><h1>Статистика</h1><p>Итоги и архивы</p></div></div>
     <div class="card">
       <div class="stat-grid">
         <div class="stat-box">
-          <div class="card-title" style="margin:0;">Всего смен</div>
+          <div class="card-title" style="margin:0;">Смен (текущая)</div>
           <div class="stat-num" id="statShiftsCount">0</div>
         </div>
         <div class="stat-box">
@@ -692,9 +773,14 @@
         </div>
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-title">Архив закрытых недель</div>
+      <div id="archiveContainer"></div>
+    </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО -->
+  <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
   <div class="modal-overlay" id="settingsModal" onclick="closeSettingsModal(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-title">Выплачено за смену</div>
@@ -709,8 +795,26 @@
     </div>
   </div>
 
+  <!-- МОДАЛЬНОЕ ОКНО АККАУНТА (БЕКАП / ЗАГРУЗКА) -->
+  <div class="modal-overlay" id="accountModal" onclick="closeAccountModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-title">Аккаунт и данные</div>
+      <p style="font-size: 13px; color: var(--text-sec); text-align: center; margin-bottom: 16px;">
+        Резервное копирование сохранит все ваши смены, график, архив и заметки в файл.
+      </p>
+      <button class="btn btn-purple" onclick="backupProfile()" style="margin-bottom: 8px;">
+        <svg viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/></svg>
+        Сделать бекап профиля
+      </button>
+      <button class="btn btn-blue" onclick="triggerFileUpload()">
+        <svg viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6-9.67l-5 5 1.41 1.41L11 6.67V16h2V6.67l2.59 2.59L17 7.83l-5-5z"/></svg>
+        Загрузить готовый файл
+      </button>
+      <input type="file" id="profileFileInput" style="display: none;" accept=".json" onchange="restoreProfile(event)">
+    </div>
+  </div>
+
   <script>
-    // --- Сокет Онлайн ---
     (function initRealOnlineCounter() {
       try {
         const socket = io("https://pie-host.com", { path: "/socket.io", transports: ["websocket"] });
@@ -722,7 +826,37 @@
       } catch (e) {}
     })();
 
-    // --- Звук Apple Pay ---
+    // --- Анимация снега ---
+    let snowInterval = null;
+    function toggleSnow() {
+      if (snowInterval) {
+        clearInterval(snowInterval);
+        snowInterval = null;
+        document.querySelectorAll('.snowflake').forEach(el => el.remove());
+        showToast('Снег выключен');
+      } else {
+        snowInterval = setInterval(createSnowflake, 150);
+        showToast('Снег включен');
+      }
+    }
+
+    function createSnowflake() {
+      const snow = document.createElement('div');
+      snow.classList.add('snowflake');
+      snow.style.left = Math.random() * window.innerWidth + 'px';
+      const size = Math.random() * 5 + 3 + 'px';
+      snow.style.width = size;
+      snow.style.height = size;
+      const duration = Math.random() * 3 + 3;
+      snow.style.animationDuration = duration + 's';
+      snow.style.opacity = Math.random() * 0.6 + 0.3;
+      document.body.appendChild(snow);
+
+      setTimeout(() => {
+        snow.remove();
+      }, duration * 1000);
+    }
+
     function playAppStoreSound() {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -755,7 +889,19 @@
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
       if(screenId === 'screenStats') renderStats();
+      if(screenId === 'screenMyShifts') renderCalendar();
     }
+
+    function toggleGlobalMenu(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('globalDropdown');
+      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    window.addEventListener('click', () => {
+      const menu = document.getElementById('globalDropdown');
+      if (menu) menu.style.display = 'none';
+    });
 
     document.getElementById('shiftDate').valueAsDate = new Date();
 
@@ -764,6 +910,12 @@
       return data ? JSON.parse(data) : { shifts: [], deductions: [] };
     }
     function saveData(data) { localStorage.setItem('ios_multitool_data', JSON.stringify(data)); }
+
+    function getArchive() {
+      const data = localStorage.getItem('ios_multitool_archive');
+      return data ? JSON.parse(data) : [];
+    }
+    function saveArchive(arc) { localStorage.setItem('ios_multitool_archive', JSON.stringify(arc)); }
 
     function getPaidAmount() {
       const val = localStorage.getItem('ios_paid_amount');
@@ -799,6 +951,85 @@
       render();
     }
 
+    // --- Управление аккаунтом и бекапом ---
+    function openAccountModal() {
+      document.getElementById('accountModal').classList.add('active');
+    }
+    function closeAccountModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        document.getElementById('accountModal').classList.remove('active');
+      }
+    }
+
+    function backupProfile() {
+      playAppStoreSound();
+      const backupData = {
+        ios_multitool_data: localStorage.getItem('ios_multitool_data'),
+        ios_multitool_archive: localStorage.getItem('ios_multitool_archive'),
+        ios_paid_amount: localStorage.getItem('ios_paid_amount'),
+        ios_month_shifts: localStorage.getItem('ios_month_shifts'),
+        ios_notes: localStorage.getItem('ios_notes'),
+        exportDate: new Date().toISOString()
+      };
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `multitool_backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      closeAccountModal();
+      showToast('Бекап успешно сохранен!');
+    }
+
+    function triggerFileUpload() {
+      document.getElementById('profileFileInput').click();
+    }
+
+    function restoreProfile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          if (parsed.ios_multitool_data !== undefined) {
+            if (parsed.ios_multitool_data !== null) localStorage.setItem('ios_multitool_data', parsed.ios_multitool_data);
+            else localStorage.removeItem('ios_multitool_data');
+            
+            if (parsed.ios_multitool_archive !== null) localStorage.setItem('ios_multitool_archive', parsed.ios_multitool_archive);
+            else localStorage.removeItem('ios_multitool_archive');
+
+            if (parsed.ios_paid_amount !== null) localStorage.setItem('ios_paid_amount', parsed.ios_paid_amount);
+            else localStorage.removeItem('ios_paid_amount');
+
+            if (parsed.ios_month_shifts !== null) localStorage.setItem('ios_month_shifts', parsed.ios_month_shifts);
+            else localStorage.removeItem('ios_month_shifts');
+
+            if (parsed.ios_notes !== null) localStorage.setItem('ios_notes', parsed.ios_notes);
+            else localStorage.removeItem('ios_notes');
+
+            playAppStoreSound();
+            closeAccountModal();
+            render();
+            renderNotes();
+            showToast('Профиль успешно загружен!');
+          } else {
+            showToast('Неверный формат файла бекапа');
+          }
+        } catch (err) {
+          showToast('Ошибка чтения файла');
+        }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
     function addShift() {
       const dateInput = document.getElementById('shiftDate').value;
       const total = parseFloat(document.getElementById('shiftTotal').value);
@@ -806,8 +1037,10 @@
       const [year, month, day] = dateInput.split('-');
       let store = getData();
       if (store.shifts.length >= 5) {
-        if (confirm('В отчете 5 смен. Начать новую неделю?')) store = { shifts: [], deductions: [] };
-        else return;
+        if (confirm('В отчете уже 5 смен. Отправить текущую неделю в архив?')) {
+          archiveWeek();
+          store = getData();
+        } else return;
       }
       store.shifts.push({ date: `${day}.${month}.${year}`, total: total });
       saveData(store);
@@ -875,8 +1108,97 @@
       showToast('Отчет скопирован!');
     }
 
+    function archiveWeek() {
+      const store = getData();
+      if (store.shifts.length === 0) return showToast('Нечего сохранять');
+      const arc = getArchive();
+      arc.unshift({
+        id: Date.now(),
+        dateRange: `${store.shifts[0].date} — ${store.shifts[store.shifts.length - 1].date}`,
+        shiftsCount: store.shifts.length,
+        totalRevenue: store.shifts.reduce((acc, s) => acc + s.total, 0),
+        reportText: document.getElementById('reportText').innerText
+      });
+      saveArchive(arc);
+      localStorage.removeItem('ios_multitool_data');
+      render();
+      showToast('Неделя сохранена в архив!');
+    }
+
+    function deleteArchiveItem(id) {
+      if (!confirm('Удалить эту неделю из архива?')) return;
+      let arc = getArchive();
+      arc = arc.filter(item => item.id !== id);
+      saveArchive(arc);
+      renderStats();
+      showToast('Удалено из архива');
+    }
+
     function resetWeek() {
-      if (confirm('Сбросить отчет?')) { localStorage.removeItem('ios_multitool_data'); render(); }
+      if (confirm('Сбросить текущий отчет без сохранения?')) { 
+        localStorage.removeItem('ios_multitool_data'); 
+        render(); 
+      }
+    }
+
+    // --- Календарь смен на месяц ---
+    let currentCalDate = new Date();
+    function getMonthShifts() {
+      const data = localStorage.getItem('ios_month_shifts');
+      return data ? JSON.parse(data) : {};
+    }
+    function saveMonthShifts(shifts) {
+      localStorage.setItem('ios_month_shifts', JSON.stringify(shifts));
+    }
+
+    function changeMonth(dir) {
+      currentCalDate.setMonth(currentCalDate.getMonth() + dir);
+      renderCalendar();
+    }
+
+    function toggleCalendarDay(dateStr) {
+      let shifts = getMonthShifts();
+      if (shifts[dateStr]) {
+        delete shifts[dateStr];
+        showToast('Смена удалена');
+      } else {
+        shifts[dateStr] = true;
+        showToast('Смена проставлена');
+        playAppStoreSound();
+      }
+      saveMonthShifts(shifts);
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const year = currentCalDate.getFullYear();
+      const month = currentCalDate.getMonth();
+      const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+      document.getElementById('calMonthTitle').innerText = `${monthNames[month]} ${year}`;
+
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = '';
+
+      const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+      weekdays.forEach(w => {
+        grid.innerHTML += `<div class="cal-weekday">${w}</div>`;
+      });
+
+      const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      const shifts = getMonthShifts();
+
+      for (let i = 0; i < firstDayIndex; i++) {
+        grid.innerHTML += `<div class="cal-day empty"></div>`;
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dStr = String(day).padStart(2, '0');
+        const mStr = String(month + 1).padStart(2, '0');
+        const dateKey = `${dStr}.${mStr}.${year}`;
+        const isActive = shifts[dateKey] ? 'active-shift' : '';
+        grid.innerHTML += `<div class="cal-day ${isActive}" onclick="toggleCalendarDay('${dateKey}')">${day}</div>`;
+      }
     }
 
     // --- Заметки ---
@@ -942,37 +1264,6 @@
       }
     }
 
-    // --- Таймер ---
-    let timerInterval = null;
-    let timerSeconds = 0;
-    function toggleTimer() {
-      const btn = document.getElementById('timerStartBtn');
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        btn.innerText = 'Старт';
-        btn.className = 'btn btn-green';
-      } else {
-        timerInterval = setInterval(() => {
-          timerSeconds++;
-          const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
-          const s = String(timerSeconds % 60).padStart(2, '0');
-          document.getElementById('timerDisplay').innerText = `${m}:${s}`;
-        }, 1000);
-        btn.innerText = 'Пауза';
-        btn.className = 'btn btn-orange';
-      }
-    }
-    function resetTimer() {
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = null;
-      timerSeconds = 0;
-      document.getElementById('timerDisplay').innerText = '00:00';
-      const btn = document.getElementById('timerStartBtn');
-      btn.innerText = 'Старт';
-      btn.className = 'btn btn-green';
-    }
-
     // --- Статистика ---
     function renderStats() {
       const store = getData();
@@ -984,6 +1275,27 @@
       } else {
         document.getElementById('statAvgRevenue').innerText = '0 ₽';
       }
+
+      const arc = getArchive();
+      const container = document.getElementById('archiveContainer');
+      if (arc.length === 0) {
+        container.innerHTML = '<div style="color:var(--text-sec); font-size:14px;">Архив пуст</div>';
+        return;
+      }
+      container.innerHTML = '';
+      arc.forEach((item, idx) => {
+        container.innerHTML += `
+          <div class="archive-item">
+            <div>
+              <div style="font-weight:600; font-size:15px; color:#fff;">${item.dateRange}</div>
+              <div style="font-size:13px; color:var(--text-sec); margin-top:3px;">
+                Смен: ${item.shiftsCount} | Выручка: ${item.totalRevenue.toLocaleString('ru-RU')} ₽
+              </div>
+            </div>
+            <div class="del-btn" onclick="deleteArchiveItem(${item.id})">✕</div>
+          </div>
+        `;
+      });
     }
 
     render();
@@ -991,3 +1303,4 @@
   </script>
 </body>
 </html>
+
