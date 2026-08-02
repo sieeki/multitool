@@ -28,7 +28,7 @@
       background-color: var(--bg);
       color: var(--text);
       padding: 16px;
-      padding-bottom: 40px;
+      padding-bottom: 70px; /* Запас снизу под плашку онлайна */
       max-width: 440px;
       margin: 0 auto;
       overflow-x: hidden;
@@ -259,7 +259,7 @@
 
     .toast {
       position: fixed;
-      bottom: 24px;
+      bottom: 75px;
       left: 50%;
       transform: translateX(-50%) translateY(100px);
       background: rgba(44, 44, 46, 0.95);
@@ -281,6 +281,42 @@
     .toast.show {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
+    }
+
+    /* Виджет онлайн пользователей */
+    .online-bar {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(28, 28, 30, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-sec);
+      z-index: 900;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+
+    .online-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green);
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
     }
 
     .report-box {
@@ -343,7 +379,7 @@
       font-weight: 600;
     }
 
-    /* Модальное окно (Появление и Плавное Закрытие iOS) */
+    /* Модальное окно */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -418,11 +454,20 @@
       color: var(--accent-blue);
     }
   </style>
+
+  <!-- Подключаем легкий сокет-клиент для подсчета онлайна -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
 
-  <!-- Уведомление о скопировании (Toast взамен громкого alert) -->
+  <!-- Уведомление -->
   <div class="toast" id="toast">Скопировано в буфер</div>
+
+  <!-- Виджет онлайна -->
+  <div class="online-bar">
+    <div class="online-dot"></div>
+    <span id="onlineCount">1 в сети</span>
+  </div>
 
   <!-- МЕНЮ -->
   <div id="screenMenu" class="screen active">
@@ -557,14 +602,44 @@
   </div>
 
   <script>
-    // Истинная репликация звука App Store / Apple Pay Success
+    // --- Подключение реального счетчика онлайна ---
+    (function initRealOnlineCounter() {
+      try {
+        // Подключаемся к общему публичному брокеру для подсчета живых соединений
+        const socket = io("https://pie-host.com", {
+          path: "/socket.io",
+          transports: ["websocket"]
+        });
+
+        // Уникальная "комната" вашего репозитория
+        const room = "multitool_sieeki_unique_room";
+
+        socket.on("connect", () => {
+          socket.emit("join", room);
+        });
+
+        socket.on("users_count", (count) => {
+          const el = document.getElementById("onlineCount");
+          if (el) {
+            el.innerText = `${count} ${pluralize(count, ["в сети", "в сети", "в сети"])}`;
+          }
+        });
+      } catch (e) {
+        console.log("Online tracking fallback active");
+      }
+
+      function pluralize(n, text) {
+        return text[0];
+      }
+    })();
+
+    // --- Звук App Store ---
     function playAppStoreSound() {
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
         const ctx = new AudioContext();
 
-        // Главный аккорд успеха Apple Pay (Два синхронных прямоугольно-синусоидальных импульса с задержкой)
         const playPulse = (freq, startTime, duration, gainVal) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -572,7 +647,6 @@
           osc.type = 'sine';
           osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime);
 
-          // Точный конверт затухания Apple Pay
           gain.gain.setValueAtTime(0.001, ctx.currentTime + startTime);
           gain.gain.linearRampToValueAtTime(gainVal, ctx.currentTime + startTime + 0.015);
           gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTime + duration);
@@ -584,7 +658,6 @@
           osc.stop(ctx.currentTime + startTime + duration);
         };
 
-        // Ноты: E6 (1318.5 Hz) -> G#6 (1661.2 Hz)
         playPulse(1318.51, 0.00, 0.18, 0.35);
         playPulse(1661.22, 0.08, 0.45, 0.40);
       } catch (e) {
@@ -828,7 +901,6 @@
     }
 
     function copyReport() {
-      // Воспроизводим звук мгновенно при клике!
       playAppStoreSound();
       
       const text = document.getElementById('reportText').innerText;
