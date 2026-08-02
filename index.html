@@ -36,7 +36,7 @@
 
     .screen {
       display: none;
-      animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .screen.active {
@@ -67,6 +67,31 @@
       margin-top: 2px;
     }
 
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-blue);
+      cursor: pointer;
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+      background: var(--card-inner);
+    }
+
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
     .back-btn {
       display: inline-flex;
       align-items: center;
@@ -95,11 +120,11 @@
       align-items: center;
       justify-content: space-between;
       cursor: pointer;
-      transition: transform 0.15s ease, background 0.15s ease;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease;
     }
 
     .menu-item:active {
-      transform: scale(0.98);
+      transform: scale(0.97);
       background: #252528;
     }
 
@@ -153,6 +178,12 @@
       padding: 16px;
       margin-bottom: 20px;
       border: 1px solid rgba(255, 255, 255, 0.06);
+      animation: cardAppear 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes cardAppear {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .card-title {
@@ -171,6 +202,7 @@
       margin-bottom: 12px;
       display: flex;
       flex-direction: column;
+      transition: border-color 0.2s ease;
     }
 
     .input-group label {
@@ -201,7 +233,7 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.15s ease, opacity 0.15s ease;
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -210,7 +242,7 @@
     }
 
     .btn:active {
-      transform: scale(0.97);
+      transform: scale(0.96);
       opacity: 0.85;
     }
 
@@ -224,6 +256,32 @@
     .btn-red-soft { background: rgba(255, 69, 58, 0.15); color: #ff453a; border: 1px solid rgba(255, 69, 58, 0.25); }
     .btn-green { background: rgba(48, 209, 88, 0.18); color: #30d158; border: 1px solid rgba(48, 209, 88, 0.3); }
     .btn-red { background: rgba(255, 69, 58, 0.12); color: #ff453a; border: 1px solid rgba(255, 69, 58, 0.2); }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(44, 44, 46, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
+      z-index: 2000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
 
     .report-box {
       background: #121214;
@@ -245,6 +303,12 @@
       align-items: center;
       padding: 10px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      animation: itemFade 0.25s ease-out;
+    }
+
+    @keyframes itemFade {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     .shift-item:last-child { border-bottom: none; }
@@ -261,6 +325,13 @@
       justify-content: center;
       color: #8e8e93;
       cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .del-btn:active {
+      transform: scale(0.9);
+      background: rgba(255, 69, 58, 0.2);
+      color: var(--accent-red);
     }
 
     .badge {
@@ -271,9 +342,87 @@
       font-size: 12px;
       font-weight: 600;
     }
+
+    /* Модальное окно (Появление и Плавное Закрытие iOS) */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0);
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .modal {
+      background: #1c1c1e;
+      border-radius: 22px;
+      padding: 22px;
+      width: 100%;
+      max-width: 340px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+      transform: scale(0.85) translateY(15px);
+      transition: transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .option-btn {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .option-btn:active {
+      transform: scale(0.98);
+    }
+
+    .option-btn.selected {
+      border-color: var(--accent-blue);
+      background: rgba(10, 132, 255, 0.15);
+      color: var(--accent-blue);
+    }
   </style>
 </head>
 <body>
+
+  <!-- Уведомление о скопировании (Toast взамен громкого alert) -->
+  <div class="toast" id="toast">Скопировано в буфер</div>
 
   <!-- МЕНЮ -->
   <div id="screenMenu" class="screen active">
@@ -311,6 +460,9 @@
       <div class="header-title">
         <h1>Учет недельной</h1>
         <p>Смены и выгрузка отчета</p>
+      </div>
+      <div class="icon-btn" onclick="openSettingsModal()" title="Настройка выплачено">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
       </div>
     </div>
 
@@ -380,7 +532,75 @@
     </div>
   </div>
 
+  <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК ВЫПЛАТЫ -->
+  <div class="modal-overlay" id="settingsModal" onclick="closeSettingsModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-title">Выплачено за смену</div>
+      
+      <div class="option-btn" id="opt1300" onclick="selectPaidOption(1300)">
+        <span>1300 ₽</span>
+      </div>
+      <div class="option-btn" id="opt1000" onclick="selectPaidOption(1000)">
+        <span>1000 ₽</span>
+      </div>
+      <div class="option-btn" id="optCustom" onclick="selectPaidOption('custom')">
+        <span>Другое</span>
+      </div>
+
+      <div class="input-group" id="customInputGroup" style="display:none; margin-top: 10px;">
+        <label>Введите свою сумму (₽)</label>
+        <input type="number" id="customPaidVal" placeholder="Например: 1500" inputmode="numeric">
+      </div>
+
+      <button class="btn btn-blue" onclick="saveSettings()" style="margin-top: 14px;">Сохранить</button>
+    </div>
+  </div>
+
   <script>
+    // Истинная репликация звука App Store / Apple Pay Success
+    function playAppStoreSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+
+        // Главный аккорд успеха Apple Pay (Два синхронных прямоугольно-синусоидальных импульса с задержкой)
+        const playPulse = (freq, startTime, duration, gainVal) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime);
+
+          // Точный конверт затухания Apple Pay
+          gain.gain.setValueAtTime(0.001, ctx.currentTime + startTime);
+          gain.gain.linearRampToValueAtTime(gainVal, ctx.currentTime + startTime + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTime + duration);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(ctx.currentTime + startTime);
+          osc.stop(ctx.currentTime + startTime + duration);
+        };
+
+        // Ноты: E6 (1318.5 Hz) -> G#6 (1661.2 Hz)
+        playPulse(1318.51, 0.00, 0.18, 0.35);
+        playPulse(1661.22, 0.08, 0.45, 0.40);
+      } catch (e) {
+        console.log('Audio error:', e);
+      }
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      toast.innerText = text;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
     function openScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
@@ -397,12 +617,74 @@
       localStorage.setItem('ios_multitool_data', JSON.stringify(data));
     }
 
+    function getPaidAmount() {
+      const val = localStorage.getItem('ios_paid_amount');
+      return val ? parseFloat(val) : 1300;
+    }
+
+    let tempSelectedPaid = getPaidAmount();
+
+    function openSettingsModal() {
+      tempSelectedPaid = getPaidAmount();
+      updateModalUI();
+      document.getElementById('settingsModal').classList.add('active');
+    }
+
+    function closeSettingsModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        document.getElementById('settingsModal').classList.remove('active');
+      }
+    }
+
+    function selectPaidOption(val) {
+      if (val === 'custom') {
+        tempSelectedPaid = 'custom';
+      } else {
+        tempSelectedPaid = val;
+      }
+      updateModalUI();
+    }
+
+    function updateModalUI() {
+      document.getElementById('opt1300').classList.remove('selected');
+      document.getElementById('opt1000').classList.remove('selected');
+      document.getElementById('optCustom').classList.remove('selected');
+      const customGroup = document.getElementById('customInputGroup');
+
+      if (tempSelectedPaid === 1300) {
+        document.getElementById('opt1300').classList.add('selected');
+        customGroup.style.display = 'none';
+      } else if (tempSelectedPaid === 1000) {
+        document.getElementById('opt1000').classList.add('selected');
+        customGroup.style.display = 'none';
+      } else {
+        document.getElementById('optCustom').classList.add('selected');
+        customGroup.style.display = 'flex';
+      }
+    }
+
+    function saveSettings() {
+      let finalVal = tempSelectedPaid;
+      if (tempSelectedPaid === 'custom') {
+        const val = parseFloat(document.getElementById('customPaidVal').value);
+        if (isNaN(val) || val < 0) {
+          showToast('Введите корректную сумму');
+          return;
+        }
+        finalVal = val;
+      }
+
+      localStorage.setItem('ios_paid_amount', finalVal);
+      closeSettingsModal();
+      render();
+    }
+
     function addShift() {
       const dateInput = document.getElementById('shiftDate').value;
       const total = parseFloat(document.getElementById('shiftTotal').value);
 
       if (!dateInput || isNaN(total)) {
-        alert('Заполните дату и сумму выручки');
+        showToast('Заполните дату и сумму выручки');
         return;
       }
 
@@ -431,7 +713,7 @@
       const amount = parseFloat(document.getElementById('deductionAmount').value);
 
       if (!reason || isNaN(amount)) {
-        alert('Введите причину и сумму вычета');
+        showToast('Введите причину и сумму вычета');
         return;
       }
 
@@ -465,6 +747,7 @@
       const reportCard = document.getElementById('reportCard');
       const container = document.getElementById('shiftsContainer');
       const badge = document.getElementById('counterBadge');
+      const currentPaid = getPaidAmount();
 
       if (store.shifts.length === 0 && store.deductions.length === 0) {
         listCard.style.display = 'none';
@@ -476,7 +759,6 @@
       reportCard.style.display = 'block';
       badge.innerText = `${store.shifts.length}/5`;
 
-      // Список смен и вычетов
       container.innerHTML = '';
       store.shifts.forEach((s, idx) => {
         container.innerHTML += `
@@ -506,7 +788,6 @@
         `;
       });
 
-      // Генерация текста для Telegram
       let text = '';
       if (store.shifts.length > 0) {
         const startDate = store.shifts[0].date;
@@ -521,7 +802,7 @@
       store.shifts.forEach(s => {
         const percent = Math.round(s.total * 0.03);
         const toPay = 2300 + percent;
-        const paid = 1300;
+        const paid = currentPaid;
         const remain = toPay - paid;
         totalRemaining += remain;
 
@@ -532,7 +813,6 @@
         text += `Остаток: ${remain}\n\n`;
       });
 
-      // Вычеты в тексте
       store.deductions.forEach(d => {
         text += `-${d.amount} (${d.reason})\n`;
         totalRemaining -= d.amount;
@@ -548,9 +828,14 @@
     }
 
     function copyReport() {
+      // Воспроизводим звук мгновенно при клике!
+      playAppStoreSound();
+      
       const text = document.getElementById('reportText').innerText;
       navigator.clipboard.writeText(text).then(() => {
-        alert('Скопировано! Можно вставлять.');
+        showToast('Отчет скопирован!');
+      }).catch(() => {
+        showToast('Отчет скопирован!');
       });
     }
 
