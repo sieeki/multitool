@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Work Tool Suite</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --card-bg: #1c1c1e;
+      --card-inner: #2c2c2e;
+      --accent-blue: #0a84ff;
+      --accent-green: #30d158;
+      --accent-red: #ff453a;
+      --text: #ffffff;
+      --text-sec: #8e8e93;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      padding-bottom: 40px;
+      max-width: 440px;
+      margin: 0 auto;
+      overflow-x: hidden;
+    }
+
+    .screen {
+      display: none;
+      animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .header {
+      margin: 15px 0 24px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-title h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .header-title p {
+      color: var(--text-sec);
+      font-size: 14px;
+      margin-top: 2px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--accent-blue);
+      font-size: 17px;
+      font-weight: 400;
+      cursor: pointer;
+      margin-bottom: 12px;
+      padding: 4px 0;
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .menu-item {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .menu-item:active {
+      transform: scale(0.98);
+      background: #252528;
+    }
+
+    .menu-item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .menu-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: rgba(10, 132, 255, 0.15);
+      color: var(--accent-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .menu-icon svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+
+    .menu-text h3 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .menu-text p {
+      font-size: 13px;
+      color: var(--text-sec);
+      margin-top: 2px;
+    }
+
+    .arrow-icon {
+      color: #545458;
+    }
+
+    .arrow-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .card-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--text-sec);
+      letter-spacing: 0.2px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .input-group {
+      background: var(--card-inner);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group label {
+      font-size: 11px;
+      color: var(--text-sec);
+      margin-bottom: 2px;
+    }
+
+    .input-group input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 17px;
+      outline: none;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+
+    .btn {
+      width: 100%;
+      height: 50px;
+      border-radius: 14px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+      opacity: 0.85;
+    }
+
+    .btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .btn-blue { background: var(--accent-blue); color: #ffffff; }
+    .btn-red-soft { background: rgba(255, 69, 58, 0.15); color: #ff453a; border: 1px solid rgba(255, 69, 58, 0.25); }
+    .btn-green { background: rgba(48, 209, 88, 0.18); color: #30d158; border: 1px solid rgba(48, 209, 88, 0.3); }
+    .btn-red { background: rgba(255, 69, 58, 0.12); color: #ff453a; border: 1px solid rgba(255, 69, 58, 0.2); }
+
+    .report-box {
+      background: #121214;
+      border-radius: 12px;
+      padding: 14px;
+      font-family: "SF Mono", "Menlo", monospace;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #30d158;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 12px;
+    }
+
+    .shift-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .shift-item:last-child { border-bottom: none; }
+    .shift-date { font-weight: 600; font-size: 16px; }
+    .shift-val { color: var(--text-sec); font-size: 14px; margin-top: 2px; }
+
+    .del-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8e8e93;
+      cursor: pointer;
+    }
+
+    .badge {
+      background: rgba(10, 132, 255, 0.15);
+      color: var(--accent-blue);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- МЕНЮ -->
+  <div id="screenMenu" class="screen active">
+    <div class="header">
+      <div class="header-title">
+        <h1>Мультитул</h1>
+        <p>Рабочие инструменты</p>
+      </div>
+    </div>
+
+    <div class="menu-item" onclick="openScreen('screenShifts')">
+      <div class="menu-item-left">
+        <div class="menu-icon">
+          <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Учет недельной</h3>
+          <p>Расчет смен и остатков</p>
+        </div>
+      </div>
+      <div class="arrow-icon">
+        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- УЧЕТ СМЕН -->
+  <div id="screenShifts" class="screen">
+    <div class="back-btn" onclick="openScreen('screenMenu')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+      Мультитул
+    </div>
+
+    <div class="header" style="margin-top: 5px;">
+      <div class="header-title">
+        <h1>Учет недельной</h1>
+        <p>Смены и выгрузка отчета</p>
+      </div>
+    </div>
+
+    <!-- Новая смена -->
+    <div class="card">
+      <div class="card-title">Новая смена</div>
+      
+      <div class="input-group">
+        <label>Дата</label>
+        <input type="date" id="shiftDate">
+      </div>
+
+      <div class="input-group">
+        <label>Выручка (Итог, ₽)</label>
+        <input type="number" id="shiftTotal" placeholder="26256" inputmode="numeric">
+      </div>
+
+      <button class="btn btn-blue" onclick="addShift()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Добавить смену
+      </button>
+    </div>
+
+    <!-- Добавить вычет -->
+    <div class="card">
+      <div class="card-title">Добавить вычет / Штраф</div>
+      
+      <div class="input-group">
+        <label>Причина / Описание</label>
+        <input type="text" id="deductionReason" placeholder="Например: Штраф или Товар">
+      </div>
+
+      <div class="input-group">
+        <label>Сумма вычета (₽)</label>
+        <input type="number" id="deductionAmount" placeholder="2000" inputmode="numeric">
+      </div>
+
+      <button class="btn btn-red-soft" onclick="addDeduction()">
+        <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
+        Добавить вычет
+      </button>
+    </div>
+
+    <!-- Список -->
+    <div class="card" id="shiftsListCard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+        <div class="card-title" style="margin:0;">Смены и вычеты</div>
+        <span class="badge" id="counterBadge">0/5</span>
+      </div>
+      <div id="shiftsContainer"></div>
+    </div>
+
+    <!-- Отчет -->
+    <div class="card" id="reportCard" style="display:none;">
+      <div class="card-title">Готовый текст для Telegram</div>
+      <div class="report-box" id="reportText"></div>
+      
+      <button class="btn btn-green" onclick="copyReport()">
+        <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        Скопировать отчет
+      </button>
+      
+      <button class="btn btn-red" onclick="resetWeek()">
+        <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        Сбросить неделю
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function openScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    document.getElementById('shiftDate').valueAsDate = new Date();
+
+    function getData() {
+      const data = localStorage.getItem('ios_multitool_data');
+      return data ? JSON.parse(data) : { shifts: [], deductions: [] };
+    }
+
+    function saveData(data) {
+      localStorage.setItem('ios_multitool_data', JSON.stringify(data));
+    }
+
+    function addShift() {
+      const dateInput = document.getElementById('shiftDate').value;
+      const total = parseFloat(document.getElementById('shiftTotal').value);
+
+      if (!dateInput || isNaN(total)) {
+        alert('Заполните дату и сумму выручки');
+        return;
+      }
+
+      const [year, month, day] = dateInput.split('-');
+      const formattedDate = `${day}.${month}.${year}`;
+
+      let store = getData();
+
+      if (store.shifts.length >= 5) {
+        if (confirm('В отчете уже 5 смен. Начать новую неделю?')) {
+          store = { shifts: [], deductions: [] };
+        } else {
+          return;
+        }
+      }
+
+      store.shifts.push({ date: formattedDate, total: total });
+      saveData(store);
+      document.getElementById('shiftTotal').value = '';
+      
+      render();
+    }
+
+    function addDeduction() {
+      const reason = document.getElementById('deductionReason').value.trim();
+      const amount = parseFloat(document.getElementById('deductionAmount').value);
+
+      if (!reason || isNaN(amount)) {
+        alert('Введите причину и сумму вычета');
+        return;
+      }
+
+      let store = getData();
+      store.deductions.push({ reason: reason, amount: amount });
+      saveData(store);
+
+      document.getElementById('deductionReason').value = '';
+      document.getElementById('deductionAmount').value = '';
+
+      render();
+    }
+
+    function deleteShift(index) {
+      let store = getData();
+      store.shifts.splice(index, 1);
+      saveData(store);
+      render();
+    }
+
+    function deleteDeduction(index) {
+      let store = getData();
+      store.deductions.splice(index, 1);
+      saveData(store);
+      render();
+    }
+
+    function render() {
+      const store = getData();
+      const listCard = document.getElementById('shiftsListCard');
+      const reportCard = document.getElementById('reportCard');
+      const container = document.getElementById('shiftsContainer');
+      const badge = document.getElementById('counterBadge');
+
+      if (store.shifts.length === 0 && store.deductions.length === 0) {
+        listCard.style.display = 'none';
+        reportCard.style.display = 'none';
+        return;
+      }
+
+      listCard.style.display = 'block';
+      reportCard.style.display = 'block';
+      badge.innerText = `${store.shifts.length}/5`;
+
+      // Список смен и вычетов
+      container.innerHTML = '';
+      store.shifts.forEach((s, idx) => {
+        container.innerHTML += `
+          <div class="shift-item">
+            <div>
+              <div class="shift-date">${s.date}</div>
+              <div class="shift-val">Итог: ${s.total.toLocaleString('ru-RU')} ₽</div>
+            </div>
+            <div class="del-btn" onclick="deleteShift(${idx})">
+              <svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:currentColor;"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </div>
+          </div>
+        `;
+      });
+
+      store.deductions.forEach((d, idx) => {
+        container.innerHTML += `
+          <div class="shift-item">
+            <div>
+              <div class="shift-date" style="color: var(--accent-red);">- ${d.amount.toLocaleString('ru-RU')} ₽</div>
+              <div class="shift-val">${d.reason}</div>
+            </div>
+            <div class="del-btn" onclick="deleteDeduction(${idx})">
+              <svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:currentColor;"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </div>
+          </div>
+        `;
+      });
+
+      // Генерация текста для Telegram
+      let text = '';
+      if (store.shifts.length > 0) {
+        const startDate = store.shifts[0].date;
+        const endDate = store.shifts[store.shifts.length - 1].date;
+        text += `Недельная с ${startDate} по ${endDate}\n\n`;
+      } else {
+        text += `Недельный отчет\n\n`;
+      }
+
+      let totalRemaining = 0;
+
+      store.shifts.forEach(s => {
+        const percent = Math.round(s.total * 0.03);
+        const toPay = 2300 + percent;
+        const paid = 1300;
+        const remain = toPay - paid;
+        totalRemaining += remain;
+
+        text += `Смена: ${s.date}\n`;
+        text += `Итог: ${s.total}\n`;
+        text += `К выплате: 2300 + ${percent} = ${toPay}\n`;
+        text += `Выплачено: ${paid}\n`;
+        text += `Остаток: ${remain}\n\n`;
+      });
+
+      // Вычеты в тексте
+      store.deductions.forEach(d => {
+        text += `-${d.amount} (${d.reason})\n`;
+        totalRemaining -= d.amount;
+      });
+
+      if (store.deductions.length > 0) {
+        text += `\n`;
+      }
+
+      text += `Остаток к выплате: ${totalRemaining}`;
+
+      document.getElementById('reportText').innerText = text;
+    }
+
+    function copyReport() {
+      const text = document.getElementById('reportText').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Скопировано! Можно вставлять.');
+      });
+    }
+
+    function resetWeek() {
+      if (confirm('Точно сбросить текущий отчет и вычеты?')) {
+        localStorage.removeItem('ios_multitool_data');
+        render();
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
