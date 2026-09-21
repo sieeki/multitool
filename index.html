@@ -37,7 +37,6 @@
       position: relative;
     }
 
-    /* Стили для падающего снега */
     .snowflake {
       position: fixed;
       top: -10px;
@@ -50,15 +49,9 @@
     }
 
     @keyframes fall {
-      0% {
-        transform: translateY(-10px) translateX(0);
-      }
-      50% {
-        transform: translateY(50vh) translateX(15px);
-      }
-      100% {
-        transform: translateY(105vh) translateX(-15px);
-      }
+      0% { transform: translateY(-10px) translateX(0); }
+      50% { transform: translateY(50vh) translateX(15px); }
+      100% { transform: translateY(105vh) translateX(-15px); }
     }
 
     .screen {
@@ -66,9 +59,7 @@
       animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    .screen.active {
-      display: block;
-    }
+    .screen.active { display: block; }
 
     @keyframes slideIn {
       from { opacity: 0; transform: translateX(20px); }
@@ -94,6 +85,12 @@
       margin-top: 2px;
     }
 
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .icon-btn {
       width: 36px;
       height: 36px;
@@ -113,11 +110,8 @@
       background: var(--card-inner);
     }
 
-    .icon-btn svg {
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
-    }
+    .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
+    .icon-btn.admin-btn { color: var(--accent-orange); }
 
     .back-btn {
       display: inline-flex;
@@ -131,11 +125,7 @@
       padding: 4px 0;
     }
 
-    .back-btn svg {
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
-    }
+    .back-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
     .menu-item {
       background: var(--card-bg);
@@ -174,23 +164,11 @@
     .icon-orange { background: rgba(255, 159, 10, 0.15); color: var(--accent-orange); }
     .icon-purple { background: rgba(191, 90, 242, 0.15); color: var(--accent-purple); }
     .icon-green { background: rgba(48, 209, 88, 0.15); color: var(--accent-green); }
+    .icon-red { background: rgba(255, 69, 58, 0.15); color: var(--accent-red); }
 
-    .menu-icon svg {
-      width: 24px;
-      height: 24px;
-      fill: currentColor;
-    }
-
-    .menu-text h3 {
-      font-size: 17px;
-      font-weight: 600;
-    }
-
-    .menu-text p {
-      font-size: 13px;
-      color: var(--text-sec);
-      margin-top: 2px;
-    }
+    .menu-icon svg { width: 24px; height: 24px; fill: currentColor; }
+    .menu-text h3 { font-size: 17px; font-weight: 600; }
+    .menu-text p { font-size: 13px; color: var(--text-sec); margin-top: 2px; }
 
     .arrow-icon { color: #545458; }
     .arrow-icon svg { width: 18px; height: 18px; fill: currentColor; }
@@ -227,12 +205,7 @@
       flex-direction: column;
     }
 
-    .input-group label {
-      font-size: 11px;
-      color: var(--text-sec);
-      margin-bottom: 2px;
-    }
-
+    .input-group label { font-size: 11px; color: var(--text-sec); margin-bottom: 2px; }
     .input-group input {
       background: transparent;
       border: none;
@@ -241,6 +214,8 @@
       outline: none;
       width: 100%;
       font-family: inherit;
+      -webkit-appearance: none;
+      appearance: none;
     }
 
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
@@ -259,6 +234,7 @@
       justify-content: center;
       gap: 10px;
       margin-top: 8px;
+      font-family: inherit;
     }
 
     .btn:active { transform: scale(0.96); opacity: 0.85; }
@@ -311,7 +287,7 @@
       font-size: 12px;
       font-weight: 500;
       color: var(--text-sec);
-      z-index: 900;
+      z-index: 100;
       box-shadow: 0 4px 15px rgba(0,0,0,0.4);
     }
 
@@ -365,6 +341,7 @@
       justify-content: center;
       color: #8e8e93;
       cursor: pointer;
+      flex-shrink: 0;
     }
 
     .del-btn:active { transform: scale(0.9); background: rgba(255, 69, 58, 0.2); color: var(--accent-red); }
@@ -414,7 +391,6 @@
     }
 
     .modal-overlay.active .modal { transform: scale(1) translateY(0); }
-
     .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; text-align: center; }
 
     .option-btn {
@@ -497,38 +473,11 @@
       border-radius: 12px;
     }
     .stat-num { font-size: 20px; font-weight: 700; color: var(--accent-blue); margin-top: 4px; }
-    .archive-item {
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .archive-item:last-child { border-bottom: none; }
 
-    /* Календарь на месяц */
-    .cal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-    .cal-title {
-      font-size: 16px;
-      font-weight: 600;
-    }
-    .cal-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
-      text-align: center;
-    }
-    .cal-weekday {
-      font-size: 11px;
-      color: var(--text-sec);
-      font-weight: 600;
-      padding-bottom: 4px;
-    }
+    .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .cal-title { font-size: 16px; font-weight: 600; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+    .cal-weekday { font-size: 11px; color: var(--text-sec); font-weight: 600; padding-bottom: 4px; }
     .cal-day {
       aspect-ratio: 1;
       background: var(--card-inner);
@@ -551,9 +500,351 @@
       color: var(--accent-green);
       font-weight: 700;
     }
-  </style>
 
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    .cal-day.green {
+      background: rgba(48, 209, 88, 0.22);
+      border-color: rgba(48, 209, 88, 0.5);
+      color: var(--accent-green);
+      font-weight: 700;
+    }
+    .cal-day.red {
+      background: rgba(255, 69, 58, 0.22);
+      border-color: rgba(255, 69, 58, 0.5);
+      color: var(--accent-red);
+      font-weight: 700;
+    }
+
+    @keyframes shakeModal {
+      0%, 100% { transform: scale(1) translateX(0); }
+      20%, 60% { transform: scale(1) translateX(-8px); }
+      40%, 80% { transform: scale(1) translateX(8px); }
+    }
+    .modal-shake { animation: shakeModal 0.35s ease-in-out; }
+
+    .location-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .location-card:active {
+      transform: scale(0.98);
+      background: #252528;
+    }
+    .location-info h4 { font-size: 16px; font-weight: 600; color: #fff; }
+    .location-info p { font-size: 12px; color: var(--text-sec); margin-top: 3px; }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .legend-row:last-child { border-bottom: none; }
+    .legend-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .legend-dot.green { background: rgba(48, 209, 88, 0.35); border: 1px solid rgba(48, 209, 88, 0.7); }
+    .legend-dot.red { background: rgba(255, 69, 58, 0.35); border: 1px solid rgba(255, 69, 58, 0.7); }
+
+    .work-time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(10, 132, 255, 0.15);
+      color: var(--accent-blue);
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .work-time-badge svg { width: 14px; height: 14px; fill: currentColor; }
+
+    .color-hint {
+      font-size: 12px;
+      color: var(--text-sec);
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+
+    .employee-select {
+      width: 100%;
+      background: var(--card-inner);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+    .employee-select:focus { border-color: var(--accent-blue); }
+
+    .employee-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      padding: 4px 0;
+    }
+
+    .confirm-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      padding: 20px;
+    }
+    .confirm-overlay.active { display: flex; }
+    .confirm-box {
+      background: #1c1c1e;
+      border-radius: 20px;
+      padding: 22px;
+      width: 100%;
+      max-width: 320px;
+      border: 1px solid rgba(255,255,255,0.12);
+      text-align: center;
+    }
+    .confirm-box h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .confirm-box p { font-size: 14px; color: var(--text-sec); margin-bottom: 18px; }
+    .confirm-btns { display: flex; gap: 10px; }
+    .confirm-btns .btn { margin-top: 0; height: 46px; font-size: 15px; }
+
+    /* AI */
+    .menu-item.ai-highlight {
+      background: linear-gradient(135deg, rgba(10, 132, 255, 0.18), rgba(191, 90, 242, 0.18));
+      border: 1px solid rgba(10, 132, 255, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .menu-item.ai-highlight::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(10, 132, 255, 0.2) 0%, transparent 60%);
+      animation: aiPulse 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes aiPulse {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 0.9; transform: scale(1.15); }
+    }
+    .menu-item.ai-highlight .menu-icon {
+      background: linear-gradient(135deg, #0a84ff, #bf5af2);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(10, 132, 255, 0.5);
+    }
+    .ai-chat-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 250px);
+      min-height: 350px;
+      padding: 12px;
+    }
+    .ai-chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 4px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    .ai-msg {
+      max-width: 85%;
+      padding: 11px 15px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.45;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    .ai-msg.user {
+      align-self: flex-end;
+      background: var(--accent-blue);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .ai-msg.ai {
+      align-self: flex-start;
+      background: var(--card-inner);
+      color: #fff;
+      border-bottom-left-radius: 4px;
+    }
+    .ai-msg.error {
+      align-self: center;
+      background: rgba(255, 69, 58, 0.15);
+      color: var(--accent-red);
+      font-size: 13px;
+      border: 1px solid rgba(255, 69, 58, 0.3);
+      text-align: center;
+    }
+    .ai-quick-btns {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 4px 0 8px 0;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .ai-quick-btns::-webkit-scrollbar { display: none; }
+    .ai-quick-btn {
+      flex-shrink: 0;
+      background: var(--card-inner);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-sec);
+      padding: 7px 13px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .ai-quick-btn:active {
+      background: var(--accent-blue);
+      color: #fff;
+    }
+    .ai-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .ai-input-row input {
+      flex: 1;
+      background: var(--card-inner);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+      font-family: inherit;
+    }
+    .ai-input-row input:focus { border-color: var(--accent-blue); }
+    .ai-input-row button {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, #0a84ff, #bf5af2);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ai-input-row button:disabled { opacity: 0.4; }
+    .ai-typing {
+      align-self: flex-start;
+      color: var(--text-sec);
+      font-size: 13px;
+      padding: 10px 15px;
+      background: var(--card-inner);
+      border-radius: 16px;
+    }
+    .ai-typing::after {
+      content: '...';
+      animation: aiDots 1.4s infinite;
+    }
+    @keyframes aiDots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    .ai-under-construction-card {
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+      background: radial-gradient(circle at 50% 35%, rgba(10, 132, 255, 0.14), transparent 58%), var(--card-bg);
+    }
+    .ai-under-construction-card::before {
+      content: '';
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(191, 90, 242, 0.18), transparent 68%);
+      animation: aiConstructionGlow 3.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .ai-under-construction-spark {
+      position: relative;
+      z-index: 1;
+      font-size: 46px;
+      line-height: 1;
+      color: var(--accent-blue);
+      text-shadow: 0 0 22px rgba(10, 132, 255, 0.8);
+      animation: aiConstructionSpark 2s ease-in-out infinite;
+    }
+    .ai-under-construction-title {
+      position: relative;
+      z-index: 1;
+      margin-top: 18px;
+      font-size: 34px;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      background: linear-gradient(110deg, #0a84ff 10%, #bf5af2 35%, #ffffff 50%, #30d158 68%, #0a84ff 90%);
+      background-size: 260% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      animation: aiConstructionText 3.2s linear infinite;
+    }
+    .ai-under-construction-card p {
+      position: relative;
+      z-index: 1;
+      max-width: 280px;
+      margin-top: 14px;
+      color: var(--text-sec);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    @keyframes aiConstructionText {
+      from { background-position: 0% center; }
+      to { background-position: 260% center; }
+    }
+    @keyframes aiConstructionGlow {
+      0%, 100% { transform: scale(0.9); opacity: 0.55; }
+      50% { transform: scale(1.18); opacity: 1; }
+    }
+    @keyframes aiConstructionSpark {
+      0%, 100% { transform: rotate(-8deg) scale(0.94); opacity: 0.75; }
+      50% { transform: rotate(8deg) scale(1.12); opacity: 1; }
+    }
+  </style>
 </head>
 <body>
 
@@ -571,23 +862,27 @@
         <h1>Мультитул</h1>
         <p>Рабочий набор</p>
       </div>
-      <div style="position: relative;">
-        <div class="icon-btn" onclick="toggleGlobalMenu(event)">
-          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      <div class="header-actions">
+        <div class="icon-btn admin-btn" onclick="openAdminAuthModal()" title="Админ-панель">
+          <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
         </div>
-        <!-- Мини-меню настроек -->
-        <div id="globalDropdown" style="display: none; position: absolute; right: 0; top: 44px; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 6px; width: 170px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-          <div onclick="openScreen('screenMyShifts'); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
-            <svg style="width:16px; height:16px; fill:var(--accent-green);" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
-            Мои смены
+        <div style="position: relative;">
+          <div class="icon-btn" onclick="toggleGlobalMenu(event)">
+            <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
           </div>
-          <div onclick="toggleSnow(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
-            <svg style="width:16px; height:16px; fill:var(--accent-blue);" viewBox="0 0 24 24"><path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/></svg>
-            Снег
-          </div>
-          <div onclick="openAccountModal(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
-            <svg style="width:16px; height:16px; fill:var(--accent-purple);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-            Аккаунт
+          <div id="globalDropdown" style="display: none; position: absolute; right: 0; top: 44px; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 6px; width: 170px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <div onclick="openScreen('screenMyShifts'); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+              <svg style="width:16px; height:16px; fill:var(--accent-green);" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+              Мои смены
+            </div>
+            <div onclick="toggleSnow(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+              <svg style="width:16px; height:16px; fill:var(--accent-blue);" viewBox="0 0 24 24"><path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/></svg>
+              Снег
+            </div>
+            <div onclick="openAccountModal(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+              <svg style="width:16px; height:16px; fill:var(--accent-purple);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+              Аккаунт
+            </div>
           </div>
         </div>
       </div>
@@ -644,9 +939,37 @@
       </div>
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
+
+    <div class="menu-item" onclick="openScreen('screenSalary')">
+      <div class="menu-item-left">
+        <div class="menu-icon icon-green">
+          <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Зарплата</h3>
+          <p>Итоги по месяцам</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+
+    <div class="menu-item ai-highlight" onclick="openScreen('screenAI')">
+      <div class="menu-item-left">
+        <div class="menu-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/><path d="M19 14L19.7 16.8L22.5 17.5L19.7 18.2L19 21L18.3 18.2L15.5 17.5L18.3 16.8L19 14Z" opacity="0.7"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Помощь AI</h3>
+          <p>Спроси что угодно по работе</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+
+    <div style="height: 80px;"></div>
   </div>
 
-  <!-- 1. УЧЕТ СМЕН -->
+  <!-- УЧЕТ СМЕН -->
   <div id="screenShifts" class="screen">
     <div class="back-btn" onclick="openScreen('screenMenu')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
@@ -662,14 +985,14 @@
     <div class="card">
       <div class="card-title">Новая смена</div>
       <div class="input-group"><label>Дата</label><input type="date" id="shiftDate"></div>
-      <div class="input-group"><label>Выручка (Итог, ₽)</label><input type="number" id="shiftTotal" placeholder="26256" inputmode="numeric"></div>
+      <div class="input-group"><label>Выручка (Итог, ₽)</label><input type="text" inputmode="decimal" id="shiftTotal" placeholder="26256"></div>
       <button class="btn btn-blue" onclick="addShift()">Добавить смену</button>
     </div>
 
     <div class="card">
       <div class="card-title">Вычет / Штраф</div>
       <div class="input-group"><label>Причина</label><input type="text" id="deductionReason" placeholder="Штраф или Товар"></div>
-      <div class="input-group"><label>Сумма (₽)</label><input type="number" id="deductionAmount" placeholder="2000" inputmode="numeric"></div>
+      <div class="input-group"><label>Сумма (₽)</label><input type="text" inputmode="decimal" id="deductionAmount" placeholder="2000"></div>
       <button class="btn btn-red-soft" onclick="addDeduction()">Добавить вычет</button>
     </div>
 
@@ -690,7 +1013,7 @@
     </div>
   </div>
 
-  <!-- МОИ СМЕНЫ (Календарь на месяц) -->
+  <!-- МОИ СМЕНЫ -->
   <div id="screenMyShifts" class="screen">
     <div class="back-btn" onclick="openScreen('screenMenu')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
@@ -705,21 +1028,19 @@
     <div class="card">
       <div class="cal-header">
         <div class="icon-btn" onclick="changeMonth(-1)"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg></div>
-        <div class="cal-title" id="calMonthTitle">Август 2026</div>
-        <div class="icon-btn" onclick="changeMonth(1)"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+        <div class="cal-title" id="calMonthTitle">Сентябрь 2026</div>
+        <div class="icon-btn" onclick="changeMonth(1)"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6 1.41-1.41z"/></svg></div>
       </div>
       <div class="cal-grid" id="calGrid"></div>
     </div>
   </div>
 
-  <!-- 2. ЗАМЕТКИ СМЕНЫ -->
+  <!-- ЗАМЕТКИ -->
   <div id="screenNotes" class="screen">
     <div class="back-btn" onclick="openScreen('screenMenu')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
     </div>
-    <div class="header">
-      <div class="header-title"><h1>Заметки смены</h1><p>Напоминания и дела</p></div>
-    </div>
+    <div class="header"><div class="header-title"><h1>Заметки смены</h1><p>Напоминания и дела</p></div></div>
     <div class="card">
       <div class="input-group"><label>Новое напоминание</label><input type="text" id="noteInput" placeholder="Отложить товар для..."></div>
       <button class="btn btn-orange" onclick="addNote()">Сохранить заметку</button>
@@ -730,15 +1051,15 @@
     </div>
   </div>
 
-  <!-- 3. РАСЧЕТ СДАЧИ -->
+  <!-- РАСЧЕТ СДАЧИ -->
   <div id="screenChange" class="screen">
     <div class="back-btn" onclick="openScreen('screenMenu')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
     </div>
     <div class="header"><div class="header-title"><h1>Расчет сдачи</h1><p>Калькулятор кассы</p></div></div>
     <div class="card">
-      <div class="input-group"><label>Сумма чека (₽)</label><input type="number" id="calcBill" placeholder="420" inputmode="numeric" oninput="calculateChange()"></div>
-      <div class="input-group"><label>Внесено клиентом (₽)</label><input type="number" id="calcPaid" placeholder="5000" inputmode="numeric" oninput="calculateChange()"></div>
+      <div class="input-group"><label>Сумма чека (₽)</label><input type="text" inputmode="decimal" id="calcBill" placeholder="420" oninput="calculateChange()"></div>
+      <div class="input-group"><label>Внесено клиентом (₽)</label><input type="text" inputmode="decimal" id="calcPaid" placeholder="5000" oninput="calculateChange()"></div>
       
       <div class="card-title" style="margin-top:10px;">Быстрый выбор купюры:</div>
       <div class="quick-cash">
@@ -755,7 +1076,7 @@
     </div>
   </div>
 
-  <!-- 5. СТАТИСТИКА И АРХИВ -->
+  <!-- СТАТИСТИКА -->
   <div id="screenStats" class="screen">
     <div class="back-btn" onclick="openScreen('screenMenu')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
@@ -780,7 +1101,251 @@
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
+  <!-- ЗАРПЛАТА -->
+  <div id="screenSalary" class="screen">
+    <div class="back-btn" onclick="openScreen('screenMenu')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Зарплата</h1>
+        <p>Итоги по месяцам</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cal-header">
+        <div class="icon-btn" onclick="changeSalaryMonth(-1)"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg></div>
+        <div class="cal-title" id="salaryMonthTitle">Сентябрь 2026</div>
+        <div class="icon-btn" onclick="changeSalaryMonth(1)"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6 1.41-1.41z"/></svg></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Итоги месяца</div>
+      <div id="salarySummary"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Недели месяца</div>
+      <div id="salaryWeeks"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Выплаты</div>
+      <div class="input-group">
+        <label>Сумма (₽)</label>
+        <input type="text" inputmode="decimal" id="payoutAmount" placeholder="15000">
+      </div>
+      <div class="input-group">
+        <label>Комментарий (необязательно)</label>
+        <input type="text" id="payoutNote" placeholder="Аванс">
+      </div>
+      <button class="btn btn-green" onclick="addPayout()">Добавить выплату</button>
+      <div id="payoutsList" style="margin-top: 12px;"></div>
+    </div>
+  </div>
+
+  <!-- AI ЭКРАН -->
+  <div id="screenAI" class="screen">
+    <div class="back-btn" onclick="openScreen('screenMenu')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Помощь AI</h1>
+        <p>Ассистент по работе</p>
+      </div>
+    </div>
+
+    <div class="card ai-under-construction-card">
+      <div class="ai-under-construction-spark">✦</div>
+      <div class="ai-under-construction-title">В разработке</div>
+      <p>AI-помощник временно отключён. Скоро здесь появится новая версия.</p>
+    </div>
+  </div>
+
+  <!-- АДМИН-ПАНЕЛЬ -->
+  <div id="screenAdmin" class="screen">
+    <div class="back-btn" onclick="openScreen('screenMenu')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Админ-панель</h1>
+        <p>Управление и графики</p>
+      </div>
+    </div>
+
+    <div class="menu-item" onclick="openScreen('screenLocations')" style="border-color: rgba(255, 159, 10, 0.3);">
+      <div class="menu-item-left">
+        <div class="menu-icon icon-orange">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Графики точек</h3>
+          <p>Адреса и время работы</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+
+    <div class="menu-item" onclick="openScreen('screenEmployees')" style="border-color: rgba(191, 90, 242, 0.3);">
+      <div class="menu-item-left">
+        <div class="menu-icon icon-purple">
+          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Сотрудники</h3>
+          <p>Список имён для графика</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+  </div>
+
+  <!-- СОТРУДНИКИ -->
+  <div id="screenEmployees" class="screen">
+    <div class="back-btn" onclick="openScreen('screenAdmin')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админ-панель
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Сотрудники</h1>
+        <p>Список имён</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Добавить сотрудника</div>
+      <div class="input-group">
+        <label>Имя</label>
+        <input type="text" id="newEmployeeInput" placeholder="Иван">
+      </div>
+      <button class="btn btn-purple" onclick="addEmployee()">Добавить</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Список</div>
+      <div id="employeesContainer"></div>
+    </div>
+  </div>
+
+  <!-- СПИСОК ТОЧЕК -->
+  <div id="screenLocations" class="screen">
+    <div class="back-btn" onclick="openScreen('screenAdmin')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админ-панель
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Графики точек</h1>
+        <p>Выберите адрес</p>
+      </div>
+    </div>
+
+    <div id="locationsList"></div>
+  </div>
+
+  <!-- ДЕТАЛЬНЫЙ ЭКРАН ТОЧКИ -->
+  <div id="screenPointDetail" class="screen">
+    <div class="back-btn" onclick="openScreen('screenLocations')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> К списку точек
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1 id="pointTitle">Точка</h1>
+        <p>График сотрудников</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Режим работы точки</div>
+      <div class="work-time-badge" id="pointWorkTime">
+        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+        <span id="pointWorkTimeText">9:00 — 23:00</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Сотрудники на точке</div>
+
+      <div class="legend-row" style="flex-direction:column; align-items:stretch; gap:6px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="legend-dot green"></div>
+          <span style="font-size:14px; color:var(--text-sec);">Зелёный</span>
+        </div>
+        <select id="greenSelect" class="employee-select" onchange="savePointEmployees()">
+          <option value="">— не выбран —</option>
+        </select>
+      </div>
+
+      <div class="legend-row" style="flex-direction:column; align-items:stretch; gap:6px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="legend-dot red"></div>
+          <span style="font-size:14px; color:var(--text-sec);">Красный</span>
+        </div>
+        <select id="redSelect" class="employee-select" onchange="savePointEmployees()">
+          <option value="">— не выбран —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cal-header">
+        <div class="icon-btn" onclick="changePointMonth(-1)"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg></div>
+        <div class="cal-title" id="pointCalTitle">Сентябрь 2026</div>
+        <div class="icon-btn" onclick="changePointMonth(1)"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6 1.41-1.41z"/></svg></div>
+      </div>
+      <div class="cal-grid" id="pointCalGrid"></div>
+      <div class="color-hint">
+        Тап по дню: пусто → <span style="color:var(--accent-green);font-weight:700;">зелёный</span> → <span style="color:var(--accent-red);font-weight:700;">красный</span> → пусто
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Смен за месяц</div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <div class="legend-dot green" style="width:14px;height:14px;"></div>
+            <span style="font-size:13px; color:var(--text-sec);" id="pointGreenNameLabel">Зелёный</span>
+          </div>
+          <div class="stat-num" id="pointGreenCount" style="color:var(--accent-green);">0</div>
+        </div>
+        <div class="stat-box">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <div class="legend-dot red" style="width:14px;height:14px;"></div>
+            <span style="font-size:13px; color:var(--text-sec);" id="pointRedNameLabel">Красный</span>
+          </div>
+          <div class="stat-num" id="pointRedCount" style="color:var(--accent-red);">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <button class="btn btn-blue" onclick="sharePointSchedule()">
+        <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+        Поделиться графиком
+      </button>
+    </div>
+  </div>
+
+  <!-- МОДАЛКА ПАРОЛЯ -->
+  <div class="modal-overlay" id="adminAuthModal" onclick="closeAdminAuthModal(event)">
+    <div class="modal" id="adminAuthModalBody" onclick="event.stopPropagation()">
+      <div class="modal-title">Вход в Админ-панель</div>
+      <p style="font-size: 13px; color: var(--text-sec); text-align: center; margin-bottom: 14px;">
+        Введите PIN-код для доступа
+      </p>
+      <div class="input-group">
+        <label>Пароль</label>
+        <input type="password" id="adminPasswordInput" placeholder="••••" maxlength="8" inputmode="numeric" onkeydown="if(event.key==='Enter') checkAdminPassword()">
+      </div>
+      <button class="btn btn-orange" onclick="checkAdminPassword()" style="margin-top: 8px;">Войти</button>
+    </div>
+  </div>
+
+  <!-- МОДАЛКА НАСТРОЕК -->
   <div class="modal-overlay" id="settingsModal" onclick="closeSettingsModal(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-title">Выплачено за смену</div>
@@ -789,19 +1354,37 @@
       <div class="option-btn" id="optCustom" onclick="selectPaidOption('custom')"><span>Другое</span></div>
       <div class="input-group" id="customInputGroup" style="display:none; margin-top: 10px;">
         <label>Своя сумма (₽)</label>
-        <input type="number" id="customPaidVal" placeholder="1500" inputmode="numeric">
+        <input type="text" inputmode="decimal" id="customPaidVal" placeholder="1500">
       </div>
       <button class="btn btn-blue" onclick="saveSettings()" style="margin-top: 14px;">Сохранить</button>
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО АККАУНТА (БЕКАП / ЗАГРУЗКА) -->
+  <!-- МОДАЛКА АККАУНТА -->
   <div class="modal-overlay" id="accountModal" onclick="closeAccountModal(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-title">Аккаунт и данные</div>
       <p style="font-size: 13px; color: var(--text-sec); text-align: center; margin-bottom: 16px;">
         Резервное копирование сохранит все ваши смены, график, архив и заметки в файл.
       </p>
+      <div id="authPanel" style="background:var(--card-inner); border-radius:14px; padding:14px; margin-bottom:16px;">
+        <div class="card-title" style="margin:0 0 8px 0;">Вход и синхронизация</div>
+        <div id="authStatus" style="font-size:13px; color:var(--text-sec); margin-bottom:10px;">Проверяем аккаунт...</div>
+        <div id="authForm">
+          <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="authEmail" placeholder="name@example.com" autocomplete="email">
+          </div>
+          <div class="input-group">
+            <label>Пароль</label>
+            <input type="password" id="authPassword" placeholder="Минимум 6 символов" autocomplete="current-password" onkeydown="if(event.key==='Enter') signInEmail()">
+          </div>
+          <button class="btn btn-blue" onclick="signInEmail()">Войти</button>
+          <button class="btn btn-purple" onclick="signUpEmail()">Создать аккаунт</button>
+        </div>
+        <button id="logoutBtn" class="btn btn-red-soft" onclick="logoutEmail()" style="display:none;">Выйти из аккаунта</button>
+      </div>
+
       <button class="btn btn-purple" onclick="backupProfile()" style="margin-bottom: 8px;">
         <svg viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/></svg>
         Сделать бекап профиля
@@ -811,9 +1394,23 @@
         Загрузить готовый файл
       </button>
       <input type="file" id="profileFileInput" style="display: none;" accept=".json" onchange="restoreProfile(event)">
+
     </div>
   </div>
 
+  <!-- ОКНО ПОДТВЕРЖДЕНИЯ -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <h3 id="confirmTitle">Удалить?</h3>
+      <p id="confirmText">Это действие нельзя отменить</p>
+      <div class="confirm-btns">
+        <button class="btn btn-blue" onclick="closeConfirm()">Отмена</button>
+        <button class="btn btn-red" onclick="confirmYes()">Удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     (function initRealOnlineCounter() {
       try {
@@ -821,12 +1418,11 @@
         socket.on("connect", () => socket.emit("join", "multitool_sieeki_room"));
         socket.on("users_count", (count) => {
           const el = document.getElementById("onlineCount");
-          if (el) el.innerText = `${count} в сети`;
+          if (el) el.innerText = count + " в сети";
         });
       } catch (e) {}
     })();
 
-    // --- Анимация снега ---
     let snowInterval = null;
     function toggleSnow() {
       if (snowInterval) {
@@ -851,10 +1447,7 @@
       snow.style.animationDuration = duration + 's';
       snow.style.opacity = Math.random() * 0.6 + 0.3;
       document.body.appendChild(snow);
-
-      setTimeout(() => {
-        snow.remove();
-      }, duration * 1000);
+      setTimeout(() => { snow.remove(); }, duration * 1000);
     }
 
     function playAppStoreSound() {
@@ -887,9 +1480,20 @@
 
     function openScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
+      const target = document.getElementById(screenId);
+      if (!target) {
+        alert('Нет экрана: ' + screenId);
+        return;
+      }
+      target.classList.add('active');
       if(screenId === 'screenStats') renderStats();
       if(screenId === 'screenMyShifts') renderCalendar();
+      if(screenId === 'screenLocations') renderLocationsList();
+      if(screenId === 'screenPointDetail') renderPointDetail();
+      if(screenId === 'screenEmployees') renderEmployees();
+      if(screenId === 'screenSalary') renderSalary();
+      if(screenId === 'screenAI') window.scrollTo(0, 0);
+      window.scrollTo(0, 0);
     }
 
     function toggleGlobalMenu(e) {
@@ -909,17 +1513,28 @@
       const data = localStorage.getItem('ios_multitool_data');
       return data ? JSON.parse(data) : { shifts: [], deductions: [] };
     }
-    function saveData(data) { localStorage.setItem('ios_multitool_data', JSON.stringify(data)); }
+    function saveData(data) {
+      localStorage.setItem('ios_multitool_data', JSON.stringify(data));
+      scheduleCloudSave();
+    }
 
     function getArchive() {
       const data = localStorage.getItem('ios_multitool_archive');
       return data ? JSON.parse(data) : [];
     }
-    function saveArchive(arc) { localStorage.setItem('ios_multitool_archive', JSON.stringify(arc)); }
+    function saveArchive(arc) {
+      localStorage.setItem('ios_multitool_archive', JSON.stringify(arc));
+      scheduleCloudSave();
+    }
 
     function getPaidAmount() {
       const val = localStorage.getItem('ios_paid_amount');
       return val ? parseFloat(val) : 1300;
+    }
+
+    function parseNum(v) {
+      if (v === null || v === undefined) return NaN;
+      return parseFloat(String(v).replace(/\s/g, '').replace(',', '.'));
     }
 
     let tempSelectedPaid = getPaidAmount();
@@ -942,99 +1557,535 @@
     function saveSettings() {
       let finalVal = tempSelectedPaid;
       if (tempSelectedPaid === 'custom') {
-        const val = parseFloat(document.getElementById('customPaidVal').value);
+        const val = parseNum(document.getElementById('customPaidVal').value);
         if (isNaN(val) || val < 0) return showToast('Введите сумму');
         finalVal = val;
       }
       localStorage.setItem('ios_paid_amount', finalVal);
+      scheduleCloudSave();
       closeSettingsModal();
       render();
     }
 
-    // --- Управление аккаунтом и бекапом ---
-    function openAccountModal() {
-      document.getElementById('accountModal').classList.add('active');
+    function openAdminAuthModal() {
+      document.getElementById('adminPasswordInput').value = '';
+      document.getElementById('adminAuthModal').classList.add('active');
+      setTimeout(() => document.getElementById('adminPasswordInput').focus(), 200);
     }
-    function closeAccountModal(e) {
+
+    function closeAdminAuthModal(e) {
       if (!e || e.target.classList.contains('modal-overlay')) {
-        document.getElementById('accountModal').classList.remove('active');
+        document.getElementById('adminAuthModal').classList.remove('active');
       }
     }
 
-    function backupProfile() {
+    function checkAdminPassword() {
+      const input = document.getElementById('adminPasswordInput');
+      const val = input.value.trim();
+      const modalBody = document.getElementById('adminAuthModalBody');
+
+      if (val === '7272') {
+        playAppStoreSound();
+        closeAdminAuthModal();
+        openScreen('screenAdmin');
+        showToast('Добро пожаловать!');
+      } else {
+        modalBody.classList.remove('modal-shake');
+        void modalBody.offsetWidth;
+        modalBody.classList.add('modal-shake');
+        showToast('Неверный пароль!');
+        input.value = '';
+      }
+    }
+
+    // ============ ТОЧКИ ============
+    const POINTS = {
+      'efimova':     { name: 'Ефимова 1/4',                 time: '9:00 — 23:00' },
+      'gorohovaya':  { name: 'Гороховая 42',                time: '9:00 — 23:00' },
+      'novgorod':    { name: 'Новгородский 6 (Подвал)',     time: '9:00 — 23:00' },
+      'pervomay':    { name: 'Первомайская 15 (Сбер)',      time: '9:00 — 22:00' },
+      'krasnoarm':   { name: '7-я Красноармейская улица, 2', time: '9:00 — 22:00' }
+    };
+
+    let activePointKey = null;
+    let pointCalDate = new Date();
+
+    function getPointData(key) {
+      const all = JSON.parse(localStorage.getItem('ios_point_data') || '{}');
+      if (!all[key]) all[key] = { greenName: '', redName: '', days: {} };
+      return all[key];
+    }
+
+    function savePointData(key, data) {
+      const all = JSON.parse(localStorage.getItem('ios_point_data') || '{}');
+      all[key] = data;
+      localStorage.setItem('ios_point_data', JSON.stringify(all));
+      scheduleCloudSave();
+    }
+
+    function renderLocationsList() {
+      const container = document.getElementById('locationsList');
+      container.innerHTML = '';
+      Object.keys(POINTS).forEach(key => {
+        const p = POINTS[key];
+        const pd = getPointData(key);
+        const parts = [p.time];
+        const gName = getEmployeeName(pd.greenName);
+        const rName = getEmployeeName(pd.redName);
+        if (gName) parts.push(gName);
+        if (rName) parts.push(rName);
+        const subText = parts.join(' · ');
+        container.innerHTML += '<div class="location-card" onclick="openPointDetail(\'' + key + '\')">' +
+            '<div class="location-info">' +
+              '<h4>' + p.name + '</h4>' +
+              '<p>' + subText + '</p>' +
+            '</div>' +
+            '<div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>' +
+          '</div>';
+      });
+    }
+
+    function openPointDetail(key) {
+      activePointKey = key;
+      pointCalDate = new Date();
+      renderPointDetail();
+      openScreen('screenPointDetail');
+    }
+
+    function renderPointDetail() {
+      if (!activePointKey) return;
+      const p = POINTS[activePointKey];
+      const pd = getPointData(activePointKey);
+
+      document.getElementById('pointTitle').innerText = p.name;
+      document.getElementById('pointWorkTimeText').innerText = p.time;
+
+      const employees = getEmployees();
+      const greenSel = document.getElementById('greenSelect');
+      const redSel = document.getElementById('redSelect');
+      const optionsHtml = '<option value="">— не выбран —</option>' +
+        employees.map(e => '<option value="' + e.id + '">' + e.name + '</option>').join('');
+      greenSel.innerHTML = optionsHtml;
+      redSel.innerHTML = optionsHtml;
+
+      greenSel.value = pd.greenName || '';
+      redSel.value = pd.redName || '';
+
+      renderPointCalendar();
+      renderPointCounters();
+    }
+
+    function savePointEmployees() {
+      const pd = getPointData(activePointKey);
+      pd.greenName = document.getElementById('greenSelect').value;
+      pd.redName = document.getElementById('redSelect').value;
+      savePointData(activePointKey, pd);
       playAppStoreSound();
-      const backupData = {
-        ios_multitool_data: localStorage.getItem('ios_multitool_data'),
-        ios_multitool_archive: localStorage.getItem('ios_multitool_archive'),
-        ios_paid_amount: localStorage.getItem('ios_paid_amount'),
-        ios_month_shifts: localStorage.getItem('ios_month_shifts'),
-        ios_notes: localStorage.getItem('ios_notes'),
-        exportDate: new Date().toISOString()
-      };
-
-      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `multitool_backup_${new Date().toISOString().slice(0,10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      closeAccountModal();
-      showToast('Бекап успешно сохранен!');
+      showToast('Сохранено');
     }
 
-    function triggerFileUpload() {
-      document.getElementById('profileFileInput').click();
+    function changePointMonth(dir) {
+      pointCalDate.setMonth(pointCalDate.getMonth() + dir);
+      renderPointCalendar();
+      renderPointCounters();
     }
 
-    function restoreProfile(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+    function togglePointDay(dateKey) {
+      const pd = getPointData(activePointKey);
+      const cur = pd.days[dateKey];
+      if (cur === 'green') pd.days[dateKey] = 'red';
+      else if (cur === 'red') delete pd.days[dateKey];
+      else pd.days[dateKey] = 'green';
+      savePointData(activePointKey, pd);
+      renderPointCalendar();
+      renderPointCounters();
+      if (cur !== 'red') playAppStoreSound();
+    }
 
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        try {
-          const parsed = JSON.parse(event.target.result);
-          if (parsed.ios_multitool_data !== undefined) {
-            if (parsed.ios_multitool_data !== null) localStorage.setItem('ios_multitool_data', parsed.ios_multitool_data);
-            else localStorage.removeItem('ios_multitool_data');
-            
-            if (parsed.ios_multitool_archive !== null) localStorage.setItem('ios_multitool_archive', parsed.ios_multitool_archive);
-            else localStorage.removeItem('ios_multitool_archive');
+    function renderPointCalendar() {
+      const pd = getPointData(activePointKey);
+      const year = pointCalDate.getFullYear();
+      const month = pointCalDate.getMonth();
+      const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+      document.getElementById('pointCalTitle').innerText = monthNames[month] + ' ' + year;
 
-            if (parsed.ios_paid_amount !== null) localStorage.setItem('ios_paid_amount', parsed.ios_paid_amount);
-            else localStorage.removeItem('ios_paid_amount');
+      const grid = document.getElementById('pointCalGrid');
+      grid.innerHTML = '';
 
-            if (parsed.ios_month_shifts !== null) localStorage.setItem('ios_month_shifts', parsed.ios_month_shifts);
-            else localStorage.removeItem('ios_month_shifts');
+      const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+      weekdays.forEach(w => { grid.innerHTML += '<div class="cal-weekday">' + w + '</div>'; });
 
-            if (parsed.ios_notes !== null) localStorage.setItem('ios_notes', parsed.ios_notes);
-            else localStorage.removeItem('ios_notes');
+      const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+      const totalDays = new Date(year, month + 1, 0).getDate();
 
-            playAppStoreSound();
-            closeAccountModal();
-            render();
-            renderNotes();
-            showToast('Профиль успешно загружен!');
-          } else {
-            showToast('Неверный формат файла бекапа');
+      for (let i = 0; i < firstDayIndex; i++) {
+        grid.innerHTML += '<div class="cal-day empty"></div>';
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dStr = String(day).padStart(2, '0');
+        const mStr = String(month + 1).padStart(2, '0');
+        const dateKey = dStr + '.' + mStr + '.' + year;
+        const state = pd.days[dateKey] || '';
+        let cls = 'cal-day';
+        if (state === 'green') cls += ' green';
+        else if (state === 'red') cls += ' red';
+        grid.innerHTML += '<div class="' + cls + '" onclick="togglePointDay(\'' + dateKey + '\')">' + day + '</div>';
+      }
+    }
+
+    function renderPointCounters() {
+      if (!activePointKey) return;
+      const pd = getPointData(activePointKey);
+      const year = pointCalDate.getFullYear();
+      const month = pointCalDate.getMonth();
+      const totalDays = new Date(year, month + 1, 0).getDate();
+
+      let greenCount = 0;
+      let redCount = 0;
+      for (let day = 1; day <= totalDays; day++) {
+        const dStr = String(day).padStart(2, '0');
+        const mStr = String(month + 1).padStart(2, '0');
+        const key = dStr + '.' + mStr + '.' + year;
+        const st = pd.days[key];
+        if (st === 'green') greenCount++;
+        else if (st === 'red') redCount++;
+      }
+
+      const greenName = getEmployeeName(pd.greenName) || 'Зелёный';
+      const redName = getEmployeeName(pd.redName) || 'Красный';
+      document.getElementById('pointGreenNameLabel').innerText = greenName;
+      document.getElementById('pointRedNameLabel').innerText = redName;
+      document.getElementById('pointGreenCount').innerText = greenCount + ' смен';
+      document.getElementById('pointRedCount').innerText = redCount + ' смен';
+    }
+
+    function sharePointSchedule() {
+      if (!activePointKey) return;
+      const p = POINTS[activePointKey];
+      const pd = getPointData(activePointKey);
+      const year = pointCalDate.getFullYear();
+      const month = pointCalDate.getMonth();
+      const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+
+      const greenDays = [];
+      const redDays = [];
+      for (let day = 1; day <= new Date(year, month + 1, 0).getDate(); day++) {
+        const dStr = String(day).padStart(2, '0');
+        const mStr = String(month + 1).padStart(2, '0');
+        const key = dStr + '.' + mStr + '.' + year;
+        const state = pd.days[key];
+        if (state === 'green') greenDays.push(day);
+        else if (state === 'red') redDays.push(day);
+      }
+
+      function groupDays(arr) {
+        if (arr.length === 0) return '';
+        const groups = [];
+        let start = arr[0], prev = arr[0];
+        for (let i = 1; i < arr.length; i++) {
+          if (arr[i] === prev + 1) { prev = arr[i]; }
+          else {
+            groups.push(start === prev ? String(start) : start + '–' + prev);
+            start = arr[i]; prev = arr[i];
           }
-        } catch (err) {
-          showToast('Ошибка чтения файла');
         }
-        e.target.value = '';
-      };
-      reader.readAsText(file);
+        groups.push(start === prev ? String(start) : start + '–' + prev);
+        return groups.join(', ');
+      }
+
+      const greenLabel = getEmployeeName(pd.greenName) || 'Зелёный';
+      const redLabel = getEmployeeName(pd.redName) || 'Красный';
+
+      let text = p.name + '\n' + p.time + '\n' + monthNames[month] + ' ' + year + '\n\n';
+
+      if (greenDays.length === 0 && redDays.length === 0) {
+        text += 'Пока пусто';
+      } else {
+        if (greenDays.length > 0) text += '🟢 ' + greenLabel + ' (' + greenDays.length + '): ' + groupDays(greenDays) + '\n\n';
+        if (redDays.length > 0) text += '🔴 ' + redLabel + ' (' + redDays.length + '): ' + groupDays(redDays);
+      }
+
+      if (navigator.share) {
+        navigator.share({ title: p.name, text: text }).then(() => playAppStoreSound()).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(text).then(() => {
+          playAppStoreSound();
+          showToast('График скопирован');
+        }).catch(() => showToast('Не удалось поделиться'));
+      }
     }
 
+    // ============ СОТРУДНИКИ ============
+    function getEmployees() {
+      try {
+        return JSON.parse(localStorage.getItem('ios_employees') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+    function saveEmployees(list) {
+      localStorage.setItem('ios_employees', JSON.stringify(list));
+      scheduleCloudSave();
+    }
+    function getEmployeeById(id) {
+      if (!id) return null;
+      return getEmployees().find(e => e.id === id) || null;
+    }
+    function getEmployeeName(id) {
+      const e = getEmployeeById(id);
+      return e ? e.name : '';
+    }
+
+    function renderEmployees() {
+      const container = document.getElementById('employeesContainer');
+      const list = getEmployees();
+      if (list.length === 0) {
+        container.innerHTML = '<div style="color:var(--text-sec); font-size:14px;">Список пуст</div>';
+        return;
+      }
+      container.innerHTML = '';
+      list.forEach((emp, idx) => {
+        const safeName = String(emp.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        container.innerHTML += '<div class="shift-item">' +
+            '<input type="text" class="employee-input" value="' + safeName + '" onchange="renameEmployeeByIndex(' + idx + ', this.value)" placeholder="Имя">' +
+            '<div class="del-btn" onclick="askDeleteEmployee(' + idx + ')">✕</div>' +
+          '</div>';
+      });
+    }
+
+    function addEmployee() {
+      const input = document.getElementById('newEmployeeInput');
+      const name = input.value.trim();
+      if (!name) return showToast('Введите имя');
+      const list = getEmployees();
+      list.push({ id: 'emp_' + Date.now() + '_' + Math.floor(Math.random()*10000), name: name });
+      saveEmployees(list);
+      input.value = '';
+      playAppStoreSound();
+      renderEmployees();
+      showToast('Сотрудник добавлен');
+    }
+
+    function renameEmployeeByIndex(idx, newName) {
+      const list = getEmployees();
+      if (list[idx]) {
+        list[idx].name = newName.trim();
+        saveEmployees(list);
+      }
+    }
+
+    let pendingDeleteIndex = null;
+    function askDeleteEmployee(idx) {
+      const list = getEmployees();
+      const emp = list[idx];
+      if (!emp) {
+        showToast('Не найден');
+        return;
+      }
+      pendingDeleteIndex = idx;
+      document.getElementById('confirmTitle').innerText = 'Удалить?';
+      document.getElementById('confirmText').innerText = (emp.name || 'Сотрудник') + ' будет отвязан со всех точек';
+      document.getElementById('confirmOverlay').classList.add('active');
+    }
+
+    function closeConfirm() {
+      pendingDeleteIndex = null;
+      document.getElementById('confirmOverlay').classList.remove('active');
+    }
+
+    function confirmYes() {
+      if (pendingDeleteIndex === null) {
+        closeConfirm();
+        return;
+      }
+      const idx = pendingDeleteIndex;
+      let list = getEmployees();
+      const emp = list[idx];
+      if (!emp) { closeConfirm(); return; }
+
+      const deletedId = emp.id;
+      const deletedName = emp.name;
+
+      list.splice(idx, 1);
+      saveEmployees(list);
+
+      const all = JSON.parse(localStorage.getItem('ios_point_data') || '{}');
+      Object.keys(all).forEach(k => {
+        if (all[k].greenName === deletedId) all[k].greenName = '';
+        if (all[k].redName === deletedId) all[k].redName = '';
+      });
+      localStorage.setItem('ios_point_data', JSON.stringify(all));
+      scheduleCloudSave();
+
+      closeConfirm();
+      renderEmployees();
+      playAppStoreSound();
+      showToast('Удалено: ' + deletedName);
+    }
+
+    // ============ ЗАРПЛАТА ============
+    let salaryMonthDate = new Date();
+
+    function getPayouts() {
+      try {
+        return JSON.parse(localStorage.getItem('ios_payouts') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+    function savePayouts(list) {
+      localStorage.setItem('ios_payouts', JSON.stringify(list));
+      scheduleCloudSave();
+    }
+
+    function changeSalaryMonth(dir) {
+      salaryMonthDate.setMonth(salaryMonthDate.getMonth() + dir);
+      renderSalary();
+    }
+
+    function renderSalary() {
+      const year = salaryMonthDate.getFullYear();
+      const month = salaryMonthDate.getMonth();
+      const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+      document.getElementById('salaryMonthTitle').innerText = monthNames[month] + ' ' + year;
+
+      const arc = getArchive();
+      const monthWeeks = arc.filter(w => {
+        const match = w.dateRange.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+        if (!match) return false;
+        const m = parseInt(match[2], 10) - 1;
+        const y = parseInt(match[3], 10);
+        return m === month && y === year;
+      });
+
+      let totalShifts = 0;
+      let totalRevenue = 0;
+      let totalToPay = 0;
+
+      monthWeeks.forEach(w => {
+        totalShifts += w.shiftsCount;
+        totalRevenue += w.totalRevenue;
+        const avgRevenuePerShift = w.totalRevenue / w.shiftsCount;
+        const percent = Math.round(avgRevenuePerShift * 0.03);
+        totalToPay += (2300 + percent) * w.shiftsCount;
+      });
+
+      const monthStr = String(month+1).padStart(2,'0') + '.' + year;
+      const monthPayouts = getPayouts().filter(p => p.monthKey === monthStr);
+      const totalPaid = monthPayouts.reduce((acc, p) => acc + p.amount, 0);
+      const remaining = totalToPay - totalPaid;
+
+      const summary = document.getElementById('salarySummary');
+      if (monthWeeks.length === 0) {
+        summary.innerHTML = '<div style="color:var(--text-sec); font-size:14px;">За этот месяц нет закрытых недель</div>';
+      } else {
+        summary.innerHTML = 
+          '<div class="stat-grid">' +
+            '<div class="stat-box">' +
+              '<div class="card-title" style="margin:0;">Смен</div>' +
+              '<div class="stat-num">' + totalShifts + '</div>' +
+            '</div>' +
+            '<div class="stat-box">' +
+              '<div class="card-title" style="margin:0;">Выручка</div>' +
+              '<div class="stat-num">' + totalRevenue.toLocaleString('ru-RU') + ' ₽</div>' +
+            '</div>' +
+            '<div class="stat-box">' +
+              '<div class="card-title" style="margin:0;">К выплате</div>' +
+              '<div class="stat-num" style="color:var(--accent-green);">' + totalToPay.toLocaleString('ru-RU') + ' ₽</div>' +
+            '</div>' +
+            '<div class="stat-box">' +
+              '<div class="card-title" style="margin:0;">Выплачено</div>' +
+              '<div class="stat-num" style="color:var(--accent-orange);">' + totalPaid.toLocaleString('ru-RU') + ' ₽</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="margin-top: 14px; padding: 14px; background: var(--card-inner); border-radius: 12px; text-align: center;">' +
+            '<div style="font-size: 12px; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.2px;">Остаток</div>' +
+            '<div style="font-size: 26px; font-weight: 700; color: ' + (remaining > 0 ? 'var(--accent-red)' : 'var(--accent-green)') + '; margin-top: 4px;">' +
+              remaining.toLocaleString('ru-RU') + ' ₽' +
+            '</div>' +
+          '</div>';
+      }
+
+      const weeksEl = document.getElementById('salaryWeeks');
+      if (monthWeeks.length === 0) {
+        weeksEl.innerHTML = '<div style="color:var(--text-sec); font-size:14px;">Пусто</div>';
+      } else {
+        weeksEl.innerHTML = '';
+        monthWeeks.forEach(w => {
+          weeksEl.innerHTML += 
+            '<div class="shift-item">' +
+              '<div>' +
+                '<div class="shift-date" style="font-size:14px;">' + w.dateRange + '</div>' +
+                '<div class="shift-val">' + w.shiftsCount + ' смен · ' + w.totalRevenue.toLocaleString('ru-RU') + ' ₽</div>' +
+              '</div>' +
+            '</div>';
+        });
+      }
+
+      const payoutsEl = document.getElementById('payoutsList');
+      if (monthPayouts.length === 0) {
+        payoutsEl.innerHTML = '<div style="color:var(--text-sec); font-size:13px;">Выплат пока нет</div>';
+      } else {
+        payoutsEl.innerHTML = '';
+        monthPayouts.forEach(p => {
+          payoutsEl.innerHTML += 
+            '<div class="shift-item">' +
+              '<div>' +
+                '<div class="shift-date" style="color:var(--accent-green); font-size:15px;">+ ' + p.amount.toLocaleString('ru-RU') + ' ₽</div>' +
+                '<div class="shift-val">' + (p.note || '—') + ' · ' + p.date + '</div>' +
+              '</div>' +
+              '<div class="del-btn" onclick="deletePayout(\'' + p.id + '\')">✕</div>' +
+            '</div>';
+        });
+      }
+    }
+
+    function addPayout() {
+      const amountInput = document.getElementById('payoutAmount');
+      const noteInput = document.getElementById('payoutNote');
+      const amount = parseNum(amountInput.value);
+      const note = noteInput.value.trim();
+
+      if (isNaN(amount) || amount <= 0) {
+        showToast('Введите сумму');
+        amountInput.focus();
+        return;
+      }
+
+      const year = salaryMonthDate.getFullYear();
+      const month = salaryMonthDate.getMonth();
+      const monthKey = String(month+1).padStart(2,'0') + '.' + year;
+      const now = new Date();
+      const dateStr = String(now.getDate()).padStart(2,'0') + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + now.getFullYear();
+
+      const list = getPayouts();
+      list.push({ id: 'pay_' + Date.now(), amount, note, date: dateStr, monthKey });
+      savePayouts(list);
+
+      amountInput.value = '';
+      noteInput.value = '';
+
+      playAppStoreSound();
+      renderSalary();
+      showToast('Выплата добавлена: ' + amount.toLocaleString('ru-RU') + ' ₽');
+    }
+
+    function deletePayout(id) {
+      if (!confirm('Удалить выплату?')) return;
+      let list = getPayouts();
+      list = list.filter(p => p.id !== id);
+      savePayouts(list);
+      renderSalary();
+    }
+
+    // ============ СМЕНЫ ============
     function addShift() {
       const dateInput = document.getElementById('shiftDate').value;
-      const total = parseFloat(document.getElementById('shiftTotal').value);
+      const total = parseNum(document.getElementById('shiftTotal').value);
       if (!dateInput || isNaN(total)) return showToast('Заполните поле!');
-      const [year, month, day] = dateInput.split('-');
+      const parts = dateInput.split('-');
+      const year = parts[0], month = parts[1], day = parts[2];
       let store = getData();
       if (store.shifts.length >= 5) {
         if (confirm('В отчете уже 5 смен. Отправить текущую неделю в архив?')) {
@@ -1042,7 +2093,7 @@
           store = getData();
         } else return;
       }
-      store.shifts.push({ date: `${day}.${month}.${year}`, total: total });
+      store.shifts.push({ date: day + '.' + month + '.' + year, total: total });
       saveData(store);
       document.getElementById('shiftTotal').value = '';
       render();
@@ -1050,7 +2101,7 @@
 
     function addDeduction() {
       const reason = document.getElementById('deductionReason').value.trim();
-      const amount = parseFloat(document.getElementById('deductionAmount').value);
+      const amount = parseNum(document.getElementById('deductionAmount').value);
       if (!reason || isNaN(amount)) return showToast('Заполните поле!');
       let store = getData();
       store.deductions.push({ reason: reason, amount: amount });
@@ -1078,27 +2129,27 @@
 
       listCard.style.display = 'block';
       reportCard.style.display = 'block';
-      document.getElementById('counterBadge').innerText = `${store.shifts.length}/5`;
+      document.getElementById('counterBadge').innerText = store.shifts.length + '/5';
       container.innerHTML = '';
 
       store.shifts.forEach((s, idx) => {
-        container.innerHTML += `<div class="shift-item"><div><div class="shift-date">${s.date}</div><div class="shift-val">Итог: ${s.total.toLocaleString('ru-RU')} ₽</div></div><div class="del-btn" onclick="deleteShift(${idx})">✕</div></div>`;
+        container.innerHTML += '<div class="shift-item"><div><div class="shift-date">' + s.date + '</div><div class="shift-val">Итог: ' + s.total.toLocaleString('ru-RU') + ' ₽</div></div><div class="del-btn" onclick="deleteShift(' + idx + ')">✕</div></div>';
       });
       store.deductions.forEach((d, idx) => {
-        container.innerHTML += `<div class="shift-item"><div><div class="shift-date" style="color:var(--accent-red);">- ${d.amount.toLocaleString('ru-RU')} ₽</div><div class="shift-val">${d.reason}</div></div><div class="del-btn" onclick="deleteDeduction(${idx})">✕</div></div>`;
+        container.innerHTML += '<div class="shift-item"><div><div class="shift-date" style="color:var(--accent-red);">- ' + d.amount.toLocaleString('ru-RU') + ' ₽</div><div class="shift-val">' + d.reason + '</div></div><div class="del-btn" onclick="deleteDeduction(' + idx + ')">✕</div></div>';
       });
 
-      let text = store.shifts.length > 0 ? `Недельная с ${store.shifts[0].date} по ${store.shifts[store.shifts.length - 1].date}\n\n` : `Недельный отчет\n\n`;
+      let text = store.shifts.length > 0 ? 'Недельная с ' + store.shifts[0].date + ' по ' + store.shifts[store.shifts.length - 1].date + '\n\n' : 'Недельный отчет\n\n';
       let totalRemaining = 0;
       store.shifts.forEach(s => {
         const percent = Math.round(s.total * 0.03);
         const toPay = 2300 + percent;
         const remain = toPay - currentPaid;
         totalRemaining += remain;
-        text += `Смена: ${s.date}\nИтог: ${s.total}\nК выплате: 2300 + ${percent} = ${toPay}\nВыплачено: ${currentPaid}\nОстаток: ${remain}\n\n`;
+        text += 'Смена: ' + s.date + '\nИтог: ' + s.total + '\nК выплате: 2300 + ' + percent + ' = ' + toPay + '\nВыплачено: ' + currentPaid + '\nОстаток: ' + remain + '\n\n';
       });
-      store.deductions.forEach(d => { text += `-${d.amount} (${d.reason})\n`; totalRemaining -= d.amount; });
-      text += `\nОстаток к выплате: ${totalRemaining}`;
+      store.deductions.forEach(d => { text += '-' + d.amount + ' (' + d.reason + ')\n'; totalRemaining -= d.amount; });
+      text += '\nОстаток к выплате: ' + totalRemaining;
       document.getElementById('reportText').innerText = text;
     }
 
@@ -1114,7 +2165,7 @@
       const arc = getArchive();
       arc.unshift({
         id: Date.now(),
-        dateRange: `${store.shifts[0].date} — ${store.shifts[store.shifts.length - 1].date}`,
+        dateRange: store.shifts[0].date + ' — ' + store.shifts[store.shifts.length - 1].date,
         shiftsCount: store.shifts.length,
         totalRevenue: store.shifts.reduce((acc, s) => acc + s.total, 0),
         reportText: document.getElementById('reportText').innerText
@@ -1141,7 +2192,6 @@
       }
     }
 
-    // --- Календарь смен на месяц ---
     let currentCalDate = new Date();
     function getMonthShifts() {
       const data = localStorage.getItem('ios_month_shifts');
@@ -1149,6 +2199,7 @@
     }
     function saveMonthShifts(shifts) {
       localStorage.setItem('ios_month_shifts', JSON.stringify(shifts));
+      scheduleCloudSave();
     }
 
     function changeMonth(dir) {
@@ -1174,36 +2225,36 @@
       const year = currentCalDate.getFullYear();
       const month = currentCalDate.getMonth();
       const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-      document.getElementById('calMonthTitle').innerText = `${monthNames[month]} ${year}`;
+      document.getElementById('calMonthTitle').innerText = monthNames[month] + ' ' + year;
 
       const grid = document.getElementById('calGrid');
       grid.innerHTML = '';
 
       const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-      weekdays.forEach(w => {
-        grid.innerHTML += `<div class="cal-weekday">${w}</div>`;
-      });
+      weekdays.forEach(w => { grid.innerHTML += '<div class="cal-weekday">' + w + '</div>'; });
 
       const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
       const totalDays = new Date(year, month + 1, 0).getDate();
       const shifts = getMonthShifts();
 
       for (let i = 0; i < firstDayIndex; i++) {
-        grid.innerHTML += `<div class="cal-day empty"></div>`;
+        grid.innerHTML += '<div class="cal-day empty"></div>';
       }
 
       for (let day = 1; day <= totalDays; day++) {
         const dStr = String(day).padStart(2, '0');
         const mStr = String(month + 1).padStart(2, '0');
-        const dateKey = `${dStr}.${mStr}.${year}`;
+        const dateKey = dStr + '.' + mStr + '.' + year;
         const isActive = shifts[dateKey] ? 'active-shift' : '';
-        grid.innerHTML += `<div class="cal-day ${isActive}" onclick="toggleCalendarDay('${dateKey}')">${day}</div>`;
+        grid.innerHTML += '<div class="cal-day ' + isActive + '" onclick="toggleCalendarDay(\'' + dateKey + '\')">' + day + '</div>';
       }
     }
 
-    // --- Заметки ---
     function getNotes() { return JSON.parse(localStorage.getItem('ios_notes') || '[]'); }
-    function saveNotes(notes) { localStorage.setItem('ios_notes', JSON.stringify(notes)); }
+    function saveNotes(notes) {
+      localStorage.setItem('ios_notes', JSON.stringify(notes));
+      scheduleCloudSave();
+    }
     function addNote() {
       const val = document.getElementById('noteInput').value.trim();
       if (!val) return;
@@ -1231,32 +2282,30 @@
       if(notes.length === 0) return container.innerHTML = '<div style="color:var(--text-sec); font-size:14px;">Заметок пока нет</div>';
       container.innerHTML = '';
       notes.forEach((n, idx) => {
-        container.innerHTML += `
-          <div class="note-item">
-            <div class="note-left" onclick="toggleNote(${idx})">
-              <div class="checkbox ${n.done ? 'checked' : ''}"></div>
-              <span class="note-text ${n.done ? 'done' : ''}">${n.text}</span>
-            </div>
-            <div class="del-btn" onclick="deleteNote(${idx})">✕</div>
-          </div>
-        `;
+        container.innerHTML += 
+          '<div class="note-item">' +
+            '<div class="note-left" onclick="toggleNote(' + idx + ')">' +
+              '<div class="checkbox ' + (n.done ? 'checked' : '') + '"></div>' +
+              '<span class="note-text ' + (n.done ? 'done' : '') + '">' + n.text + '</span>' +
+            '</div>' +
+            '<div class="del-btn" onclick="deleteNote(' + idx + ')">✕</div>' +
+          '</div>';
       });
     }
 
-    // --- Калькулятор сдачи ---
     function setCash(val) {
       document.getElementById('calcPaid').value = val;
       calculateChange();
     }
     function calculateChange() {
-      const bill = parseFloat(document.getElementById('calcBill').value) || 0;
-      const paid = parseFloat(document.getElementById('calcPaid').value) || 0;
+      const bill = parseNum(document.getElementById('calcBill').value) || 0;
+      const paid = parseNum(document.getElementById('calcPaid').value) || 0;
       const resEl = document.getElementById('changeResult');
       if (paid >= bill && bill > 0) {
-        resEl.innerText = `${(paid - bill).toLocaleString('ru-RU')} ₽`;
+        resEl.innerText = (paid - bill).toLocaleString('ru-RU') + ' ₽';
         resEl.style.color = "var(--accent-green)";
       } else if (bill > paid) {
-        resEl.innerText = `Нехватает ${(bill - paid).toLocaleString('ru-RU')} ₽`;
+        resEl.innerText = 'Нехватает ' + (bill - paid).toLocaleString('ru-RU') + ' ₽';
         resEl.style.color = "var(--accent-red)";
       } else {
         resEl.innerText = '0 ₽';
@@ -1264,14 +2313,13 @@
       }
     }
 
-    // --- Статистика ---
     function renderStats() {
       const store = getData();
       document.getElementById('statShiftsCount').innerText = store.shifts.length;
       if (store.shifts.length > 0) {
         const sum = store.shifts.reduce((acc, s) => acc + s.total, 0);
         const avg = Math.round(sum / store.shifts.length);
-        document.getElementById('statAvgRevenue').innerText = `${avg.toLocaleString('ru-RU')} ₽`;
+        document.getElementById('statAvgRevenue').innerText = avg.toLocaleString('ru-RU') + ' ₽';
       } else {
         document.getElementById('statAvgRevenue').innerText = '0 ₽';
       }
@@ -1283,24 +2331,279 @@
         return;
       }
       container.innerHTML = '';
-      arc.forEach((item, idx) => {
-        container.innerHTML += `
-          <div class="archive-item">
-            <div>
-              <div style="font-weight:600; font-size:15px; color:#fff;">${item.dateRange}</div>
-              <div style="font-size:13px; color:var(--text-sec); margin-top:3px;">
-                Смен: ${item.shiftsCount} | Выручка: ${item.totalRevenue.toLocaleString('ru-RU')} ₽
-              </div>
-            </div>
-            <div class="del-btn" onclick="deleteArchiveItem(${item.id})">✕</div>
-          </div>
-        `;
+      arc.forEach((item) => {
+        container.innerHTML += 
+          '<div class="archive-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.08);">' +
+            '<div>' +
+              '<div style="font-weight:600; font-size:15px; color:#fff;">' + item.dateRange + '</div>' +
+              '<div style="font-size:13px; color:var(--text-sec); margin-top:3px;">' +
+                'Смен: ' + item.shiftsCount + ' | Выручка: ' + item.totalRevenue.toLocaleString('ru-RU') + ' ₽' +
+              '</div>' +
+            '</div>' +
+            '<div class="del-btn" onclick="deleteArchiveItem(' + item.id + ')">✕</div>' +
+          '</div>';
       });
     }
 
+    const SUPABASE_URL = 'https://rnodblcqymplzelmcntu.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mrmlYaUy7kyox0SUxZubXg_cCOepXJY';
+    const multitoolSupabase = window.supabase && window.supabase.createClient
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+      : null;
+    const CLOUD_DATA_KEYS = [
+      'ios_multitool_data', 'ios_multitool_archive', 'ios_paid_amount',
+      'ios_month_shifts', 'ios_notes', 'ios_point_data', 'ios_employees', 'ios_payouts'
+    ];
+    let currentAuthUser = null;
+    let cloudSaveTimer = null;
+    let cloudSaveInProgress = false;
+    let cloudSaveAgain = false;
+    let cloudRestoring = false;
+
+    function authErrorText(error) {
+      const message = String(error && error.message || 'Неизвестная ошибка');
+      if (/invalid login credentials/i.test(message)) return 'Неверный email или пароль';
+      if (/email not confirmed/i.test(message)) return 'Сначала подтверди email в письме';
+      if (/already registered|user already registered/i.test(message)) return 'Такой email уже зарегистрирован';
+      return message;
+    }
+
+    function updateAuthUI(message) {
+      const status = document.getElementById('authStatus');
+      const form = document.getElementById('authForm');
+      const logout = document.getElementById('logoutBtn');
+      if (!status || !form || !logout) return;
+
+      if (!multitoolSupabase) {
+        status.innerText = 'Облачная авторизация недоступна: нет соединения с Supabase';
+        status.style.color = 'var(--accent-red)';
+        return;
+      }
+      if (currentAuthUser) {
+        status.innerText = message || ('Выполнен вход: ' + (currentAuthUser.email || 'пользователь'));
+        status.style.color = 'var(--accent-green)';
+        form.style.display = 'none';
+        logout.style.display = 'flex';
+      } else {
+        status.innerText = message || 'Войдите, чтобы синхронизировать данные между устройствами';
+        status.style.color = 'var(--text-sec)';
+        form.style.display = 'block';
+        logout.style.display = 'none';
+      }
+    }
+
+    function collectCloudPayload() {
+      const payload = {};
+      CLOUD_DATA_KEYS.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value !== null) payload[key] = value;
+      });
+      return payload;
+    }
+
+    function scheduleCloudSave() {
+      if (!currentAuthUser || cloudRestoring || !multitoolSupabase) return;
+      clearTimeout(cloudSaveTimer);
+      cloudSaveTimer = setTimeout(() => saveCloudDataNow(), 700);
+    }
+
+    async function saveCloudDataNow() {
+      if (!currentAuthUser || !multitoolSupabase) return;
+      if (cloudSaveInProgress) {
+        cloudSaveAgain = true;
+        return;
+      }
+      cloudSaveInProgress = true;
+      try {
+        const { error } = await multitoolSupabase.from('multitool_data').upsert({
+          user_id: currentAuthUser.id,
+          payload: collectCloudPayload(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+        if (error) updateAuthUI('Ошибка синхронизации: ' + error.message);
+      } finally {
+        cloudSaveInProgress = false;
+        if (cloudSaveAgain) {
+          cloudSaveAgain = false;
+          scheduleCloudSave();
+        }
+      }
+    }
+
+    async function loadCloudData() {
+      if (!currentAuthUser || !multitoolSupabase) return;
+      const { data, error } = await multitoolSupabase.from('multitool_data')
+        .select('payload')
+        .eq('user_id', currentAuthUser.id)
+        .maybeSingle();
+      if (error) {
+        updateAuthUI('База ещё не настроена: выполни SQL-файл в Supabase');
+        return;
+      }
+
+      if (data && data.payload) {
+        cloudRestoring = true;
+        try {
+          Object.keys(data.payload).forEach(key => {
+            if (CLOUD_DATA_KEYS.includes(key)) localStorage.setItem(key, data.payload[key]);
+          });
+        } finally {
+          cloudRestoring = false;
+        }
+        render();
+        renderNotes();
+        updateAuthUI();
+      } else {
+        await saveCloudDataNow();
+        updateAuthUI('Аккаунт подключён, данные сохранены в облако');
+      }
+    }
+
+    async function handleAuthSession(session) {
+      currentAuthUser = session && session.user ? session.user : null;
+      updateAuthUI();
+      if (currentAuthUser) await loadCloudData();
+    }
+
+    async function signInEmail() {
+      if (!multitoolSupabase) return showToast('Supabase недоступен');
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      if (!email || !password) return showToast('Введи email и пароль');
+      const { error } = await multitoolSupabase.auth.signInWithPassword({ email, password });
+      if (error) return showToast(authErrorText(error));
+      showToast('Вход выполнен');
+    }
+
+    async function signUpEmail() {
+      if (!multitoolSupabase) return showToast('Supabase недоступен');
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      if (!email || !password) return showToast('Введи email и пароль');
+      if (password.length < 6) return showToast('Пароль должен быть не короче 6 символов');
+      const { data, error } = await multitoolSupabase.auth.signUp({ email, password });
+      if (error) return showToast(authErrorText(error));
+      if (data.session) showToast('Аккаунт создан');
+      else showToast('Проверь почту для подтверждения аккаунта');
+    }
+
+    async function logoutEmail() {
+      if (!multitoolSupabase) return;
+      await saveCloudDataNow();
+      const { error } = await multitoolSupabase.auth.signOut();
+      if (error) return showToast(authErrorText(error));
+      currentAuthUser = null;
+      CLOUD_DATA_KEYS.forEach(key => localStorage.removeItem(key));
+      render();
+      renderNotes();
+      updateAuthUI('Вы вышли. Локальные данные очищены');
+      showToast('Выход выполнен');
+    }
+
+    async function initSupabaseAuth() {
+      updateAuthUI();
+      if (!multitoolSupabase) return;
+      const { data } = await multitoolSupabase.auth.getSession();
+      await handleAuthSession(data.session);
+      multitoolSupabase.auth.onAuthStateChange((_event, session) => {
+        setTimeout(() => handleAuthSession(session), 0);
+      });
+    }
+
+    // ============ АККАУНТ ============
+    function openAccountModal() {
+      updateAuthUI();
+      document.getElementById('accountModal').classList.add('active');
+    }
+    function closeAccountModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        document.getElementById('accountModal').classList.remove('active');
+      }
+    }
+
+    function backupProfile() {
+      playAppStoreSound();
+      const backupData = {
+        ios_multitool_data: localStorage.getItem('ios_multitool_data'),
+        ios_multitool_archive: localStorage.getItem('ios_multitool_archive'),
+        ios_paid_amount: localStorage.getItem('ios_paid_amount'),
+        ios_month_shifts: localStorage.getItem('ios_month_shifts'),
+        ios_notes: localStorage.getItem('ios_notes'),
+        ios_point_data: localStorage.getItem('ios_point_data'),
+        ios_employees: localStorage.getItem('ios_employees'),
+        ios_payouts: localStorage.getItem('ios_payouts'),
+        exportDate: new Date().toISOString()
+      };
+
+      const jsonStr = JSON.stringify(backupData, null, 2);
+      const fileName = 'multitool_backup_' + new Date().toISOString().slice(0,10) + '.json';
+
+      if (navigator.canShare) {
+        try {
+          const file = new File([jsonStr], fileName, { type: 'application/json' });
+          if (navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: 'Бекап Мультитул' })
+              .then(() => closeAccountModal())
+              .catch(() => {});
+            return;
+          }
+        } catch (e) {}
+      }
+
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      closeAccountModal();
+      showToast('Бекап сохранён');
+    }
+
+    function triggerFileUpload() { document.getElementById('profileFileInput').click(); }
+
+    function restoreProfile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          if (parsed.ios_multitool_data !== undefined || parsed.ios_point_data !== undefined) {
+            if (parsed.ios_multitool_data !== null && parsed.ios_multitool_data !== undefined) localStorage.setItem('ios_multitool_data', parsed.ios_multitool_data);
+            if (parsed.ios_multitool_archive !== null && parsed.ios_multitool_archive !== undefined) localStorage.setItem('ios_multitool_archive', parsed.ios_multitool_archive);
+            if (parsed.ios_paid_amount !== null && parsed.ios_paid_amount !== undefined) localStorage.setItem('ios_paid_amount', parsed.ios_paid_amount);
+            if (parsed.ios_month_shifts !== null && parsed.ios_month_shifts !== undefined) localStorage.setItem('ios_month_shifts', parsed.ios_month_shifts);
+            if (parsed.ios_notes !== null && parsed.ios_notes !== undefined) localStorage.setItem('ios_notes', parsed.ios_notes);
+            if (parsed.ios_point_data !== null && parsed.ios_point_data !== undefined) localStorage.setItem('ios_point_data', parsed.ios_point_data);
+            if (parsed.ios_employees !== null && parsed.ios_employees !== undefined) localStorage.setItem('ios_employees', parsed.ios_employees);
+            if (parsed.ios_payouts !== null && parsed.ios_payouts !== undefined) localStorage.setItem('ios_payouts', parsed.ios_payouts);
+            scheduleCloudSave();
+
+            playAppStoreSound();
+            closeAccountModal();
+            render();
+            renderNotes();
+            showToast('Профиль успешно загружен!');
+          } else {
+            showToast('Неверный формат файла бекапа');
+          }
+        } catch (err) {
+          showToast('Ошибка чтения файла');
+        }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    initSupabaseAuth();
     render();
     renderNotes();
   </script>
 </body>
 </html>
-
