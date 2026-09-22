@@ -37,33 +37,120 @@
       position: relative;
     }
 
-    .snowflake {
+    .particle {
       position: fixed;
-      top: -10px;
-      background: #ffffff;
-      border-radius: 50%;
+      top: -20px;
       pointer-events: none;
       z-index: 1500;
-      opacity: 0.8;
-      animation: fall linear infinite;
+      will-change: transform, opacity;
     }
 
-    @keyframes fall {
-      0% { transform: translateY(-10px) translateX(0); }
-      50% { transform: translateY(50vh) translateX(15px); }
-      100% { transform: translateY(105vh) translateX(-15px); }
+    .particle.snow {
+      background: #ffffff;
+      border-radius: 50%;
+      opacity: 0.85;
+      animation: fallSnow linear forwards;
+    }
+
+    .particle.leaf {
+      width: 12px;
+      height: 12px;
+      background: transparent;
+      opacity: 0.9;
+      animation: fallLeaf linear forwards;
+    }
+
+    .particle.leaf svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    @keyframes fallSnow {
+      0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 0.9; }
+      50% { transform: translateY(50vh) translateX(20px) rotate(180deg); opacity: 0.7; }
+      100% { transform: translateY(105vh) translateX(-15px) rotate(360deg); opacity: 0; }
+    }
+
+    @keyframes fallLeaf {
+      0% { transform: translateY(-10px) translateX(0) rotate(0deg) scale(1); opacity: 0.95; }
+      25% { transform: translateY(25vh) translateX(30px) rotate(90deg) scale(1.05); }
+      50% { transform: translateY(50vh) translateX(-20px) rotate(180deg) scale(0.95); }
+      75% { transform: translateY(75vh) translateX(25px) rotate(270deg) scale(1.02); }
+      100% { transform: translateY(110vh) translateX(-10px) rotate(360deg) scale(0.9); opacity: 0; }
     }
 
     .screen {
       display: none;
-      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+      pointer-events: none;
     }
 
-    .screen.active { display: block; }
+    .screen.active {
+      display: block;
+      pointer-events: auto;
+      animation: screenEnter 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(20px); }
-      to { opacity: 1; transform: translateX(0); }
+    .screen.leaving {
+      display: block;
+      animation: screenLeave 0.22s cubic-bezier(0.4, 0, 1, 1) forwards;
+      pointer-events: none;
+    }
+
+    @keyframes screenEnter {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes screenLeave {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 0; transform: translateY(-8px) scale(0.99); }
+    }
+
+    .success-flash {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(48, 209, 88, 0.18) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1800;
+      opacity: 0;
+      animation: successFlash 0.55s ease-out forwards;
+    }
+
+    @keyframes successFlash {
+      0% { opacity: 0; }
+      30% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .toast-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      display: none;
+    }
+
+    .toast.success .toast-icon {
+      display: block;
+      animation: checkPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes checkPop {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .btn.success-pulse {
+      animation: btnSuccess 0.45s ease;
+    }
+
+    @keyframes btnSuccess {
+      0% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0.5); }
+      50% { box-shadow: 0 0 0 8px rgba(48, 209, 88, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0); }
     }
 
     .header {
@@ -137,7 +224,7 @@
       align-items: center;
       justify-content: space-between;
       cursor: pointer;
-      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease, box-shadow 0.2s ease;
     }
 
     .menu-item:active {
@@ -180,6 +267,7 @@
       margin-bottom: 16px;
       border: 1px solid rgba(255, 255, 255, 0.06);
       animation: cardAppear 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
     }
 
     @keyframes cardAppear {
@@ -228,7 +316,7 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease, box-shadow 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -246,6 +334,254 @@
     .btn-red { background: rgba(255, 69, 58, 0.12); color: #ff453a; border: 1px solid rgba(255, 69, 58, 0.2); }
     .btn-orange { background: var(--accent-orange); color: #ffffff; }
     .btn-purple { background: rgba(191, 90, 242, 0.2); color: var(--accent-purple); border: 1px solid rgba(191, 90, 242, 0.35); }
+
+    .btn-shimmer {
+      position: relative;
+      overflow: hidden;
+      height: 42px;
+      margin-top: 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 40%, #3a3a3c 70%, #1c1c1e 100%);
+      background-size: 220% 220%;
+      animation: shimmerBg 4.5s ease-in-out infinite;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-shimmer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 45%;
+      height: 100%;
+      background: linear-gradient(
+        105deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.06) 35%,
+        rgba(255, 255, 255, 0.22) 50%,
+        rgba(255, 255, 255, 0.06) 65%,
+        transparent 100%
+      );
+      animation: shimmerSweep 2.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .btn-shimmer svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      opacity: 0.9;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-shimmer span,
+    .btn-shimmer {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes shimmerBg {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes shimmerSweep {
+      0% { left: -60%; opacity: 0; }
+      15% { opacity: 1; }
+      50% { left: 120%; opacity: 1; }
+      51%, 100% { left: 120%; opacity: 0; }
+    }
+
+    .control-today-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(10, 132, 255, 0.12);
+      color: var(--accent-blue);
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .control-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .control-card:active {
+      transform: scale(0.98);
+      background: #252528;
+    }
+
+    .control-card.empty-shift {
+      opacity: 0.72;
+      border-style: dashed;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .control-status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .control-status-dot.green { background: var(--accent-green); color: var(--accent-green); }
+    .control-status-dot.red { background: var(--accent-red); color: var(--accent-red); }
+    .control-status-dot.none { background: #545458; color: #545458; box-shadow: none; }
+
+    .control-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .control-info h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .control-info .control-person {
+      font-size: 14px;
+      margin-top: 3px;
+      font-weight: 500;
+    }
+
+    .control-info .control-person.green { color: var(--accent-green); }
+    .control-info .control-person.red { color: var(--accent-red); }
+    .control-info .control-person.none { color: var(--text-sec); }
+
+    .control-info .control-time {
+      font-size: 12px;
+      color: var(--text-sec);
+      margin-top: 2px;
+    }
+
+    .control-link-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(0, 119, 255, 0.12);
+      border: 1px solid rgba(0, 119, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+      color: #0077ff;
+    }
+
+    .control-link-btn:active {
+      transform: scale(0.9);
+      background: rgba(0, 119, 255, 0.22);
+    }
+
+    .control-link-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .control-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .control-stat {
+      background: var(--card-inner);
+      border-radius: 12px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+
+    .control-stat .num {
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .control-stat .lbl {
+      font-size: 11px;
+      color: var(--text-sec);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .control-link-btn.disabled {
+      opacity: 0.35;
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.08);
+      color: var(--text-sec);
+    }
+
+    .employee-row {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .employee-row:last-child { border-bottom: none; }
+    .employee-row-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .employee-row .employee-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      padding: 4px 0;
+      font-weight: 600;
+    }
+    .employee-vk-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-inner);
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+    .employee-vk-row svg {
+      width: 16px;
+      height: 16px;
+      fill: #0077ff;
+      flex-shrink: 0;
+      opacity: 0.85;
+    }
+    .employee-vk-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      min-width: 0;
+    }
+    .employee-vk-input::placeholder { color: var(--text-sec); }
 
     .toast {
       position: fixed;
@@ -266,6 +602,9 @@
       pointer-events: none;
       transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
       z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -289,6 +628,9 @@
       color: var(--text-sec);
       z-index: 100;
       box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     .online-dot {
@@ -848,9 +1190,14 @@
 </head>
 <body>
 
-  <div class="toast" id="toast">Уведомление</div>
+  <div class="toast" id="toast">
+    <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 13l4 4L19 7"/>
+    </svg>
+    <span id="toastText">Уведомление</span>
+  </div>
 
-  <div class="online-bar">
+  <div class="online-bar" id="onlineBar" onclick="openCreatorAuthModal()">
     <div class="online-dot"></div>
     <span id="onlineCount">1 в сети</span>
   </div>
@@ -875,9 +1222,9 @@
               <svg style="width:16px; height:16px; fill:var(--accent-green);" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
               Мои смены
             </div>
-            <div onclick="toggleSnow(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
-              <svg style="width:16px; height:16px; fill:var(--accent-blue);" viewBox="0 0 24 24"><path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/></svg>
-              Снег
+            <div onclick="openSeasonModal(); toggleGlobalMenu();" id="seasonMenuItem" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+              <svg id="seasonMenuIcon" style="width:16px; height:16px; fill:var(--accent-blue);" viewBox="0 0 24 24"><path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/></svg>
+              <span id="seasonMenuLabel">Эффекты: Выкл</span>
             </div>
             <div onclick="openAccountModal(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
               <svg style="width:16px; height:16px; fill:var(--accent-purple);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
@@ -1008,6 +1355,10 @@
       <div class="card-title">Текст для Telegram</div>
       <div class="report-box" id="reportText"></div>
       <button class="btn btn-green" onclick="copyReport()">Скопировать отчет</button>
+      <button class="btn btn-purple" onclick="exportReportImage()">
+        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        Сохранить картинкой
+      </button>
       <button class="btn btn-orange" onclick="archiveWeek()">Завершить неделю и в архив</button>
       <button class="btn btn-red" onclick="resetWeek()">Сбросить без сохранения</button>
     </div>
@@ -1154,14 +1505,43 @@
     <div class="header">
       <div class="header-title">
         <h1>Помощь AI</h1>
-        <p>Ассистент по работе</p>
+        <p>Groq · Llama</p>
+      </div>
+      <div class="header-actions">
+        <div class="icon-btn" onclick="clearAiChat()" title="Очистить чат" style="color:var(--accent-red);">
+          <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        </div>
       </div>
     </div>
 
-    <div class="card ai-under-construction-card">
-      <div class="ai-under-construction-spark">✦</div>
-      <div class="ai-under-construction-title">В разработке</div>
-      <p>AI-помощник временно отключён. Скоро здесь появится новая версия.</p>
+    <div class="card" id="aiKeyCard" style="display:none; margin-bottom:12px;">
+      <div class="card-title">Ключ Groq API</div>
+      <p style="font-size:13px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
+        Бесплатный ключ: console.groq.com → API Keys
+      </p>
+      <div class="input-group">
+        <label>API Key</label>
+        <input type="password" id="groqApiKeyInput" placeholder="gsk_..." autocomplete="off">
+      </div>
+      <button class="btn btn-purple" onclick="saveGroqKey()">Сохранить ключ</button>
+    </div>
+
+    <div class="card" style="padding:12px; margin-bottom:12px;">
+      <div class="ai-chat-container" style="height:calc(100vh - 320px); min-height:280px;">
+        <div class="ai-chat-messages" id="aiChatMessages"></div>
+        <div class="ai-quick-btns">
+          <button class="ai-quick-btn" onclick="aiQuickAsk('Как посчитать зарплату за смену?')">Зарплата</button>
+          <button class="ai-quick-btn" onclick="aiQuickAsk('Что делать если касса не сходится?')">Касса</button>
+          <button class="ai-quick-btn" onclick="aiQuickAsk('Кратко объясни как вести учёт недели в Мультитуле')">Учёт</button>
+          <button class="ai-quick-btn" onclick="aiQuickAsk('Дай совет как не выгореть на сменах')">Совет</button>
+        </div>
+        <div class="ai-input-row">
+          <input type="text" id="aiInput" placeholder="Спроси что угодно..." onkeydown="if(event.key==='Enter') sendAiMessage()">
+          <button id="aiSendBtn" onclick="sendAiMessage()" aria-label="Отправить">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1175,6 +1555,19 @@
         <h1>Админ-панель</h1>
         <p>Управление и графики</p>
       </div>
+    </div>
+
+    <div class="menu-item" onclick="openScreen('screenControl')" style="border-color: rgba(10, 132, 255, 0.35);">
+      <div class="menu-item-left">
+        <div class="menu-icon icon-blue">
+          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Контроль точек</h3>
+          <p>Кто сегодня на смене</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
 
     <div class="menu-item" onclick="openScreen('screenLocations')" style="border-color: rgba(255, 159, 10, 0.3);">
@@ -1202,6 +1595,95 @@
       </div>
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
+
+    <div class="menu-item" onclick="openScreen('screenAdminPin')" style="border-color: rgba(142, 142, 147, 0.35);">
+      <div class="menu-item-left">
+        <div class="menu-icon" style="background:rgba(142,142,147,0.15);color:#8e8e93;">
+          <svg viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Сменить PIN</h3>
+          <p>Код входа в админку</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+  </div>
+
+  <!-- СМЕНА PIN -->
+  <div id="screenAdminPin" class="screen">
+    <div class="back-btn" onclick="openScreen('screenAdmin')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админ-панель
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Сменить PIN</h1>
+        <p>Код входа в админку</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="input-group">
+        <label>Текущий PIN</label>
+        <input type="password" id="pinCurrent" placeholder="••••" maxlength="8" inputmode="numeric">
+      </div>
+      <div class="input-group">
+        <label>Новый PIN</label>
+        <input type="password" id="pinNew" placeholder="••••" maxlength="8" inputmode="numeric">
+      </div>
+      <div class="input-group">
+        <label>Повтор нового PIN</label>
+        <input type="password" id="pinNew2" placeholder="••••" maxlength="8" inputmode="numeric">
+      </div>
+      <button class="btn btn-blue" onclick="changeAdminPin()">Сохранить</button>
+    </div>
+  </div>
+
+  <!-- МЕНЮ СОЗДАТЕЛЯ -->
+  <div id="screenCreator" class="screen">
+    <div class="back-btn" onclick="openScreen('screenMenu')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Создатель</h1>
+        <p>Служебный доступ</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Текущий PIN админки</div>
+      <div style="text-align:center; padding: 18px 12px;">
+        <div style="font-size:13px; color:var(--text-sec); margin-bottom:8px;">Актуальный код</div>
+        <div id="creatorPinDisplay" style="font-size:42px; font-weight:800; letter-spacing:6px; color:var(--accent-orange);">••••</div>
+      </div>
+      <button class="btn btn-green" onclick="copyCreatorPin()">Скопировать PIN</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Инфо</div>
+      <p style="font-size:14px; color:var(--text-sec); line-height:1.45;">
+        Здесь всегда отображается свежий PIN админ-панели. Доступ только по паролю создателя.
+      </p>
+    </div>
+  </div>
+
+  <!-- КОНТРОЛЬ ТОЧЕК -->
+  <div id="screenControl" class="screen">
+    <div class="back-btn" onclick="openScreen('screenAdmin')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админ-панель
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Контроль точек</h1>
+        <p>Кто на смене сегодня</p>
+      </div>
+    </div>
+
+    <div class="control-today-badge" id="controlTodayBadge">
+      <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+      <span id="controlTodayText">Сегодня</span>
+    </div>
+
+    <div class="control-summary" id="controlSummary"></div>
+    <div id="controlPointsList"></div>
   </div>
 
   <!-- СОТРУДНИКИ -->
@@ -1222,6 +1704,10 @@
         <label>Имя</label>
         <input type="text" id="newEmployeeInput" placeholder="Иван">
       </div>
+      <div class="input-group">
+        <label>Ссылка VK (необязательно)</label>
+        <input type="url" id="newEmployeeVk" placeholder="https://vk.com/id123">
+      </div>
       <button class="btn btn-purple" onclick="addEmployee()">Добавить</button>
     </div>
 
@@ -1241,6 +1727,18 @@
         <h1>Графики точек</h1>
         <p>Выберите адрес</p>
       </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 14px;">
+      <div class="cal-header" style="margin-bottom: 12px;">
+        <div class="icon-btn" onclick="changeAllPointsMonth(-1)"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg></div>
+        <div class="cal-title" id="allPointsMonthTitle">Сентябрь 2026</div>
+        <div class="icon-btn" onclick="changeAllPointsMonth(1)"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6 1.41-1.41z"/></svg></div>
+      </div>
+      <button class="btn btn-shimmer" onclick="exportAllPointsImage()">
+        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        Все графики картинкой
+      </button>
     </div>
 
     <div id="locationsList"></div>
@@ -1345,6 +1843,47 @@
     </div>
   </div>
 
+  <!-- МОДАЛКА СОЗДАТЕЛЯ -->
+  <div class="modal-overlay" id="creatorAuthModal" onclick="closeCreatorAuthModal(event)">
+    <div class="modal" id="creatorAuthModalBody" onclick="event.stopPropagation()">
+      <div class="modal-title">Доступ создателя</div>
+      <p style="font-size: 13px; color: var(--text-sec); text-align: center; margin-bottom: 14px;">
+        Введите пароль создателя
+      </p>
+      <div class="input-group">
+        <label>Пароль</label>
+        <input type="password" id="creatorPasswordInput" placeholder="••••••••" maxlength="24" onkeydown="if(event.key==='Enter') checkCreatorPassword()">
+      </div>
+      <button class="btn btn-blue" onclick="checkCreatorPassword()" style="margin-top: 8px;">Войти</button>
+    </div>
+  </div>
+
+  <!-- МОДАЛКА ЭФФЕКТОВ -->
+  <div class="modal-overlay" id="seasonModal" onclick="closeSeasonModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-title">Эффекты</div>
+      <p style="font-size: 13px; color: var(--text-sec); text-align: center; margin-bottom: 14px;">Выберите один режим</p>
+      <div class="option-btn" id="seasonOptOff" onclick="selectSeasonMode('off')">
+        <span style="display:flex;align-items:center;gap:10px;">
+          <svg style="width:18px;height:18px;fill:var(--text-sec);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+          Выкл
+        </span>
+      </div>
+      <div class="option-btn" id="seasonOptSnow" onclick="selectSeasonMode('snow')">
+        <span style="display:flex;align-items:center;gap:10px;">
+          <svg style="width:18px;height:18px;fill:var(--accent-blue);" viewBox="0 0 24 24"><path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/></svg>
+          Снег
+        </span>
+      </div>
+      <div class="option-btn" id="seasonOptLeaves" onclick="selectSeasonMode('leaves')">
+        <span style="display:flex;align-items:center;gap:10px;">
+          <svg style="width:18px;height:18px;fill:#e07a3a;" viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22.13C8.68 16.11 11 12.89 17 12V8M17 3C17 3 12 4 10 9C10 9 14.5 8 17 12C17 12 22 8 17 3Z"/></svg>
+          Листья
+        </span>
+      </div>
+    </div>
+  </div>
+
   <!-- МОДАЛКА НАСТРОЕК -->
   <div class="modal-overlay" id="settingsModal" onclick="closeSettingsModal(event)">
     <div class="modal" onclick="event.stopPropagation()">
@@ -1367,23 +1906,12 @@
       <p style="font-size: 13px; color: var(--text-sec); text-align: center; margin-bottom: 16px;">
         Резервное копирование сохранит все ваши смены, график, архив и заметки в файл.
       </p>
-      <div id="authPanel" style="background:var(--card-inner); border-radius:14px; padding:14px; margin-bottom:16px;">
-        <div class="card-title" style="margin:0 0 8px 0;">Вход и синхронизация</div>
-        <div id="authStatus" style="font-size:13px; color:var(--text-sec); margin-bottom:10px;">Проверяем аккаунт...</div>
-        <div id="authForm">
-          <div class="input-group">
-            <label>Email</label>
-            <input type="email" id="authEmail" placeholder="name@example.com" autocomplete="email">
-          </div>
-          <div class="input-group">
-            <label>Пароль</label>
-            <input type="password" id="authPassword" placeholder="Минимум 6 символов" autocomplete="current-password" onkeydown="if(event.key==='Enter') signInEmail()">
-          </div>
-          <button class="btn btn-blue" onclick="signInEmail()">Войти</button>
-          <button class="btn btn-purple" onclick="signUpEmail()">Создать аккаунт</button>
-        </div>
-        <button id="logoutBtn" class="btn btn-red-soft" onclick="logoutEmail()" style="display:none;">Выйти из аккаунта</button>
+
+      <div class="input-group" style="margin-bottom:12px;">
+        <label>Groq API Key (для AI)</label>
+        <input type="password" id="accountGroqKey" placeholder="gsk_..." autocomplete="off">
       </div>
+      <button class="btn btn-green" onclick="saveGroqKeyFromAccount()" style="margin-bottom: 10px;">Сохранить ключ AI</button>
 
       <button class="btn btn-purple" onclick="backupProfile()" style="margin-bottom: 8px;">
         <svg viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/></svg>
@@ -1410,45 +1938,149 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
     (function initRealOnlineCounter() {
       try {
-        const socket = io("https://pie-host.com", { path: "/socket.io", transports: ["websocket"] });
-        socket.on("connect", () => socket.emit("join", "multitool_sieeki_room"));
+        const socket = io("https://pie-host.com", {
+          path: "/socket.io",
+          transports: ["websocket", "polling"],
+          reconnection: true,
+          reconnectionAttempts: 10,
+          timeout: 10000
+        });
+        socket.on("connect", () => {
+          socket.emit("join", "multitool_sieeki_room");
+          console.log("[online] connected");
+        });
         socket.on("users_count", (count) => {
           const el = document.getElementById("onlineCount");
           if (el) el.innerText = count + " в сети";
         });
-      } catch (e) {}
+        socket.on("connect_error", (err) => {
+          console.warn("[online] connect_error:", err.message);
+        });
+        socket.on("disconnect", () => {
+          console.log("[online] disconnected");
+        });
+      } catch (e) {
+        console.warn("[online] init error:", e);
+      }
     })();
 
-    let snowInterval = null;
-    function toggleSnow() {
-      if (snowInterval) {
-        clearInterval(snowInterval);
-        snowInterval = null;
-        document.querySelectorAll('.snowflake').forEach(el => el.remove());
-        showToast('Снег выключен');
+    // ===== Сезонные эффекты =====
+    const SEASON_MODES = ['off', 'snow', 'leaves'];
+    let seasonMode = localStorage.getItem('ios_season_mode') || 'off';
+    let particleInterval = null;
+
+    const LEAF_SVG = '<svg viewBox="0 0 24 24" fill="#e07a3a"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22.13C8.68 16.11 11 12.89 17 12V8M17 3C17 3 12 4 10 9C10 9 14.5 8 17 12C17 12 22 8 17 3Z"/></svg>';
+    const SNOW_ICON = '<path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/>';
+    const LEAF_ICON = '<path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22.13C8.68 16.11 11 12.89 17 12V8M17 3C17 3 12 4 10 9C10 9 14.5 8 17 12C17 12 22 8 17 3Z"/>';
+    const OFF_ICON = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>';
+
+    function updateSeasonMenuUI() {
+      const label = document.getElementById('seasonMenuLabel');
+      const icon = document.getElementById('seasonMenuIcon');
+      if (!label || !icon) return;
+      if (seasonMode === 'snow') {
+        label.textContent = 'Эффекты: Снег';
+        icon.innerHTML = SNOW_ICON;
+        icon.style.fill = 'var(--accent-blue)';
+      } else if (seasonMode === 'leaves') {
+        label.textContent = 'Эффекты: Листья';
+        icon.innerHTML = LEAF_ICON;
+        icon.style.fill = '#e07a3a';
       } else {
-        snowInterval = setInterval(createSnowflake, 150);
-        showToast('Снег включен');
+        label.textContent = 'Эффекты: Выкл';
+        icon.innerHTML = OFF_ICON;
+        icon.style.fill = 'var(--text-sec)';
       }
     }
 
-    function createSnowflake() {
-      const snow = document.createElement('div');
-      snow.classList.add('snowflake');
-      snow.style.left = Math.random() * window.innerWidth + 'px';
-      const size = Math.random() * 5 + 3 + 'px';
-      snow.style.width = size;
-      snow.style.height = size;
-      const duration = Math.random() * 3 + 3;
-      snow.style.animationDuration = duration + 's';
-      snow.style.opacity = Math.random() * 0.6 + 0.3;
-      document.body.appendChild(snow);
-      setTimeout(() => { snow.remove(); }, duration * 1000);
+    function clearParticles() {
+      if (particleInterval) {
+        clearInterval(particleInterval);
+        particleInterval = null;
+      }
+      document.querySelectorAll('.particle').forEach(el => el.remove());
     }
+
+    function createSnowflake() {
+      const el = document.createElement('div');
+      el.className = 'particle snow';
+      el.style.left = Math.random() * window.innerWidth + 'px';
+      const size = (Math.random() * 5 + 3) + 'px';
+      el.style.width = size;
+      el.style.height = size;
+      const duration = Math.random() * 3.5 + 3.5;
+      el.style.animationDuration = duration + 's';
+      el.style.opacity = Math.random() * 0.5 + 0.35;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), duration * 1000 + 100);
+    }
+
+    function createLeaf() {
+      const el = document.createElement('div');
+      el.className = 'particle leaf';
+      el.style.left = Math.random() * window.innerWidth + 'px';
+      const size = (Math.random() * 8 + 10) + 'px';
+      el.style.width = size;
+      el.style.height = size;
+      el.innerHTML = LEAF_SVG;
+      const duration = Math.random() * 4 + 5;
+      el.style.animationDuration = duration + 's';
+      const colors = ['#e07a3a', '#c45c26', '#d4a017', '#b85c38', '#a0522d'];
+      const svg = el.querySelector('svg');
+      if (svg) svg.setAttribute('fill', colors[Math.floor(Math.random() * colors.length)]);
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), duration * 1000 + 100);
+    }
+
+    function startSeasonMode(mode) {
+      clearParticles();
+      seasonMode = mode;
+      localStorage.setItem('ios_season_mode', mode);
+      updateSeasonMenuUI();
+      if (mode === 'snow') {
+        particleInterval = setInterval(createSnowflake, 160);
+      } else if (mode === 'leaves') {
+        particleInterval = setInterval(createLeaf, 280);
+      }
+    }
+
+    function openSeasonModal() {
+      updateSeasonModalUI();
+      document.getElementById('seasonModal').classList.add('active');
+    }
+
+    function closeSeasonModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        document.getElementById('seasonModal').classList.remove('active');
+      }
+    }
+
+    function updateSeasonModalUI() {
+      ['seasonOptOff', 'seasonOptSnow', 'seasonOptLeaves'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('selected');
+      });
+      const map = { off: 'seasonOptOff', snow: 'seasonOptSnow', leaves: 'seasonOptLeaves' };
+      const active = document.getElementById(map[seasonMode] || 'seasonOptOff');
+      if (active) active.classList.add('selected');
+    }
+
+    function selectSeasonMode(mode) {
+      startSeasonMode(mode);
+      updateSeasonModalUI();
+      const names = { off: 'Эффекты выключены', snow: 'Снег включён', leaves: 'Листья включены' };
+      showToast(names[mode] || 'Готово', mode !== 'off');
+      playAppStoreSound();
+      setTimeout(() => closeSeasonModal({ target: document.getElementById('seasonModal') }), 180);
+    }
+
+    // Восстановить режим при загрузке
+    if (seasonMode !== 'off') startSeasonMode(seasonMode);
+    else updateSeasonMenuUI();
 
     function playAppStoreSound() {
       try {
@@ -1471,29 +2103,69 @@
       } catch (e) {}
     }
 
-    function showToast(text) {
-      const toast = document.getElementById('toast');
-      toast.innerText = text;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
+    function triggerSuccessFlash() {
+      const flash = document.createElement('div');
+      flash.className = 'success-flash';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 600);
     }
 
+    function showToast(text, isSuccess) {
+      const toast = document.getElementById('toast');
+      const textEl = document.getElementById('toastText');
+      if (textEl) textEl.textContent = text;
+      else toast.textContent = text;
+      toast.classList.toggle('success', !!isSuccess);
+      toast.classList.remove('show');
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      clearTimeout(toast._hideTimer);
+      toast._hideTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    let screenTransitionLock = false;
     function openScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      if (screenTransitionLock) return;
+      const current = document.querySelector('.screen.active');
       const target = document.getElementById(screenId);
       if (!target) {
         alert('Нет экрана: ' + screenId);
         return;
       }
-      target.classList.add('active');
-      if(screenId === 'screenStats') renderStats();
-      if(screenId === 'screenMyShifts') renderCalendar();
-      if(screenId === 'screenLocations') renderLocationsList();
-      if(screenId === 'screenPointDetail') renderPointDetail();
-      if(screenId === 'screenEmployees') renderEmployees();
-      if(screenId === 'screenSalary') renderSalary();
-      if(screenId === 'screenAI') window.scrollTo(0, 0);
-      window.scrollTo(0, 0);
+      if (current === target) return;
+
+      screenTransitionLock = true;
+
+      if (current) {
+        current.classList.add('leaving');
+        current.classList.remove('active');
+        setTimeout(() => {
+          current.classList.remove('leaving');
+          target.classList.add('active');
+          afterScreenOpen(screenId);
+          screenTransitionLock = false;
+        }, 200);
+      } else {
+        target.classList.add('active');
+        afterScreenOpen(screenId);
+        screenTransitionLock = false;
+      }
+    }
+
+    function afterScreenOpen(screenId) {
+      if (screenId === 'screenStats') renderStats();
+      if (screenId === 'screenMyShifts') renderCalendar();
+      if (screenId === 'screenLocations') {
+        updateAllPointsMonthTitle();
+        renderLocationsList();
+      }
+      if (screenId === 'screenPointDetail') renderPointDetail();
+      if (screenId === 'screenEmployees') renderEmployees();
+      if (screenId === 'screenSalary') renderSalary();
+      if (screenId === 'screenControl') renderControlPoints();
+      if (screenId === 'screenCreator') renderCreatorScreen();
+      if (screenId === 'screenAI') initAiScreen();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function toggleGlobalMenu(e) {
@@ -1567,6 +2239,14 @@
       render();
     }
 
+    function getAdminPin() {
+      const pin = localStorage.getItem('ios_admin_pin');
+      return pin && pin.length ? pin : '7272';
+    }
+    function setAdminPin(pin) {
+      localStorage.setItem('ios_admin_pin', String(pin));
+    }
+
     function openAdminAuthModal() {
       document.getElementById('adminPasswordInput').value = '';
       document.getElementById('adminAuthModal').classList.add('active');
@@ -1583,12 +2263,11 @@
       const input = document.getElementById('adminPasswordInput');
       const val = input.value.trim();
       const modalBody = document.getElementById('adminAuthModalBody');
-
-      if (val === '7272') {
+      if (val === getAdminPin()) {
         playAppStoreSound();
         closeAdminAuthModal();
         openScreen('screenAdmin');
-        showToast('Добро пожаловать!');
+        showToast('Добро пожаловать!', true);
       } else {
         modalBody.classList.remove('modal-shake');
         void modalBody.offsetWidth;
@@ -1598,14 +2277,173 @@
       }
     }
 
+    function changeAdminPin() {
+      const cur = (document.getElementById('pinCurrent').value || '').trim();
+      const n1 = (document.getElementById('pinNew').value || '').trim();
+      const n2 = (document.getElementById('pinNew2').value || '').trim();
+      if (cur !== getAdminPin()) return showToast('Неверный текущий PIN');
+      if (!/^\d{4,8}$/.test(n1)) return showToast('Новый PIN: 4–8 цифр');
+      if (n1 !== n2) return showToast('PIN не совпадает');
+      setAdminPin(n1);
+      document.getElementById('pinCurrent').value = '';
+      document.getElementById('pinNew').value = '';
+      document.getElementById('pinNew2').value = '';
+      playAppStoreSound();
+      if (typeof triggerSuccessFlash === 'function') triggerSuccessFlash();
+      showToast('PIN обновлён', true);
+    }
+
+    function openCreatorAuthModal() {
+      document.getElementById('creatorPasswordInput').value = '';
+      document.getElementById('creatorAuthModal').classList.add('active');
+      setTimeout(() => document.getElementById('creatorPasswordInput').focus(), 200);
+    }
+    function closeCreatorAuthModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        document.getElementById('creatorAuthModal').classList.remove('active');
+      }
+    }
+    function checkCreatorPassword() {
+      const input = document.getElementById('creatorPasswordInput');
+      const val = (input.value || '').trim();
+      const modalBody = document.getElementById('creatorAuthModalBody');
+      if (val === 'sieeki') {
+        playAppStoreSound();
+        closeCreatorAuthModal();
+        openScreen('screenCreator');
+        renderCreatorScreen();
+        showToast('Доступ создателя', true);
+      } else {
+        modalBody.classList.remove('modal-shake');
+        void modalBody.offsetWidth;
+        modalBody.classList.add('modal-shake');
+        showToast('Неверный пароль!');
+        input.value = '';
+      }
+    }
+    function renderCreatorScreen() {
+      const el = document.getElementById('creatorPinDisplay');
+      if (el) el.textContent = getAdminPin();
+    }
+    function copyCreatorPin() {
+      navigator.clipboard.writeText(getAdminPin()).then(() => {
+        playAppStoreSound();
+        showToast('PIN скопирован', true);
+      }).catch(() => showToast('Не удалось скопировать'));
+    }
+
     // ============ ТОЧКИ ============
     const POINTS = {
-      'efimova':     { name: 'Ефимова 1/4',                 time: '9:00 — 23:00' },
-      'gorohovaya':  { name: 'Гороховая 42',                time: '9:00 — 23:00' },
-      'novgorod':    { name: 'Новгородский 6 (Подвал)',     time: '9:00 — 23:00' },
-      'pervomay':    { name: 'Первомайская 15 (Сбер)',      time: '9:00 — 22:00' },
-      'krasnoarm':   { name: '7-я Красноармейская улица, 2', time: '9:00 — 22:00' }
+      'efimova':     { name: 'Ефимова 1/4',                 time: '9:00 — 23:00', vk: '' },
+      'gorohovaya':  { name: 'Гороховая 42',                time: '9:00 — 23:00', vk: '' },
+      'novgorod':    { name: 'Новгородский 6 (Подвал)',     time: '9:00 — 23:00', vk: '' },
+      'pervomay':    { name: 'Первомайская 15 (Сбер)',      time: '9:00 — 22:00', vk: '' },
+      'krasnoarm':   { name: '7-я Красноармейская улица, 2', time: '9:00 — 22:00', vk: '' }
     };
+
+    function openEmployeeVk(empId) {
+      if (!empId) {
+        showToast('На точке никого нет');
+        return;
+      }
+      const emp = getEmployeeById(empId);
+      if (!emp) {
+        showToast('Сотрудник не найден');
+        return;
+      }
+      const link = (emp.vk || '').trim();
+      if (!link) {
+        showToast('У сотрудника нет ссылки VK');
+        return;
+      }
+      let url = link;
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      window.open(url, '_blank');
+      playAppStoreSound();
+    }
+
+    function getTodayDateKey() {
+      const now = new Date();
+      const d = String(now.getDate()).padStart(2, '0');
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      return d + '.' + m + '.' + now.getFullYear();
+    }
+
+    function renderControlPoints() {
+      const list = document.getElementById('controlPointsList');
+      const summary = document.getElementById('controlSummary');
+      const todayText = document.getElementById('controlTodayText');
+      if (!list) return;
+
+      const todayKey = getTodayDateKey();
+      const now = new Date();
+      const weekdays = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+      if (todayText) {
+        todayText.textContent = weekdays[now.getDay()] + ', ' + todayKey;
+      }
+
+      let filled = 0;
+      let empty = 0;
+
+      let html = '';
+      Object.keys(POINTS).forEach(key => {
+        const p = POINTS[key];
+        const pd = getPointData(key);
+        const state = pd.days[todayKey] || '';
+        let person = 'Никого нет';
+        let personClass = 'none';
+        let dotClass = 'none';
+        let cardClass = 'control-card empty-shift';
+        let empId = '';
+
+        if (state === 'green') {
+          empId = pd.greenName || '';
+          person = getEmployeeName(empId) || 'Зелёный (не выбран)';
+          personClass = 'green';
+          dotClass = 'green';
+          cardClass = 'control-card';
+          filled++;
+        } else if (state === 'red') {
+          empId = pd.redName || '';
+          person = getEmployeeName(empId) || 'Красный (не выбран)';
+          personClass = 'red';
+          dotClass = 'red';
+          cardClass = 'control-card';
+          filled++;
+        } else {
+          empty++;
+        }
+
+        const emp = empId ? getEmployeeById(empId) : null;
+        const hasVk = !!(emp && emp.vk && String(emp.vk).trim());
+        const linkClass = 'control-link-btn' + (hasVk ? '' : ' disabled');
+        const linkClick = empId
+          ? 'openEmployeeVk(\'' + empId + '\')'
+          : 'showToast(\'На точке никого нет\')';
+
+        html +=
+          '<div class="' + cardClass + '">' +
+            '<div class="control-status-dot ' + dotClass + '"></div>' +
+            '<div class="control-info">' +
+              '<h4>' + p.name + '</h4>' +
+              '<div class="control-person ' + personClass + '">' + person + '</div>' +
+              '<div class="control-time">' + p.time + '</div>' +
+            '</div>' +
+            '<div class="' + linkClass + '" onclick="event.stopPropagation(); ' + linkClick + '" title="VK сотрудника">' +
+              '<svg viewBox="0 0 24 24"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.02-1.304.587-1.496c.597-.19 1.365 1.26 2.178 1.818.615.422 1.082.33 1.082.33l2.172-.03s1.136-.07.597-.964c-.044-.073-.312-.658-1.606-1.86-1.355-1.258-1.173-1.054.458-3.23.993-1.325 1.39-2.134 1.266-2.48-.119-.33-.85-.242-.85-.242l-2.242.014s-.166-.023-.289.052c-.12.072-.198.24-.198.24s-.354.94-.825 1.74c-.993 1.69-1.39 1.78-1.553 1.675-.38-.244-.285-.98-.285-1.503 0-1.633.248-2.313-.483-2.49-.243-.058-.421-.097-1.042-.103-.796-.008-1.47.003-1.85.19-.254.124-.45.4-.33.416.148.02.482.09.66.332.228.312.22 1.012.22 1.012s.13 1.928-.305 2.166c-.3.164-.71-.17-1.593-1.7-.45-.78-.79-1.642-.79-1.642s-.065-.16-.182-.246c-.142-.103-.34-.136-.34-.136l-2.13.014s-.32.01-.437.148c-.104.122-.008.374-.008.374s1.66 3.886 3.54 5.844c1.723 1.796 3.68 1.68 3.68 1.68h.886z"/></svg>' +
+            '</div>' +
+          '</div>';
+      });
+
+      list.innerHTML = html;
+
+      if (summary) {
+        summary.innerHTML =
+          '<div class="control-stat"><div class="lbl">На смене</div><div class="num" style="color:var(--accent-green);">' + filled + '</div></div>' +
+          '<div class="control-stat"><div class="lbl">Пусто</div><div class="num" style="color:var(--accent-red);">' + empty + '</div></div>' +
+          '<div class="control-stat"><div class="lbl">Всего</div><div class="num" style="color:var(--accent-blue);">' + Object.keys(POINTS).length + '</div></div>';
+      }
+    }
 
     let activePointKey = null;
     let pointCalDate = new Date();
@@ -1760,50 +2598,57 @@
       document.getElementById('pointRedCount').innerText = redCount + ' смен';
     }
 
-    function sharePointSchedule() {
-      if (!activePointKey) return;
-      const p = POINTS[activePointKey];
-      const pd = getPointData(activePointKey);
-      const year = pointCalDate.getFullYear();
-      const month = pointCalDate.getMonth();
-      const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+    function groupDaysList(arr) {
+      if (!arr || arr.length === 0) return '';
+      const groups = [];
+      let start = arr[0], prev = arr[0];
+      for (let i = 1; i < arr.length; i++) {
+        if (arr[i] === prev + 1) { prev = arr[i]; }
+        else {
+          groups.push(start === prev ? String(start) : start + '–' + prev);
+          start = arr[i]; prev = arr[i];
+        }
+      }
+      groups.push(start === prev ? String(start) : start + '–' + prev);
+      return groups.join(', ');
+    }
 
+    function getPointMonthDays(key, year, month) {
+      const pd = getPointData(key);
       const greenDays = [];
       const redDays = [];
-      for (let day = 1; day <= new Date(year, month + 1, 0).getDate(); day++) {
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      for (let day = 1; day <= totalDays; day++) {
         const dStr = String(day).padStart(2, '0');
         const mStr = String(month + 1).padStart(2, '0');
-        const key = dStr + '.' + mStr + '.' + year;
-        const state = pd.days[key];
+        const dateKey = dStr + '.' + mStr + '.' + year;
+        const state = pd.days[dateKey];
         if (state === 'green') greenDays.push(day);
         else if (state === 'red') redDays.push(day);
       }
+      return {
+        pd,
+        greenDays,
+        redDays,
+        greenLabel: getEmployeeName(pd.greenName) || 'Зелёный',
+        redLabel: getEmployeeName(pd.redName) || 'Красный'
+      };
+    }
 
-      function groupDays(arr) {
-        if (arr.length === 0) return '';
-        const groups = [];
-        let start = arr[0], prev = arr[0];
-        for (let i = 1; i < arr.length; i++) {
-          if (arr[i] === prev + 1) { prev = arr[i]; }
-          else {
-            groups.push(start === prev ? String(start) : start + '–' + prev);
-            start = arr[i]; prev = arr[i];
-          }
-        }
-        groups.push(start === prev ? String(start) : start + '–' + prev);
-        return groups.join(', ');
-      }
-
-      const greenLabel = getEmployeeName(pd.greenName) || 'Зелёный';
-      const redLabel = getEmployeeName(pd.redName) || 'Красный';
+    function sharePointSchedule() {
+      if (!activePointKey) return;
+      const p = POINTS[activePointKey];
+      const year = pointCalDate.getFullYear();
+      const month = pointCalDate.getMonth();
+      const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+      const data = getPointMonthDays(activePointKey, year, month);
 
       let text = p.name + '\n' + p.time + '\n' + monthNames[month] + ' ' + year + '\n\n';
-
-      if (greenDays.length === 0 && redDays.length === 0) {
+      if (data.greenDays.length === 0 && data.redDays.length === 0) {
         text += 'Пока пусто';
       } else {
-        if (greenDays.length > 0) text += '🟢 ' + greenLabel + ' (' + greenDays.length + '): ' + groupDays(greenDays) + '\n\n';
-        if (redDays.length > 0) text += '🔴 ' + redLabel + ' (' + redDays.length + '): ' + groupDays(redDays);
+        if (data.greenDays.length > 0) text += data.greenLabel + ' (' + data.greenDays.length + '): ' + groupDaysList(data.greenDays) + '\n\n';
+        if (data.redDays.length > 0) text += data.redLabel + ' (' + data.redDays.length + '): ' + groupDaysList(data.redDays);
       }
 
       if (navigator.share) {
@@ -1811,9 +2656,230 @@
       } else {
         navigator.clipboard.writeText(text).then(() => {
           playAppStoreSound();
-          showToast('График скопирован');
+          showToast('График скопирован', true);
         }).catch(() => showToast('Не удалось поделиться'));
       }
+    }
+
+    // ===== Все точки — картинка =====
+    let allPointsCalDate = new Date();
+
+    function changeAllPointsMonth(dir) {
+      allPointsCalDate.setMonth(allPointsCalDate.getMonth() + dir);
+      updateAllPointsMonthTitle();
+    }
+
+    function updateAllPointsMonthTitle() {
+      const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+      const el = document.getElementById('allPointsMonthTitle');
+      if (el) el.innerText = monthNames[allPointsCalDate.getMonth()] + ' ' + allPointsCalDate.getFullYear();
+    }
+
+    function exportAllPointsImage() {
+      const year = allPointsCalDate.getFullYear();
+      const month = allPointsCalDate.getMonth();
+      const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+      const monthTitle = monthNames[month] + ' ' + year;
+
+      const keys = Object.keys(POINTS);
+      const blocks = keys.map(key => {
+        const p = POINTS[key];
+        const data = getPointMonthDays(key, year, month);
+        return { key, p, data };
+      });
+
+      const w = 780;
+      const pad = 32;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Предварительный расчёт высоты
+      let contentH = pad + 90; // header
+      blocks.forEach(b => {
+        contentH += 28; // name
+        contentH += 22; // time
+        contentH += 8;
+        const hasG = b.data.greenDays.length > 0;
+        const hasR = b.data.redDays.length > 0;
+        if (!hasG && !hasR) contentH += 26;
+        else {
+          if (hasG) contentH += 48;
+          if (hasR) contentH += 48;
+        }
+        contentH += 20; // gap between cards
+      });
+      contentH += 50; // footer
+
+      canvas.width = w;
+      canvas.height = Math.max(contentH, 500);
+
+      // Фон — чуть теплее, чем у отчёта
+      const bg = ctx.createLinearGradient(0, 0, w, canvas.height);
+      bg.addColorStop(0, '#0c0a08');
+      bg.addColorStop(0.4, '#12100e');
+      bg.addColorStop(1, '#0e0c0a');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, canvas.height);
+
+      // Рамка
+      ctx.strokeStyle = 'rgba(255, 159, 10, 0.2)';
+      ctx.lineWidth = 2;
+      roundRectPath(ctx, 14, 14, w - 28, canvas.height - 28, 22);
+      ctx.stroke();
+
+      // Акцент — оранжевый (админка)
+      const accent = ctx.createLinearGradient(pad, 0, w - pad, 0);
+      accent.addColorStop(0, '#ff9f0a');
+      accent.addColorStop(0.55, '#ff6b00');
+      accent.addColorStop(1, '#ff453a');
+      ctx.fillStyle = accent;
+      ctx.fillRect(pad, 26, w - pad * 2, 4);
+
+      let y = pad + 24;
+      ctx.textBaseline = 'top';
+
+      // Заголовок
+      ctx.font = '700 30px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('Графики точек', pad, y);
+      y += 38;
+
+      ctx.font = '500 18px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = '#ff9f0a';
+      ctx.fillText(monthTitle, pad, y);
+      y += 36;
+
+      blocks.forEach((b, idx) => {
+        const cardTop = y;
+        const hasG = b.data.greenDays.length > 0;
+        const hasR = b.data.redDays.length > 0;
+        let cardH = 28 + 22 + 8;
+        if (!hasG && !hasR) cardH += 26;
+        else {
+          if (hasG) cardH += 48;
+          if (hasR) cardH += 48;
+        }
+        cardH += 12;
+
+        // Карточка точки
+        roundRectPath(ctx, pad - 6, cardTop - 6, w - pad * 2 + 12, cardH, 16);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Имя точки
+        ctx.font = '700 20px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(b.p.name, pad + 8, y);
+        y += 28;
+
+        // Время
+        ctx.font = '400 15px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#8e8e93';
+        ctx.fillText(b.p.time, pad + 8, y);
+        y += 26;
+
+        if (!hasG && !hasR) {
+          ctx.font = '400 15px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = 'rgba(255,255,255,0.3)';
+          ctx.fillText('График пока пуст', pad + 8, y);
+          y += 26;
+        } else {
+          if (hasG) {
+            // зелёная точка
+            ctx.beginPath();
+            ctx.arc(pad + 14, y + 10, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#30d158';
+            ctx.fill();
+            ctx.font = '600 16px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillStyle = '#30d158';
+            ctx.fillText(b.data.greenLabel + '  ·  ' + b.data.greenDays.length + ' смен', pad + 28, y);
+            y += 22;
+            ctx.font = '400 15px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillStyle = '#c7c7cc';
+            const gText = groupDaysList(b.data.greenDays);
+            const gLines = wrapText(ctx, gText, pad + 28, y, w - pad * 2 - 36, 20);
+            y += Math.max(22, gLines * 20 + 4);
+          }
+          if (hasR) {
+            ctx.beginPath();
+            ctx.arc(pad + 14, y + 10, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff453a';
+            ctx.fill();
+            ctx.font = '600 16px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillStyle = '#ff453a';
+            ctx.fillText(b.data.redLabel + '  ·  ' + b.data.redDays.length + ' смен', pad + 28, y);
+            y += 22;
+            ctx.font = '400 15px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillStyle = '#c7c7cc';
+            const rText = groupDaysList(b.data.redDays);
+            const rLines = wrapText(ctx, rText, pad + 28, y, w - pad * 2 - 36, 20);
+            y += Math.max(22, rLines * 20 + 4);
+          }
+        }
+        y += 14;
+      });
+
+      // Футер
+      y += 8;
+      ctx.font = '500 14px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      const footer = 'Мультитул · Админ';
+      const fw = ctx.measureText(footer).width;
+      ctx.fillText(footer, (w - fw) / 2, y);
+
+      function roundRectPath(c, x, yy, width, height, r) {
+        c.beginPath();
+        c.moveTo(x + r, yy);
+        c.arcTo(x + width, yy, x + width, yy + height, r);
+        c.arcTo(x + width, yy + height, x, yy + height, r);
+        c.arcTo(x, yy + height, x, yy, r);
+        c.arcTo(x, yy, x + width, yy, r);
+        c.closePath();
+      }
+
+      function wrapText(c, text, x, yy, maxWidth, lineHeight) {
+        const words = text.split(', ');
+        let line = '';
+        let lineCount = 0;
+        for (let n = 0; n < words.length; n++) {
+          const test = line ? line + ', ' + words[n] : words[n];
+          if (c.measureText(test).width > maxWidth && line) {
+            c.fillText(line, x, yy + lineCount * lineHeight);
+            line = words[n];
+            lineCount++;
+          } else {
+            line = test;
+          }
+        }
+        if (line) {
+          c.fillText(line, x, yy + lineCount * lineHeight);
+          lineCount++;
+        }
+        return Math.max(lineCount, 1);
+      }
+
+      canvas.toBlob(function(blob) {
+        if (!blob) return showToast('Не удалось создать картинку');
+        const fileName = 'grafiki_' + monthNames[month].toLowerCase() + '_' + year + '.png';
+        if (navigator.canShare) {
+          try {
+            const file = new File([blob], fileName, { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+              navigator.share({ files: [file], title: 'Графики точек · ' + monthTitle })
+                .then(() => {
+                  playAppStoreSound();
+                  showToast('Графики готовы', true);
+                })
+                .catch(() => downloadBlob(blob, fileName));
+              return;
+            }
+          } catch (e) {}
+        }
+        downloadBlob(blob, fileName);
+      }, 'image/png');
     }
 
     // ============ СОТРУДНИКИ ============
@@ -1847,24 +2913,39 @@
       container.innerHTML = '';
       list.forEach((emp, idx) => {
         const safeName = String(emp.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        container.innerHTML += '<div class="shift-item">' +
-            '<input type="text" class="employee-input" value="' + safeName + '" onchange="renameEmployeeByIndex(' + idx + ', this.value)" placeholder="Имя">' +
-            '<div class="del-btn" onclick="askDeleteEmployee(' + idx + ')">✕</div>' +
+        const safeVk = String(emp.vk || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        container.innerHTML +=
+          '<div class="employee-row">' +
+            '<div class="employee-row-top">' +
+              '<input type="text" class="employee-input" value="' + safeName + '" onchange="renameEmployeeByIndex(' + idx + ', this.value)" placeholder="Имя">' +
+              '<div class="del-btn" onclick="askDeleteEmployee(' + idx + ')">✕</div>' +
+            '</div>' +
+            '<div class="employee-vk-row">' +
+              '<svg viewBox="0 0 24 24"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.02-1.304.587-1.496c.597-.19 1.365 1.26 2.178 1.818.615.422 1.082.33 1.082.33l2.172-.03s1.136-.07.597-.964c-.044-.073-.312-.658-1.606-1.86-1.355-1.258-1.173-1.054.458-3.23.993-1.325 1.39-2.134 1.266-2.48-.119-.33-.85-.242-.85-.242l-2.242.014s-.166-.023-.289.052c-.12.072-.198.24-.198.24s-.354.94-.825 1.74c-.993 1.69-1.39 1.78-1.553 1.675-.38-.244-.285-.98-.285-1.503 0-1.633.248-2.313-.483-2.49-.243-.058-.421-.097-1.042-.103-.796-.008-1.47.003-1.85.19-.254.124-.45.4-.33.416.148.02.482.09.66.332.228.312.22 1.012.22 1.012s.13 1.928-.305 2.166c-.3.164-.71-.17-1.593-1.7-.45-.78-.79-1.642-.79-1.642s-.065-.16-.182-.246c-.142-.103-.34-.136-.34-.136l-2.13.014s-.32.01-.437.148c-.104.122-.008.374-.008.374s1.66 3.886 3.54 5.844c1.723 1.796 3.68 1.68 3.68 1.68h.886z"/></svg>' +
+              '<input type="url" class="employee-vk-input" value="' + safeVk + '" onchange="updateEmployeeVkByIndex(' + idx + ', this.value)" placeholder="https://vk.com/...">' +
+            '</div>' +
           '</div>';
       });
     }
 
     function addEmployee() {
       const input = document.getElementById('newEmployeeInput');
+      const vkInput = document.getElementById('newEmployeeVk');
       const name = input.value.trim();
+      const vk = (vkInput && vkInput.value || '').trim();
       if (!name) return showToast('Введите имя');
       const list = getEmployees();
-      list.push({ id: 'emp_' + Date.now() + '_' + Math.floor(Math.random()*10000), name: name });
+      list.push({
+        id: 'emp_' + Date.now() + '_' + Math.floor(Math.random()*10000),
+        name: name,
+        vk: vk
+      });
       saveEmployees(list);
       input.value = '';
+      if (vkInput) vkInput.value = '';
       playAppStoreSound();
       renderEmployees();
-      showToast('Сотрудник добавлен');
+      showToast('Сотрудник добавлен', true);
     }
 
     function renameEmployeeByIndex(idx, newName) {
@@ -1872,6 +2953,15 @@
       if (list[idx]) {
         list[idx].name = newName.trim();
         saveEmployees(list);
+      }
+    }
+
+    function updateEmployeeVkByIndex(idx, vk) {
+      const list = getEmployees();
+      if (list[idx]) {
+        list[idx].vk = (vk || '').trim();
+        saveEmployees(list);
+        showToast('VK сохранён', true);
       }
     }
 
@@ -2097,6 +3187,11 @@
       saveData(store);
       document.getElementById('shiftTotal').value = '';
       render();
+      playAppStoreSound();
+      triggerSuccessFlash();
+      showToast('Смена добавлена', true);
+      const btn = document.querySelector('#screenShifts .btn-blue');
+      if (btn) { btn.classList.remove('success-pulse'); void btn.offsetWidth; btn.classList.add('success-pulse'); }
     }
 
     function addDeduction() {
@@ -2109,6 +3204,8 @@
       document.getElementById('deductionReason').value = '';
       document.getElementById('deductionAmount').value = '';
       render();
+      playAppStoreSound();
+      showToast('Вычет добавлен', true);
     }
 
     function deleteShift(idx) { let store = getData(); store.shifts.splice(idx, 1); saveData(store); render(); }
@@ -2156,7 +3253,191 @@
     function copyReport() {
       playAppStoreSound();
       navigator.clipboard.writeText(document.getElementById('reportText').innerText);
-      showToast('Отчет скопирован!');
+      showToast('Отчёт скопирован', true);
+      const btn = document.querySelector('#screenShifts .btn-green');
+      if (btn) { btn.classList.remove('success-pulse'); void btn.offsetWidth; btn.classList.add('success-pulse'); }
+    }
+
+    function exportReportImage() {
+      const store = getData();
+      if (!store.shifts.length) return showToast('Нет смен для отчёта');
+
+      const currentPaid = getPaidAmount();
+      const canvas = document.createElement('canvas');
+      const w = 720;
+      const pad = 36;
+      const lineH = 28;
+      const titleH = 52;
+      const metaH = 36;
+
+      // Считаем строки
+      const lines = [];
+      lines.push({ type: 'title', text: 'Недельный отчёт' });
+      const range = store.shifts[0].date + ' — ' + store.shifts[store.shifts.length - 1].date;
+      lines.push({ type: 'meta', text: range });
+      lines.push({ type: 'spacer' });
+
+      let totalRemaining = 0;
+      store.shifts.forEach((s, i) => {
+        const percent = Math.round(s.total * 0.03);
+        const toPay = 2300 + percent;
+        const remain = toPay - currentPaid;
+        totalRemaining += remain;
+        lines.push({ type: 'shift', text: 'Смена ' + (i + 1) + ' · ' + s.date });
+        lines.push({ type: 'row', label: 'Итог', value: s.total.toLocaleString('ru-RU') + ' ₽' });
+        lines.push({ type: 'row', label: 'К выплате', value: '2300 + ' + percent + ' = ' + toPay.toLocaleString('ru-RU') + ' ₽' });
+        lines.push({ type: 'row', label: 'Выплачено', value: currentPaid.toLocaleString('ru-RU') + ' ₽' });
+        lines.push({ type: 'row', label: 'Остаток', value: remain.toLocaleString('ru-RU') + ' ₽', accent: true });
+        lines.push({ type: 'spacer' });
+      });
+
+      store.deductions.forEach(d => {
+        totalRemaining -= d.amount;
+        lines.push({ type: 'deduct', text: '− ' + d.amount.toLocaleString('ru-RU') + ' ₽  ·  ' + d.reason });
+      });
+      if (store.deductions.length) lines.push({ type: 'spacer' });
+
+      lines.push({ type: 'total', label: 'Остаток к выплате', value: totalRemaining.toLocaleString('ru-RU') + ' ₽' });
+      lines.push({ type: 'footer', text: 'Мультитул' });
+
+      // Высота
+      let contentH = pad * 2 + 20;
+      lines.forEach(l => {
+        if (l.type === 'title') contentH += titleH;
+        else if (l.type === 'meta') contentH += metaH;
+        else if (l.type === 'spacer') contentH += 14;
+        else if (l.type === 'shift') contentH += 34;
+        else if (l.type === 'total') contentH += 48;
+        else if (l.type === 'footer') contentH += 40;
+        else contentH += lineH;
+      });
+
+      canvas.width = w;
+      canvas.height = Math.max(contentH, 400);
+      const ctx = canvas.getContext('2d');
+
+      // Фон
+      const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      bg.addColorStop(0, '#0a0a0c');
+      bg.addColorStop(1, '#141418');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, canvas.height);
+
+      // Тонкая рамка
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 2;
+      roundRect(ctx, 16, 16, w - 32, canvas.height - 32, 24);
+      ctx.stroke();
+
+      // Акцентная полоска сверху
+      const accent = ctx.createLinearGradient(pad, 0, w - pad, 0);
+      accent.addColorStop(0, '#0a84ff');
+      accent.addColorStop(0.5, '#bf5af2');
+      accent.addColorStop(1, '#30d158');
+      ctx.fillStyle = accent;
+      ctx.fillRect(pad, 28, w - pad * 2, 4);
+
+      let y = pad + 28;
+      ctx.textBaseline = 'top';
+
+      lines.forEach(l => {
+        if (l.type === 'title') {
+          ctx.font = '700 32px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(l.text, pad, y);
+          y += titleH;
+        } else if (l.type === 'meta') {
+          ctx.font = '500 18px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#8e8e93';
+          ctx.fillText(l.text, pad, y);
+          y += metaH;
+        } else if (l.type === 'spacer') {
+          y += 14;
+        } else if (l.type === 'shift') {
+          ctx.font = '600 20px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#0a84ff';
+          ctx.fillText(l.text, pad, y);
+          y += 34;
+        } else if (l.type === 'row') {
+          ctx.font = '400 17px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#8e8e93';
+          ctx.fillText(l.label, pad, y);
+          ctx.font = '600 17px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = l.accent ? '#30d158' : '#ffffff';
+          const vw = ctx.measureText(l.value).width;
+          ctx.fillText(l.value, w - pad - vw, y);
+          y += lineH;
+        } else if (l.type === 'deduct') {
+          ctx.font = '500 17px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#ff453a';
+          ctx.fillText(l.text, pad, y);
+          y += lineH;
+        } else if (l.type === 'total') {
+          y += 8;
+          // блок итога
+          roundRect(ctx, pad - 4, y - 8, w - pad * 2 + 8, 52, 14);
+          ctx.fillStyle = 'rgba(48, 209, 88, 0.12)';
+          ctx.fill();
+          ctx.font = '500 15px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#8e8e93';
+          ctx.fillText(l.label, pad + 12, y + 6);
+          ctx.font = '700 24px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#30d158';
+          const tw = ctx.measureText(l.value).width;
+          ctx.fillText(l.value, w - pad - 12 - tw, y + 4);
+          y += 48;
+        } else if (l.type === 'footer') {
+          y += 16;
+          ctx.font = '500 14px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = 'rgba(255,255,255,0.25)';
+          const fw = ctx.measureText(l.text).width;
+          ctx.fillText(l.text, (w - fw) / 2, y);
+        }
+      });
+
+      function roundRect(c, x, y, width, height, r) {
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.arcTo(x + width, y, x + width, y + height, r);
+        c.arcTo(x + width, y + height, x, y + height, r);
+        c.arcTo(x, y + height, x, y, r);
+        c.arcTo(x, y, x + width, y, r);
+        c.closePath();
+      }
+
+      canvas.toBlob(function(blob) {
+        if (!blob) return showToast('Не удалось создать картинку');
+        const fileName = 'otchet_' + new Date().toISOString().slice(0, 10) + '.png';
+        if (navigator.canShare) {
+          try {
+            const file = new File([blob], fileName, { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+              navigator.share({ files: [file], title: 'Недельный отчёт' })
+                .then(() => {
+                  playAppStoreSound();
+                  showToast('Отчёт готов', true);
+                })
+                .catch(() => downloadBlob(blob, fileName));
+              return;
+            }
+          } catch (e) {}
+        }
+        downloadBlob(blob, fileName);
+      }, 'image/png');
+    }
+
+    function downloadBlob(blob, fileName) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      playAppStoreSound();
+      triggerSuccessFlash();
+      showToast('Картинка сохранена', true);
     }
 
     function archiveWeek() {
@@ -2173,7 +3454,9 @@
       saveArchive(arc);
       localStorage.removeItem('ios_multitool_data');
       render();
-      showToast('Неделя сохранена в архив!');
+      playAppStoreSound();
+      triggerSuccessFlash();
+      showToast('Неделя сохранена в архив', true);
     }
 
     function deleteArchiveItem(id) {
@@ -2261,6 +3544,8 @@
       const notes = getNotes();
       notes.push({ text: val, done: false });
       saveNotes(notes);
+      playAppStoreSound();
+      showToast('Заметка сохранена', true);
       document.getElementById('noteInput').value = '';
       renderNotes();
     }
@@ -2345,174 +3630,173 @@
       });
     }
 
-    const SUPABASE_URL = 'https://rnodblcqymplzelmcntu.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mrmlYaUy7kyox0SUxZubXg_cCOepXJY';
-    const multitoolSupabase = window.supabase && window.supabase.createClient
-      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
-      : null;
-    const CLOUD_DATA_KEYS = [
-      'ios_multitool_data', 'ios_multitool_archive', 'ios_paid_amount',
-      'ios_month_shifts', 'ios_notes', 'ios_point_data', 'ios_employees', 'ios_payouts'
-    ];
-    let currentAuthUser = null;
-    let cloudSaveTimer = null;
-    let cloudSaveInProgress = false;
-    let cloudSaveAgain = false;
-    let cloudRestoring = false;
 
-    function authErrorText(error) {
-      const message = String(error && error.message || 'Неизвестная ошибка');
-      if (/invalid login credentials/i.test(message)) return 'Неверный email или пароль';
-      if (/email not confirmed/i.test(message)) return 'Сначала подтверди email в письме';
-      if (/already registered|user already registered/i.test(message)) return 'Такой email уже зарегистрирован';
-      return message;
+    // ============ GROQ AI ============
+    const GROQ_MODELS = ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'openai/gpt-oss-20b'];
+    let GROQ_MODEL = GROQ_MODELS[0];
+    let aiMessages = [];
+    let aiBusy = false;
+
+    function getGroqKey() {
+      return (localStorage.getItem('ios_groq_key') || '').trim();
+    }
+    function setGroqKey(key) {
+      localStorage.setItem('ios_groq_key', (key || '').trim());
     }
 
-    function updateAuthUI(message) {
-      const status = document.getElementById('authStatus');
-      const form = document.getElementById('authForm');
-      const logout = document.getElementById('logoutBtn');
-      if (!status || !form || !logout) return;
+    function saveGroqKey() {
+      const el = document.getElementById('groqApiKeyInput');
+      const key = (el && el.value || '').trim();
+      if (!key) return showToast('Вставьте ключ');
+      setGroqKey(key);
+      playAppStoreSound();
+      showToast('Ключ сохранён', true);
+      initAiScreen();
+    }
 
-      if (!multitoolSupabase) {
-        status.innerText = 'Облачная авторизация недоступна: нет соединения с Supabase';
-        status.style.color = 'var(--accent-red)';
+    function saveGroqKeyFromAccount() {
+      const el = document.getElementById('accountGroqKey');
+      const key = (el && el.value || '').trim();
+      if (!key) return showToast('Вставьте ключ');
+      setGroqKey(key);
+      playAppStoreSound();
+      showToast('Ключ AI сохранён', true);
+    }
+
+    function initAiScreen() {
+      const hasKey = !!getGroqKey();
+      const keyCard = document.getElementById('aiKeyCard');
+      if (keyCard) keyCard.style.display = hasKey ? 'none' : 'block';
+      const keyInput = document.getElementById('groqApiKeyInput');
+      if (keyInput && hasKey) keyInput.value = getGroqKey();
+      renderAiMessages();
+    }
+
+    function clearAiChat() {
+      aiMessages = [];
+      renderAiMessages();
+      showToast('Чат очищен');
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderAiMessages() {
+      const box = document.getElementById('aiChatMessages');
+      if (!box) return;
+      if (aiMessages.length === 0) {
+        box.innerHTML = '<div class="ai-msg ai" style="opacity:0.7;">Привет! Я помощник на Groq. Спроси про смены, кассу, зарплату или что угодно по работе.</div>';
         return;
       }
-      if (currentAuthUser) {
-        status.innerText = message || ('Выполнен вход: ' + (currentAuthUser.email || 'пользователь'));
-        status.style.color = 'var(--accent-green)';
-        form.style.display = 'none';
-        logout.style.display = 'flex';
-      } else {
-        status.innerText = message || 'Войдите, чтобы синхронизировать данные между устройствами';
-        status.style.color = 'var(--text-sec)';
-        form.style.display = 'block';
-        logout.style.display = 'none';
-      }
-    }
-
-    function collectCloudPayload() {
-      const payload = {};
-      CLOUD_DATA_KEYS.forEach(key => {
-        const value = localStorage.getItem(key);
-        if (value !== null) payload[key] = value;
+      let html = '';
+      aiMessages.forEach(m => {
+        if (m.role === 'user') {
+          html += '<div class="ai-msg user">' + escapeHtml(m.content) + '</div>';
+        } else if (m.role === 'assistant') {
+          html += '<div class="ai-msg ai">' + escapeHtml(m.content) + '</div>';
+        } else if (m.role === 'error') {
+          html += '<div class="ai-msg error">' + escapeHtml(m.content) + '</div>';
+        }
       });
-      return payload;
+      if (aiBusy) html += '<div class="ai-typing">Думаю</div>';
+      box.innerHTML = html;
+      box.scrollTop = box.scrollHeight;
     }
 
-    function scheduleCloudSave() {
-      if (!currentAuthUser || cloudRestoring || !multitoolSupabase) return;
-      clearTimeout(cloudSaveTimer);
-      cloudSaveTimer = setTimeout(() => saveCloudDataNow(), 700);
+    function aiQuickAsk(text) {
+      const input = document.getElementById('aiInput');
+      if (input) input.value = text;
+      sendAiMessage();
     }
 
-    async function saveCloudDataNow() {
-      if (!currentAuthUser || !multitoolSupabase) return;
-      if (cloudSaveInProgress) {
-        cloudSaveAgain = true;
+    async function sendAiMessage() {
+      if (aiBusy) return;
+      const input = document.getElementById('aiInput');
+      const text = (input && input.value || '').trim();
+      if (!text) return;
+
+      const key = getGroqKey();
+      if (!key) {
+        const keyCard = document.getElementById('aiKeyCard');
+        if (keyCard) keyCard.style.display = 'block';
+        showToast('Нужен ключ Groq API');
         return;
       }
-      cloudSaveInProgress = true;
+
+      aiMessages.push({ role: 'user', content: text });
+      if (input) input.value = '';
+      aiBusy = true;
+      const sendBtn = document.getElementById('aiSendBtn');
+      if (sendBtn) sendBtn.disabled = true;
+      renderAiMessages();
+
+      const systemPrompt = 'Ты помощник сотрудника в торговом/сервисном заведении. Отвечай кратко, по-русски, по делу. Можешь помогать с расчётом смен, кассой, сдачей, графиками, общением с клиентами. Не выдумывай юридические факты. Если вопрос не про работу — всё равно отвечай полезно и коротко.';
+
+      const apiMessages = [
+        { role: 'system', content: systemPrompt }
+      ];
+      aiMessages.forEach(m => {
+        if (m.role === 'user' || m.role === 'assistant') {
+          apiMessages.push({ role: m.role, content: m.content });
+        }
+      });
+
       try {
-        const { error } = await multitoolSupabase.from('multitool_data').upsert({
-          user_id: currentAuthUser.id,
-          payload: collectCloudPayload(),
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
-        if (error) updateAuthUI('Ошибка синхронизации: ' + error.message);
-      } finally {
-        cloudSaveInProgress = false;
-        if (cloudSaveAgain) {
-          cloudSaveAgain = false;
-          scheduleCloudSave();
-        }
-      }
-    }
-
-    async function loadCloudData() {
-      if (!currentAuthUser || !multitoolSupabase) return;
-      const { data, error } = await multitoolSupabase.from('multitool_data')
-        .select('payload')
-        .eq('user_id', currentAuthUser.id)
-        .maybeSingle();
-      if (error) {
-        updateAuthUI('База ещё не настроена: выполни SQL-файл в Supabase');
-        return;
-      }
-
-      if (data && data.payload) {
-        cloudRestoring = true;
-        try {
-          Object.keys(data.payload).forEach(key => {
-            if (CLOUD_DATA_KEYS.includes(key)) localStorage.setItem(key, data.payload[key]);
+        let lastErr = null;
+        let reply = null;
+        for (const model of GROQ_MODELS) {
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + key
+            },
+            body: JSON.stringify({
+              model: model,
+              messages: apiMessages,
+              temperature: 0.6,
+              max_tokens: 1024
+            })
           });
-        } finally {
-          cloudRestoring = false;
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            lastErr = (data && data.error && data.error.message) ? data.error.message : ('Ошибка ' + res.status);
+            // если модель недоступна — пробуем следующую
+            if (/model|access|does not exist/i.test(lastErr)) continue;
+            throw new Error(lastErr);
+          }
+          GROQ_MODEL = model;
+          reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+            ? data.choices[0].message.content.trim()
+            : 'Пустой ответ';
+          break;
         }
-        render();
-        renderNotes();
-        updateAuthUI();
-      } else {
-        await saveCloudDataNow();
-        updateAuthUI('Аккаунт подключён, данные сохранены в облако');
+        if (reply == null) throw new Error(lastErr || 'Нет доступных моделей');
+        aiMessages.push({ role: 'assistant', content: reply });
+        playAppStoreSound();
+      } catch (e) {
+        aiMessages.push({ role: 'error', content: 'Ошибка: ' + (e.message || 'сеть / ключ') });
+        showToast('AI ошибка');
       }
+
+      aiBusy = false;
+      if (sendBtn) sendBtn.disabled = false;
+      renderAiMessages();
     }
 
-    async function handleAuthSession(session) {
-      currentAuthUser = session && session.user ? session.user : null;
-      updateAuthUI();
-      if (currentAuthUser) await loadCloudData();
-    }
 
-    async function signInEmail() {
-      if (!multitoolSupabase) return showToast('Supabase недоступен');
-      const email = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value;
-      if (!email || !password) return showToast('Введи email и пароль');
-      const { error } = await multitoolSupabase.auth.signInWithPassword({ email, password });
-      if (error) return showToast(authErrorText(error));
-      showToast('Вход выполнен');
-    }
-
-    async function signUpEmail() {
-      if (!multitoolSupabase) return showToast('Supabase недоступен');
-      const email = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value;
-      if (!email || !password) return showToast('Введи email и пароль');
-      if (password.length < 6) return showToast('Пароль должен быть не короче 6 символов');
-      const { data, error } = await multitoolSupabase.auth.signUp({ email, password });
-      if (error) return showToast(authErrorText(error));
-      if (data.session) showToast('Аккаунт создан');
-      else showToast('Проверь почту для подтверждения аккаунта');
-    }
-
-    async function logoutEmail() {
-      if (!multitoolSupabase) return;
-      await saveCloudDataNow();
-      const { error } = await multitoolSupabase.auth.signOut();
-      if (error) return showToast(authErrorText(error));
-      currentAuthUser = null;
-      CLOUD_DATA_KEYS.forEach(key => localStorage.removeItem(key));
-      render();
-      renderNotes();
-      updateAuthUI('Вы вышли. Локальные данные очищены');
-      showToast('Выход выполнен');
-    }
-
-    async function initSupabaseAuth() {
-      updateAuthUI();
-      if (!multitoolSupabase) return;
-      const { data } = await multitoolSupabase.auth.getSession();
-      await handleAuthSession(data.session);
-      multitoolSupabase.auth.onAuthStateChange((_event, session) => {
-        setTimeout(() => handleAuthSession(session), 0);
-      });
-    }
+    // Облачная авторизация временно отключена
+    function scheduleCloudSave() { /* no-op */ }
 
     // ============ АККАУНТ ============
     function openAccountModal() {
-      updateAuthUI();
+      const k = document.getElementById('accountGroqKey');
+      if (k) k.value = getGroqKey() || '';
       document.getElementById('accountModal').classList.add('active');
     }
     function closeAccountModal(e) {
@@ -2583,7 +3867,6 @@
             if (parsed.ios_point_data !== null && parsed.ios_point_data !== undefined) localStorage.setItem('ios_point_data', parsed.ios_point_data);
             if (parsed.ios_employees !== null && parsed.ios_employees !== undefined) localStorage.setItem('ios_employees', parsed.ios_employees);
             if (parsed.ios_payouts !== null && parsed.ios_payouts !== undefined) localStorage.setItem('ios_payouts', parsed.ios_payouts);
-            scheduleCloudSave();
 
             playAppStoreSound();
             closeAccountModal();
@@ -2601,7 +3884,6 @@
       reader.readAsText(file);
     }
 
-    initSupabaseAuth();
     render();
     renderNotes();
   </script>
