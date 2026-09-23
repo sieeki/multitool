@@ -178,6 +178,7 @@
       margin-top: 2px;
     }
 
+
     .header-actions {
       display: flex;
       align-items: center;
@@ -4817,6 +4818,40 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       return { ok: true };
     }
 
+    async function validateCurrentSession(opts) {
+      opts = opts || {};
+      const sess = getSession();
+      if (!sess || !sess.code) return false;
+      try {
+        const rec = await findKeyRecord(sess.code);
+        const check = keyIsValid(rec);
+        if (check.ok) return true;
+        dropDeadSession(check.reason || 'Ключ больше не действует');
+        return false;
+      } catch (e) {
+        // сеть упала — не выкидываем зря
+        if (opts.strict) {
+          dropDeadSession('Ключ не подтверждён');
+          return false;
+        }
+        return true;
+      }
+    }
+
+    function dropDeadSession(reason) {
+      clearSession();
+      const info = document.getElementById('accountSessionInfo');
+      if (info) info.textContent = 'Нет активного ключа';
+      const logoutBtn = document.getElementById('accountLogoutBtn');
+      if (logoutBtn) logoutBtn.style.display = 'none';
+      showToast(reason || 'Ключ удалён');
+      if (isGateEnabled()) {
+        document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+        const gate = document.getElementById('screenGate');
+        if (gate) gate.classList.add('active');
+      }
+    }
+
     let pendingBind = null;
 
     async function submitAccessKey() {
@@ -5112,6 +5147,15 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         } catch (e) {}
         await sbFetch('access_keys?code=eq.' + encodeURIComponent(code), { method: 'DELETE' });
         saveLocalKeys(getLocalKeys().filter(function(k) { return k.code !== code; }));
+        try {
+          await sbFetch('device_sessions?access_code=eq.' + encodeURIComponent(code), {
+            method: 'PATCH',
+            headers: { 'Prefer': 'return=minimal' },
+            body: JSON.stringify({ revoked: true })
+          });
+        } catch (e) {}
+        const sess = getSession();
+        if (sess && sess.code === code) dropDeadSession('Этот ключ удалён');
         showToast('Ключ удалён', true);
         refreshAccessKeysList();
       } catch (e) {
@@ -5186,6 +5230,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
     async function heartbeatDeviceSession() {
       try {
+        await validateCurrentSession();
         const rows = await sbFetch('device_sessions?id=eq.' + encodeURIComponent(getDeviceId()) + '&select=revoked');
         if (rows && rows[0] && rows[0].revoked) {
           clearSession();
@@ -5289,6 +5334,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
     async function bootAccessGate() {
       try { await fetchGateFromCloud(); } catch (e) {}
+      await validateCurrentSession();
       if (!isGateEnabled()) {
         // open mode — show menu
         document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
@@ -5322,18 +5368,21 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     function openAccountModal() {
       const k = document.getElementById('accountGroqKey');
       if (k) k.value = getGroqKey() || '';
-      const sess = getSession();
       const info = document.getElementById('accountSessionInfo');
       const logoutBtn = document.getElementById('accountLogoutBtn');
-      if (info) {
-        if (sess) {
-          info.textContent = 'Ключ: ' + sess.name + ' · ' + sess.code + (sess.expires_at ? (' · до ' + new Date(sess.expires_at).toLocaleDateString('ru-RU')) : '');
-        } else {
-          info.textContent = isGateEnabled() ? 'Нет активного ключа' : 'Открытый режим (ключ не обязателен)';
-        }
-      }
-      if (logoutBtn) logoutBtn.style.display = sess ? 'flex' : 'none';
+      if (info) info.textContent = 'Проверяем ключ…';
       document.getElementById('accountModal').classList.add('active');
+      validateCurrentSession({ strict: true }).then(function() {
+        const sess = getSession();
+        if (info) {
+          if (sess) {
+            info.textContent = 'Ключ: ' + sess.name + ' · ' + sess.code + (sess.expires_at ? (' · до ' + new Date(sess.expires_at).toLocaleDateString('ru-RU')) : ' · без срока');
+          } else {
+            info.textContent = isGateEnabled() ? 'Нет активного ключа' : 'Открытый режим (ключ не обязателен)';
+          }
+        }
+        if (logoutBtn) logoutBtn.style.display = sess ? 'flex' : 'none';
+      });
     }
     function closeAccountModal(e) {
       if (!e || e.target.classList.contains('modal-overlay')) {
@@ -5543,6 +5592,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         'Понятно'
       );
     }
+
 
 
     render();
