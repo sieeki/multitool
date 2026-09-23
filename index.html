@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Work Tool Suite</title>
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Мультитул">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Мультитул</title>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230a84ff'/%3E%3Ctext x='90' y='118' text-anchor='middle' font-size='88' font-family='system-ui,sans-serif' fill='white'%3EM%3C/text%3E%3C/svg%3E">
   <style>
     :root {
       --bg: #000000;
@@ -633,6 +639,36 @@
       user-select: none;
     }
 
+
+    .add-home-fab {
+      position: fixed;
+      bottom: 14px;
+      left: 14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(28, 28, 30, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      cursor: pointer;
+      padding: 0;
+      color: var(--accent-blue);
+      transition: transform 0.15s ease, opacity 0.2s ease;
+    }
+    .add-home-fab:active { transform: scale(0.92); }
+    .add-home-fab svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+    .add-home-fab.hidden { display: none !important; }
+
     .online-dot {
       width: 7px;
       height: 7px;
@@ -1170,6 +1206,67 @@
     }
     .ai-key-status.off { color: var(--text-sec); font-weight: 500; }
 
+    .gate-wrap {
+      min-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 10px 0 40px;
+    }
+    .gate-logo {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .gate-logo h1 {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+    }
+    .gate-logo p { color: var(--text-sec); font-size: 14px; margin-top: 6px; }
+    .key-item {
+      background: var(--card-inner);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .key-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .key-item-name { font-weight: 600; font-size: 15px; }
+    .key-item-code {
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 13px;
+      color: var(--accent-blue);
+      margin-top: 4px;
+      letter-spacing: 0.5px;
+    }
+    .key-item-meta { font-size: 12px; color: var(--text-sec); margin-top: 4px; }
+    .key-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+    .key-badge.ok { background: rgba(48,209,88,0.15); color: var(--accent-green); }
+    .key-badge.off { background: rgba(255,69,58,0.15); color: var(--accent-red); }
+    .key-badge.exp { background: rgba(255,159,10,0.15); color: var(--accent-orange); }
+    .session-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-sec);
+      background: var(--card-inner);
+      padding: 6px 10px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+
+
     .ai-quick-btns {
       display: flex;
       gap: 6px;
@@ -1328,8 +1425,42 @@
     <span id="onlineCount">1 в сети</span>
   </div>
 
+  <button type="button" class="add-home-fab" id="addHomeFab" onclick="promptAddToHome()" title="На экран Домой" aria-label="На экран Домой">
+    <svg viewBox="0 0 24 24"><path d="M18 1.01L8 1c-1.1 0-2 .9-2 2v3h2V5h10v14H8v-1H6v3c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM10 15h2V8H5v2h3.59L3 15.59 4.41 17 10 11.41V15z"/></svg>
+  </button>
+
+
+
+  <!-- ВХОД ПО КЛЮЧУ -->
+  <div id="screenGate" class="screen active">
+    <div class="gate-wrap">
+      <div class="gate-logo">
+        <h1>Мультитул</h1>
+        <p>Вход по ключу доступа</p>
+      </div>
+      <div class="card">
+        <div class="input-group">
+          <label>Ключ доступа</label>
+          <input type="text" id="gateKeyInput" placeholder="MT-XXXX-XXXX" autocomplete="off" autocapitalize="characters" onkeydown="if(event.key==='Enter') submitAccessKey()">
+        </div>
+        <button class="btn btn-blue" onclick="submitAccessKey()">Войти</button>
+        <p style="font-size:12px;color:var(--text-sec);text-align:center;margin-top:12px;line-height:1.4;">
+          Ключ выдаёт администратор. Он сохранится на этом устройстве.
+        </p>
+      </div>
+      <div class="card" id="gateBindCard" style="display:none;">
+        <div class="card-title">Найдены старые данные</div>
+        <p style="font-size:13px;color:var(--text-sec);line-height:1.45;margin-bottom:12px;">
+          На этом устройстве уже есть смены и настройки. Привязать их к ключу?
+        </p>
+        <button class="btn btn-green" onclick="bindLocalDataToKey()">Да, привязать</button>
+        <button class="btn btn-red-soft" onclick="skipBindLocalData()" style="margin-top:8px;">Нет, облачные данные ключа</button>
+      </div>
+    </div>
+  </div>
+
   <!-- МЕНЮ -->
-  <div id="screenMenu" class="screen active">
+  <div id="screenMenu" class="screen">
     <div class="header">
       <div class="header-title">
         <h1>Мультитул</h1>
@@ -1352,7 +1483,7 @@
               <svg id="seasonMenuIcon" style="width:16px; height:16px; fill:var(--accent-blue);" viewBox="0 0 24 24"><path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/></svg>
               <span id="seasonMenuLabel">Эффекты: Выкл</span>
             </div>
-            <div onclick="openAccountModal(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+            <div onclick="openAccountModal(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
               <svg style="width:16px; height:16px; fill:var(--accent-purple);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
               Аккаунт
             </div>
@@ -1438,6 +1569,7 @@
       </div>
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
+
 
     <div style="height: 80px;"></div>
   </div>
@@ -1756,6 +1888,19 @@
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
 
+    <div class="menu-item" onclick="openScreen('screenAdminKeys')" style="border-color: rgba(48, 209, 88, 0.35);">
+      <div class="menu-item-left">
+        <div class="menu-icon icon-green">
+          <svg viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Ключи доступа</h3>
+          <p>Создать ключ сотруднику</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+
     <div class="menu-item" onclick="openScreen('screenAdminPin')" style="border-color: rgba(142, 142, 147, 0.35);">
       <div class="menu-item-left">
         <div class="menu-icon" style="background:rgba(142,142,147,0.15);color:#8e8e93;">
@@ -1767,6 +1912,46 @@
         </div>
       </div>
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+  </div>
+
+  <!-- КЛЮЧИ (АДМИН) -->
+  <div id="screenAdminKeys" class="screen">
+    <div class="back-btn" onclick="openScreen('screenAdmin')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админ-панель
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Ключи доступа</h1>
+        <p>Для сотрудников</p>
+      </div>
+    </div>
+    <div class="card" id="adminDbStatusCard">
+      <div class="card-title">Статус базы</div>
+      <div id="adminDbStatus" style="font-size:14px;color:var(--text-sec);">Проверка…</div>
+      <button class="btn btn-blue" onclick="testSupabaseConnection(true)" style="margin-top:10px;height:42px;font-size:14px;">Проверить снова</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Создать ключ</div>
+      <div class="input-group">
+        <label>Имя (сотрудник)</label>
+        <input type="text" id="adminNewKeyName" placeholder="Иван">
+      </div>
+      <div class="input-group">
+        <label>Срок (дней)</label>
+        <input type="number" id="adminNewKeyDays" value="30" min="1" max="3650">
+      </div>
+      <button class="btn btn-orange" onclick="createAccessKey('admin')">Сгенерировать ключ</button>
+      <div id="adminNewKeyResult" style="display:none;margin-top:12px;text-align:center;">
+        <div style="font-size:12px;color:var(--text-sec);">Новый ключ</div>
+        <div id="adminNewKeyCode" style="font-size:22px;font-weight:800;letter-spacing:2px;color:var(--accent-blue);margin:8px 0;font-family:monospace;"></div>
+        <button class="btn btn-green" onclick="copyNewKeyCode()">Скопировать</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Все ключи</div>
+      <div id="adminAccessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
+      <button class="btn btn-blue" onclick="void refreshAccessKeysList()" style="margin-top:10px;">Обновить список</button>
     </div>
   </div>
 
@@ -1800,28 +1985,47 @@
 
   <!-- МЕНЮ СОЗДАТЕЛЯ -->
   <div id="screenCreator" class="screen">
-    <div class="back-btn" onclick="openScreen('screenMenu')">
-      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
+    <div class="back-btn" onclick="creatorGoBack()">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Назад
     </div>
     <div class="header">
       <div class="header-title">
         <h1>Создатель</h1>
-        <p>Служебный доступ</p>
+        <p>Ключи и облако</p>
       </div>
     </div>
+
     <div class="card">
       <div class="card-title">Текущий PIN админки</div>
-      <div style="text-align:center; padding: 18px 12px;">
-        <div style="font-size:13px; color:var(--text-sec); margin-bottom:8px;">Актуальный код</div>
-        <div id="creatorPinDisplay" style="font-size:42px; font-weight:800; letter-spacing:6px; color:var(--accent-orange);">••••</div>
+      <div style="text-align:center; padding: 12px;">
+        <div id="creatorPinDisplay" style="font-size:36px; font-weight:800; letter-spacing:6px; color:var(--accent-orange);">••••</div>
       </div>
       <button class="btn btn-green" onclick="copyCreatorPin()">Скопировать PIN</button>
     </div>
+
     <div class="card">
-      <div class="card-title">Инфо</div>
-      <p style="font-size:14px; color:var(--text-sec); line-height:1.45;">
-        Здесь всегда отображается свежий PIN админ-панели. Доступ только по паролю создателя.
+      <div class="card-title">Статус базы</div>
+      <div id="sbStatus" style="font-size:14px;line-height:1.45;color:var(--text-sec);">Проверка…</div>
+      <button class="btn btn-blue" onclick="testSupabaseConnection(true)" style="margin-top:12px;">Проверить подключение</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Режим входа</div>
+      <div class="option-btn" id="gateModeOff" onclick="setGateEnabled(false)">
+        <span>Открытый (без ключа)</span>
+      </div>
+      <div class="option-btn" id="gateModeOn" onclick="setGateEnabled(true)">
+        <span>Только по ключу</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-sec);margin-top:8px;line-height:1.4;">
+        Пока друг пользуется — держи «Открытый». Когда раздашь ключи — включи «Только по ключу».
       </p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Все ключи (из базы)</div>
+      <div id="accessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
+      <button class="btn btn-blue" onclick="void refreshAccessKeysList()" style="margin-top:10px;">Обновить список</button>
     </div>
   </div>
 
@@ -2073,6 +2277,8 @@
       </div>
       <button class="btn btn-green" onclick="saveGroqKeyFromAccount()" style="margin-bottom: 10px;">Сохранить ключ AI</button>
 
+      <div id="accountSessionInfo" style="font-size:13px;color:var(--text-sec);margin-bottom:12px;line-height:1.4;"></div>
+      <button class="btn btn-red-soft" id="accountLogoutBtn" onclick="logoutAccessKey()" style="display:none;margin-bottom:10px;">Выйти из ключа</button>
       <button class="btn btn-purple" onclick="backupProfile()" style="margin-bottom: 8px;">
         <svg viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/></svg>
         Сделать бекап профиля
@@ -2083,6 +2289,15 @@
       </button>
       <input type="file" id="profileFileInput" style="display: none;" accept=".json" onchange="restoreProfile(event)">
 
+    </div>
+  </div>
+
+  <!-- ДОБАВИТЬ НА ЭКРАН -->
+  <div class="modal-overlay" id="addHomeModal" onclick="closeAddHomeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-title">На экран «Домой»</div>
+      <div id="addHomeBody" style="font-size:14px;color:var(--text-sec);line-height:1.5;"></div>
+      <button class="btn btn-blue" id="addHomePrimaryBtn" onclick="closeAddHomeModal()" style="margin-top:16px;">Понятно</button>
     </div>
   </div>
 
@@ -2324,6 +2539,7 @@
       if (screenId === 'screenSalary') renderSalary();
       if (screenId === 'screenControl') renderControlPoints();
       if (screenId === 'screenCreator') renderCreatorScreen();
+      if (screenId === 'screenAdminKeys') renderAdminKeysScreen();
       if (screenId === 'screenAI') initAiScreen();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -2399,18 +2615,61 @@
       render();
     }
 
+    let cachedAdminPin = null;
+
     function getAdminPin() {
+      if (cachedAdminPin && String(cachedAdminPin).length) return String(cachedAdminPin);
       const pin = localStorage.getItem('ios_admin_pin');
       return pin && pin.length ? pin : '7272';
     }
-    function setAdminPin(pin) {
+
+    function setAdminPinLocal(pin) {
+      cachedAdminPin = String(pin);
       localStorage.setItem('ios_admin_pin', String(pin));
+    }
+
+    function setAdminPin(pin) {
+      setAdminPinLocal(pin);
+      // асинхронно в облако
+      pushAdminPinToCloud(pin).catch(function(e) {
+        console.warn('pin cloud', e);
+      });
+    }
+
+    async function pushAdminPinToCloud(pin) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'admin_pin',
+          value: String(pin),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+
+    async function fetchAdminPinFromCloud() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.admin_pin&select=value');
+        if (rows && rows[0] && rows[0].value) {
+          setAdminPinLocal(rows[0].value);
+          return rows[0].value;
+        }
+      } catch (e) {
+        console.warn('fetch pin', e);
+      }
+      return getAdminPin();
     }
 
     function openAdminAuthModal() {
       document.getElementById('adminPasswordInput').value = '';
       document.getElementById('adminAuthModal').classList.add('active');
-      setTimeout(() => document.getElementById('adminPasswordInput').focus(), 200);
+      setTimeout(function() { document.getElementById('adminPasswordInput').focus(); }, 200);
+      // подтянуть свежий PIN с сервера (тихо)
+      fetchAdminPinFromCloud().then(function() {
+        const el = document.getElementById('creatorPinDisplay');
+        if (el) el.textContent = getAdminPin();
+      });
     }
 
     function closeAdminAuthModal(e) {
@@ -2419,10 +2678,13 @@
       }
     }
 
-    function checkAdminPassword() {
+    async function checkAdminPassword() {
       const input = document.getElementById('adminPasswordInput');
       const val = input.value.trim();
       const modalBody = document.getElementById('adminAuthModalBody');
+      // свежий PIN с сервера перед проверкой
+      showToast('Проверка…');
+      try { await fetchAdminPinFromCloud(); } catch (e) {}
       if (val === getAdminPin()) {
         playAppStoreSound();
         closeAdminAuthModal();
@@ -2437,20 +2699,28 @@
       }
     }
 
-    function changeAdminPin() {
+    async function changeAdminPin() {
       const cur = (document.getElementById('pinCurrent').value || '').trim();
       const n1 = (document.getElementById('pinNew').value || '').trim();
       const n2 = (document.getElementById('pinNew2').value || '').trim();
+      try { await fetchAdminPinFromCloud(); } catch (e) {}
       if (cur !== getAdminPin()) return showToast('Неверный текущий PIN');
       if (!/^\d{4,8}$/.test(n1)) return showToast('Новый PIN: 4–8 цифр');
       if (n1 !== n2) return showToast('PIN не совпадает');
-      setAdminPin(n1);
+      setAdminPinLocal(n1);
+      try {
+        await pushAdminPinToCloud(n1);
+        showToast('PIN сохранён на сервере', true);
+      } catch (e) {
+        showToast('Локально ок, сервер: ' + (e.message || 'ошибка'));
+      }
       document.getElementById('pinCurrent').value = '';
       document.getElementById('pinNew').value = '';
       document.getElementById('pinNew2').value = '';
       playAppStoreSound();
       if (typeof triggerSuccessFlash === 'function') triggerSuccessFlash();
-      showToast('PIN обновлён', true);
+      const el = document.getElementById('creatorPinDisplay');
+      if (el) el.textContent = getAdminPin();
     }
 
     function openCreatorAuthModal() {
@@ -2480,10 +2750,6 @@
         showToast('Неверный пароль!');
         input.value = '';
       }
-    }
-    function renderCreatorScreen() {
-      const el = document.getElementById('creatorPinDisplay');
-      if (el) el.textContent = getAdminPin();
     }
     function copyCreatorPin() {
       navigator.clipboard.writeText(getAdminPin()).then(() => {
@@ -4160,13 +4426,568 @@
     }
 
 
-    // Облачная авторизация временно отключена
-    function scheduleCloudSave() { /* no-op */ }
+
+    // ============ ACCESS KEYS + SUPABASE ============
+    const USER_DATA_KEYS = [
+      'ios_multitool_data',
+      'ios_multitool_archive',
+      'ios_paid_amount',
+      'ios_month_shifts',
+      'ios_notes',
+      'ios_point_data',
+      'ios_employees',
+      'ios_payouts',
+      'ios_season_mode',
+      'ios_groq_key'
+    ];
+
+    const SUPABASE_SQL = `-- Выполни в Supabase → SQL Editor\ncreate table if not exists access_keys (\n  code text primary key,\n  name text not null,\n  expires_at timestamptz,\n  active boolean default true,\n  created_at timestamptz default now()\n);\ncreate table if not exists key_data (\n  code text primary key references access_keys(code) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz default now()\n);\nalter table access_keys enable row level security;\nalter table key_data enable row level security;\ncreate policy "anon_all_keys" on access_keys for all using (true) with check (true);\ncreate policy "anon_all_data" on key_data for all using (true) with check (true);`;
+
+    // Вшито в код — одна база на всех, кто открыл этот HTML
+    const DEFAULT_SB_URL = 'https://slbjwfdgoptqdchethch.supabase.co';
+    const DEFAULT_SB_KEY = 'sb_publishable_12H4vxr-VXYcoUhxYsOsuQ_TVfAkWEf';
+
+    function getSbConfig() {
+      try {
+        const raw = localStorage.getItem('ios_supabase_cfg');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.url && parsed.anon) return parsed;
+        }
+      } catch (e) {}
+      return { url: DEFAULT_SB_URL, anon: DEFAULT_SB_KEY };
+    }
+    function setDbStatusUI(ok, text) {
+      ['sbStatus', 'adminDbStatus'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = text;
+        el.style.color = ok ? 'var(--accent-green)' : 'var(--accent-red)';
+      });
+    }
+
+    async function testSupabaseConnection(showToastResult) {
+      setDbStatusUI(false, 'Проверка…');
+      const cfg = getSbConfig();
+      if (!cfg || !cfg.url || !cfg.anon) {
+        setDbStatusUI(false, 'Нет конфига базы в коде');
+        if (showToastResult) showToast('Нет конфига');
+        return false;
+      }
+      try {
+        // 1) ping REST
+        const res = await fetch(cfg.url + '/rest/v1/access_keys?select=code&limit=1', {
+          headers: {
+            'apikey': cfg.anon,
+            'Authorization': 'Bearer ' + cfg.anon
+          }
+        });
+        const text = await res.text();
+        if (!res.ok) {
+          let msg = 'HTTP ' + res.status;
+          try {
+            const j = JSON.parse(text);
+            msg = j.message || j.error || j.hint || msg;
+          } catch (e) {}
+          if (res.status === 404 || /relation|does not exist|schema cache/i.test(msg)) {
+            setDbStatusUI(false, 'База отвечает, но таблиц нет — выполни SQL в SQL Editor');
+          } else if (res.status === 401 || res.status === 403) {
+            setDbStatusUI(false, 'Ключ отклонён (401/403). Проверь publishable key');
+          } else {
+            setDbStatusUI(false, 'Ошибка: ' + msg);
+          }
+          if (showToastResult) showToast('База: ошибка');
+          return false;
+        }
+        let rows = [];
+        try { rows = JSON.parse(text) || []; } catch (e) {}
+        const n = Array.isArray(rows) ? rows.length : 0;
+        setDbStatusUI(true, 'OK · ' + cfg.url.replace('https://','') + ' · таблицы на месте · ключей в выборке: ' + n + '+');
+        if (showToastResult) showToast('База работает', true);
+        return true;
+      } catch (e) {
+        setDbStatusUI(false, 'Нет сети или CORS: ' + (e.message || 'ошибка'));
+        if (showToastResult) showToast('Нет связи с базой');
+        return false;
+      }
+    }
+    async function sbFetch(path, options) {
+      const cfg = getSbConfig();
+      if (!cfg) throw new Error('Нет Supabase');
+      const opts = options || {};
+      const headers = Object.assign({
+        'apikey': cfg.anon,
+        'Authorization': 'Bearer ' + cfg.anon,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }, opts.headers || {});
+      const ctrl = new AbortController();
+      const timer = setTimeout(function() { ctrl.abort(); }, 12000);
+      try {
+        const res = await fetch(cfg.url + '/rest/v1/' + path, Object.assign({}, opts, {
+          headers: headers,
+          signal: ctrl.signal
+        }));
+        const text = await res.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
+        if (!res.ok) {
+          const msg = (data && data.message) ? data.message
+            : (data && data.error) ? data.error
+            : (data && data.msg) ? data.msg
+            : ('HTTP ' + res.status);
+          throw new Error(msg);
+        }
+        return data;
+      } catch (e) {
+        if (e && e.name === 'AbortError') throw new Error('Таймаут (12с) — база не ответила');
+        throw e;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function isGateEnabled() {
+      return localStorage.getItem('ios_gate_enabled') === '1';
+    }
+    function setGateEnabled(on) {
+      localStorage.setItem('ios_gate_enabled', on ? '1' : '0');
+      updateGateModeUI();
+      playAppStoreSound();
+      showToast(on ? 'Вход только по ключу' : 'Открытый режим', true);
+    }
+    function updateGateModeUI() {
+      const on = isGateEnabled();
+      const a = document.getElementById('gateModeOn');
+      const b = document.getElementById('gateModeOff');
+      if (a) a.classList.toggle('selected', on);
+      if (b) b.classList.toggle('selected', !on);
+    }
+
+    function getSession() {
+      try { return JSON.parse(localStorage.getItem('ios_access_session') || 'null'); }
+      catch (e) { return null; }
+    }
+    function setSession(s) {
+      if (s) localStorage.setItem('ios_access_session', JSON.stringify(s));
+      else localStorage.removeItem('ios_access_session');
+    }
+    function clearSession() { setSession(null); }
+
+    function getLocalKeys() {
+      try { return JSON.parse(localStorage.getItem('ios_access_keys') || '[]'); }
+      catch (e) { return []; }
+    }
+    function saveLocalKeys(list) {
+      localStorage.setItem('ios_access_keys', JSON.stringify(list));
+    }
+
+    function genAccessCode() {
+      const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let a = '', b = '';
+      for (let i = 0; i < 4; i++) a += abc[Math.floor(Math.random() * abc.length)];
+      for (let i = 0; i < 4; i++) b += abc[Math.floor(Math.random() * abc.length)];
+      return 'MT-' + a + '-' + b;
+    }
+
+    function collectUserPayload() {
+      const payload = {};
+      USER_DATA_KEYS.forEach(function(k) {
+        payload[k] = localStorage.getItem(k);
+      });
+      payload._savedAt = new Date().toISOString();
+      return payload;
+    }
+
+    function applyUserPayload(payload) {
+      if (!payload || typeof payload !== 'object') return;
+      USER_DATA_KEYS.forEach(function(k) {
+        if (payload[k] === null || payload[k] === undefined) {
+          localStorage.removeItem(k);
+        } else {
+          localStorage.setItem(k, payload[k]);
+        }
+      });
+    }
+
+    function hasLocalUserData() {
+      try {
+        const d = JSON.parse(localStorage.getItem('ios_multitool_data') || '{}');
+        if (d.shifts && d.shifts.length) return true;
+      } catch (e) {}
+      try {
+        const a = JSON.parse(localStorage.getItem('ios_multitool_archive') || '[]');
+        if (a.length) return true;
+      } catch (e) {}
+      try {
+        const n = JSON.parse(localStorage.getItem('ios_notes') || '[]');
+        if (n.length) return true;
+      } catch (e) {}
+      return false;
+    }
+
+    let cloudSaveTimer = null;
+    function scheduleCloudSave() {
+      if (!getSession()) return;
+      if (!getSbConfig()) return;
+      clearTimeout(cloudSaveTimer);
+      cloudSaveTimer = setTimeout(function() { pushKeyDataToCloud(); }, 800);
+    }
+
+    async function pushKeyDataToCloud() {
+      const session = getSession();
+      const cfg = getSbConfig();
+      if (!session || !cfg) return;
+      try {
+        const payload = collectUserPayload();
+        await sbFetch('key_data?on_conflict=code', {
+          method: 'POST',
+          headers: {
+            'Prefer': 'resolution=merge-duplicates,return=minimal'
+          },
+          body: JSON.stringify({
+            code: session.code,
+            payload: payload,
+            updated_at: new Date().toISOString()
+          })
+        });
+      } catch (e) {
+        console.warn('cloud save', e);
+      }
+    }
+
+    async function pullKeyDataFromCloud(code) {
+      const rows = await sbFetch('key_data?code=eq.' + encodeURIComponent(code) + '&select=payload');
+      if (rows && rows[0] && rows[0].payload) return rows[0].payload;
+      return null;
+    }
+
+    async function findKeyRecord(code) {
+      const normalized = String(code || '').trim().toUpperCase();
+      const cfg = getSbConfig();
+      if (cfg) {
+        try {
+          const rows = await sbFetch('access_keys?code=eq.' + encodeURIComponent(normalized) + '&select=*');
+          if (rows && rows[0]) return rows[0];
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+      const local = getLocalKeys().find(function(k) { return k.code === normalized; });
+      return local || null;
+    }
+
+    function keyIsValid(rec) {
+      if (!rec) return { ok: false, reason: 'Ключ не найден' };
+      if (rec.active === false) return { ok: false, reason: 'Ключ отключён' };
+      if (rec.expires_at) {
+        const exp = new Date(rec.expires_at).getTime();
+        if (!isNaN(exp) && Date.now() > exp) return { ok: false, reason: 'Срок ключа истёк' };
+      }
+      return { ok: true };
+    }
+
+    let pendingBind = null;
+
+    async function submitAccessKey() {
+      const input = document.getElementById('gateKeyInput');
+      const code = (input && input.value || '').trim().toUpperCase();
+      if (!code) return showToast('Введи ключ');
+      showToast('Проверяем…');
+      try {
+        const rec = await findKeyRecord(code);
+        const check = keyIsValid(rec);
+        if (!check.ok) return showToast(check.reason);
+
+        const session = {
+          code: rec.code,
+          name: rec.name || 'Сотрудник',
+          expires_at: rec.expires_at || null
+        };
+
+        let remote = null;
+        if (getSbConfig()) {
+          try { remote = await pullKeyDataFromCloud(rec.code); } catch (e) {}
+        }
+
+        const localHas = hasLocalUserData();
+        const remoteHas = remote && (remote.ios_multitool_data || remote.ios_multitool_archive || remote.ios_notes);
+
+        if (localHas && !remoteHas) {
+          pendingBind = { session: session, remote: remote };
+          setSession(session);
+          const card = document.getElementById('gateBindCard');
+          if (card) card.style.display = 'block';
+          showToast('Найдены локальные данные');
+          return;
+        }
+
+        if (remoteHas) {
+          applyUserPayload(remote);
+        }
+
+        setSession(session);
+        playAppStoreSound();
+        finishGateLogin();
+      } catch (e) {
+        showToast(e.message || 'Ошибка входа');
+      }
+    }
+
+    async function bindLocalDataToKey() {
+      if (!pendingBind) return finishGateLogin();
+      setSession(pendingBind.session);
+      await pushKeyDataToCloud();
+      pendingBind = null;
+      const card = document.getElementById('gateBindCard');
+      if (card) card.style.display = 'none';
+      playAppStoreSound();
+      showToast('Данные привязаны к ключу', true);
+      finishGateLogin();
+    }
+
+    function skipBindLocalData() {
+      if (pendingBind && pendingBind.remote) {
+        applyUserPayload(pendingBind.remote);
+      }
+      if (pendingBind) setSession(pendingBind.session);
+      pendingBind = null;
+      const card = document.getElementById('gateBindCard');
+      if (card) card.style.display = 'none';
+      finishGateLogin();
+    }
+
+    function finishGateLogin() {
+      render();
+      renderNotes();
+      openScreen('screenMenu');
+      showToast('Вход выполнен', true);
+    }
+
+    function logoutAccessKey() {
+      clearSession();
+      showToast('Вы вышли');
+      bootAccessGate();
+    }
+
+    async function createAccessKey(source) {
+      const isAdmin = source === 'admin';
+      const nameEl = document.getElementById(isAdmin ? 'adminNewKeyName' : 'newKeyName');
+      const daysEl = document.getElementById(isAdmin ? 'adminNewKeyDays' : 'newKeyDays');
+      const name = (nameEl && nameEl.value || '').trim();
+      const days = parseInt((daysEl && daysEl.value || '30'), 10);
+      if (!name) return showToast('Укажи имя');
+      if (!days || days < 1) return showToast('Срок в днях');
+      const code = genAccessCode();
+      const expires = new Date();
+      expires.setDate(expires.getDate() + days);
+      const rec = {
+        code: code,
+        name: name,
+        expires_at: expires.toISOString(),
+        active: true,
+        created_at: new Date().toISOString()
+      };
+
+      const list = getLocalKeys();
+      list.unshift(rec);
+      saveLocalKeys(list);
+
+      let cloudOk = false;
+      try {
+        await sbFetch('access_keys', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify(rec)
+        });
+        await sbFetch('key_data', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ code: code, payload: {}, updated_at: new Date().toISOString() })
+        });
+        cloudOk = true;
+      } catch (e) {
+        showToast('Облако: ' + e.message);
+      }
+
+      if (nameEl) nameEl.value = '';
+      const resId = isAdmin ? 'adminNewKeyResult' : 'newKeyResult';
+      const codeId = isAdmin ? 'adminNewKeyCode' : 'newKeyCode';
+      const resEl = document.getElementById(resId);
+      const codeEl = document.getElementById(codeId);
+      if (resEl) resEl.style.display = 'block';
+      if (codeEl) codeEl.textContent = code;
+      window._lastNewKey = code;
+      playAppStoreSound();
+      showToast(cloudOk ? 'Ключ в базе' : 'Ключ только локально', cloudOk);
+      refreshAccessKeysList();
+    }
+
+    function copyNewKeyCode() {
+      const c = window._lastNewKey || (document.getElementById('newKeyCode') && document.getElementById('newKeyCode').textContent);
+      if (!c) return;
+      navigator.clipboard.writeText(c).then(() => showToast('Ключ скопирован', true));
+    }
+
+    async function refreshAccessKeysList() {
+      const boxes = [document.getElementById('accessKeysList'), document.getElementById('adminAccessKeysList')].filter(Boolean);
+      if (!boxes.length) {
+        showToast('Список не найден на экране');
+        return;
+      }
+
+      boxes.forEach(function(box) {
+        box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Обновляю…</div>';
+      });
+
+      let list = [];
+      let err = null;
+      try {
+        const data = await sbFetch('access_keys?select=*&order=created_at.desc');
+        list = Array.isArray(data) ? data : [];
+      } catch (e) {
+        err = (e && e.message) ? e.message : 'ошибка';
+        list = getLocalKeys();
+      }
+
+      boxes.forEach(function(box) {
+        if (!list.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">' +
+            (err ? ('База: ' + escapeHtml(String(err)) + ' · ключей нет') : 'Ключей пока нет') +
+            '</div>';
+          return;
+        }
+        let h = '';
+        if (err) {
+          h += '<div style="color:var(--accent-orange);font-size:12px;margin-bottom:8px;">Облако: ' +
+            escapeHtml(String(err)) + ' · локальный список</div>';
+        }
+        list.forEach(function(k) {
+          const check = keyIsValid(k);
+          const badge = check.ok
+            ? '<span class="key-badge ok">активен</span>'
+            : ('<span class="key-badge ' + (k.active === false ? 'off' : 'exp') + '">' +
+              escapeHtml(check.reason || 'нет') + '</span>');
+          const exp = k.expires_at ? new Date(k.expires_at).toLocaleDateString('ru-RU') : '∞';
+          const codeSafe = String(k.code || '').replace(/\\/g, '').replace(/'/g, '');
+          h += '<div class="key-item">' +
+            '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(k.name || '') + '</div>' + badge + '</div>' +
+            '<div class="key-item-code">' + escapeHtml(k.code || '') + '</div>' +
+            '<div class="key-item-meta">до ' + exp + '</div>' +
+            '<div style="display:flex;gap:8px;margin-top:8px;">' +
+              '<button type="button" class="btn btn-green" style="height:36px;font-size:13px;margin:0;" data-code="' +
+                escapeHtml(codeSafe) + '" onclick="copyAccessKeyCode(this)">Копировать</button>' +
+              (k.active === false
+                ? '<button type="button" class="btn btn-blue" style="height:36px;font-size:13px;margin:0;" onclick="setKeyActive(\'' + codeSafe + '\',true)">Включить</button>'
+                : '<button type="button" class="btn btn-red-soft" style="height:36px;font-size:13px;margin:0;" onclick="setKeyActive(\'' + codeSafe + '\',false)">Отключить</button>') +
+            '</div></div>';
+        });
+        box.innerHTML = h;
+      });
+
+      if (err) showToast('База: ' + err);
+      else showToast('Список обновлён · ' + list.length, true);
+    }
+
+    function copyAccessKeyCode(btn) {
+      const code = btn && btn.getAttribute('data-code');
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(function() {
+        showToast('Скопировано', true);
+      }).catch(function() {
+        showToast('Не удалось скопировать');
+      });
+    }
+
+    async function setKeyActive(code, active) {
+      let list = getLocalKeys();
+      list = list.map(function(k) {
+        if (k.code === code) k.active = active;
+        return k;
+      });
+      saveLocalKeys(list);
+      if (getSbConfig()) {
+        try {
+          await sbFetch('access_keys?code=eq.' + encodeURIComponent(code), {
+            method: 'PATCH',
+            headers: { 'Prefer': 'return=minimal' },
+            body: JSON.stringify({ active: active })
+          });
+        } catch (e) {
+          showToast('Облако: ' + e.message);
+        }
+      }
+      showToast(active ? 'Ключ включён' : 'Ключ отключён', true);
+      refreshAccessKeysList();
+    }
+
+    function creatorGoBack() {
+      if (isGateEnabled() && !getSession()) openScreen('screenGate');
+      else openScreen('screenMenu');
+    }
+
+    function renderCreatorScreen() {
+      const el = document.getElementById('creatorPinDisplay');
+      if (el) el.textContent = getAdminPin();
+      updateGateModeUI();
+      testSupabaseConnection(false);
+      refreshAccessKeysList();
+      fetchAdminPinFromCloud().then(function(p) {
+        if (el) el.textContent = p || getAdminPin();
+      });
+    }
+
+    function renderAdminKeysScreen() {
+      testSupabaseConnection(false);
+      refreshAccessKeysList();
+    }
+
+    function bootAccessGate() {
+      // Creator path always available via online bar
+      if (!isGateEnabled()) {
+        // open mode — show menu
+        document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+        const menu = document.getElementById('screenMenu');
+        if (menu) menu.classList.add('active');
+        return;
+      }
+      const session = getSession();
+      if (session) {
+        // re-validate expiry quickly from session field
+        if (session.expires_at && Date.now() > new Date(session.expires_at).getTime()) {
+          clearSession();
+          document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+          const gate = document.getElementById('screenGate');
+          if (gate) gate.classList.add('active');
+          showToast('Срок ключа истёк');
+          return;
+        }
+        document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+        const menu = document.getElementById('screenMenu');
+        if (menu) menu.classList.add('active');
+        return;
+      }
+      document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+      const gate = document.getElementById('screenGate');
+      if (gate) gate.classList.add('active');
+    }
+
 
     // ============ АККАУНТ ============
     function openAccountModal() {
       const k = document.getElementById('accountGroqKey');
       if (k) k.value = getGroqKey() || '';
+      const sess = getSession();
+      const info = document.getElementById('accountSessionInfo');
+      const logoutBtn = document.getElementById('accountLogoutBtn');
+      if (info) {
+        if (sess) {
+          info.textContent = 'Ключ: ' + sess.name + ' · ' + sess.code + (sess.expires_at ? (' · до ' + new Date(sess.expires_at).toLocaleDateString('ru-RU')) : '');
+        } else {
+          info.textContent = isGateEnabled() ? 'Нет активного ключа' : 'Открытый режим (ключ не обязателен)';
+        }
+      }
+      if (logoutBtn) logoutBtn.style.display = sess ? 'flex' : 'none';
       document.getElementById('accountModal').classList.add('active');
     }
     function closeAccountModal(e) {
@@ -4254,8 +5075,137 @@
       reader.readAsText(file);
     }
 
+
+    // ============ ADD TO HOME SCREEN ============
+    let deferredInstallPrompt = null;
+
+    (function setupPwaManifest() {
+      try {
+        const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230a84ff'/%3E%3Ctext x='256' y='330' text-anchor='middle' font-size='260' font-family='system-ui,sans-serif' font-weight='700' fill='white'%3EM%3C/text%3E%3C/svg%3E";
+        const manifest = {
+          name: 'Мультитул',
+          short_name: 'Мультитул',
+          start_url: '.',
+          display: 'standalone',
+          background_color: '#000000',
+          theme_color: '#000000',
+          icons: [
+            { src: icon, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+          ]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        let link = document.querySelector('link[rel="manifest"]');
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'manifest';
+          document.head.appendChild(link);
+        }
+        link.href = url;
+      } catch (e) {}
+    })();
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+    });
+
+    function isIos() {
+      return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+    function isAndroid() {
+      return /android/i.test(navigator.userAgent);
+    }
+    function isStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
+    function updateAddHomeFabVisibility() {
+      const fab = document.getElementById('addHomeFab');
+      if (!fab) return;
+      if (isStandalone()) fab.classList.add('hidden');
+      else fab.classList.remove('hidden');
+    }
+
+    function closeAddHomeModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        const m = document.getElementById('addHomeModal');
+        if (m) m.classList.remove('active');
+      }
+    }
+
+    function openAddHomeModal(html, primaryLabel, primaryFn) {
+      const body = document.getElementById('addHomeBody');
+      const btn = document.getElementById('addHomePrimaryBtn');
+      if (body) body.innerHTML = html;
+      if (btn) {
+        btn.textContent = primaryLabel || 'Понятно';
+        btn.onclick = function() {
+          document.getElementById('addHomeModal').classList.remove('active');
+          if (typeof primaryFn === 'function') primaryFn();
+        };
+      }
+      document.getElementById('addHomeModal').classList.add('active');
+    }
+
+    async function promptAddToHome() {
+      if (isStandalone()) {
+        updateAddHomeFabVisibility();
+        showToast('Уже на экране «Домой»', true);
+        return;
+      }
+
+      if (deferredInstallPrompt) {
+        try {
+          deferredInstallPrompt.prompt();
+          const choice = await deferredInstallPrompt.userChoice;
+          deferredInstallPrompt = null;
+          if (choice && choice.outcome === 'accepted') {
+            showToast('Добавлено', true);
+            updateAddHomeFabVisibility();
+          }
+        } catch (e) {
+          showToast('Не удалось открыть установку');
+        }
+        return;
+      }
+
+      if (isIos()) {
+        openAddHomeModal(
+          '<p style="margin-bottom:12px;color:#fff;font-weight:600;">iPhone / iPad (Safari)</p>' +
+          '<p>1. Нажми кнопку <b style="color:#fff;">Поделиться</b> <span style="color:var(--accent-blue);">⬆</span> внизу Safari</p>' +
+          '<p style="margin-top:8px;">2. Прокрути и выбери <b style="color:#fff;">«На экран „Домой“»</b></p>' +
+          '<p style="margin-top:8px;">3. Нажми <b style="color:#fff;">Добавить</b></p>' +
+          '<p style="margin-top:12px;font-size:12px;">Если заходишь не через Safari (Telegram / Chrome) — открой сайт в Safari.</p>',
+          'Понятно'
+        );
+        return;
+      }
+
+      if (isAndroid()) {
+        openAddHomeModal(
+          '<p style="margin-bottom:12px;color:#fff;font-weight:600;">Android (Chrome)</p>' +
+          '<p>1. Нажми <b style="color:#fff;">⋮</b> в правом верхнем углу Chrome</p>' +
+          '<p style="margin-top:8px;">2. Выбери <b style="color:#fff;">«Установить приложение»</b> или <b style="color:#fff;">«На главный экран»</b></p>' +
+          '<p style="margin-top:12px;font-size:12px;">Если пункта нет — обнови Chrome или открой сайт ещё раз.</p>',
+          'Понятно'
+        );
+        return;
+      }
+
+      openAddHomeModal(
+        '<p>В меню браузера найди пункт <b style="color:#fff;">«Установить»</b> или <b style="color:#fff;">«Добавить на главный экран»</b>.</p>',
+        'Понятно'
+      );
+    }
+
+
     render();
     renderNotes();
+    bootAccessGate();
+    fetchAdminPinFromCloud();
+    updateAddHomeFabVisibility();
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', updateAddHomeFabVisibility);
   </script>
 </body>
 </html>
