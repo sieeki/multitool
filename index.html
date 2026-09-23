@@ -852,6 +852,18 @@
       border-radius: 12px;
     }
     .stat-num { font-size: 20px; font-weight: 700; color: var(--accent-blue); margin-top: 4px; }
+    .peek-page { padding-bottom: 110px; }
+    .peek-page .stat-grid { margin-bottom: 14px; }
+    .peek-shift {
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .peek-shift:last-child { border-bottom: none; }
+    .peek-shift b { font-size: 15px; }
+    .peek-shift .peek-sum { text-align: right; font-weight: 700; font-size: 15px; }
+    .peek-shift .peek-sub { color: var(--text-sec); font-size: 12px; margin-top: 3px; font-weight: 500; }
+    #peekMeta { word-break: break-all; }
 
     .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .cal-title { font-size: 16px; font-weight: 600; }
@@ -2036,9 +2048,45 @@
     </div>
 
     <div class="card">
+      <div class="card-title">Аккаунты и недельки</div>
+      <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
+        Открой профиль — увидишь смены человека, не трогая свои данные.
+      </p>
+      <div id="peekAccountsList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
+      <button class="btn btn-blue" onclick="void refreshPeekAccounts()" style="margin-top:10px;">Обновить аккаунты</button>
+    </div>
+
+    <div class="card">
       <div class="card-title">Все ключи (из базы)</div>
       <div id="accessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
       <button class="btn btn-blue" onclick="void refreshAccessKeysList()" style="margin-top:10px;">Обновить список</button>
+    </div>
+  </div>
+
+  <div id="screenPeekAccount" class="screen">
+    <div class="peek-page">
+    <div class="back-btn" onclick="openScreen('screenCreator')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Создатель
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1 id="peekName">Профиль</h1>
+        <p id="peekMeta">облачные данные ключа</p>
+      </div>
+    </div>
+    <div class="stat-grid" id="peekStats"></div>
+    <div class="card" id="peekWeekCard">
+      <div class="card-title">Текущая неделя</div>
+      <div id="peekWeek"></div>
+    </div>
+    <div class="card" id="peekDedCard">
+      <div class="card-title">Вычеты</div>
+      <div id="peekDeductions"></div>
+    </div>
+    <div class="card" id="peekArcCard">
+      <div class="card-title">Архив недель</div>
+      <div id="peekArchive"></div>
+    </div>
     </div>
   </div>
 
@@ -2551,7 +2599,7 @@
       if (screenId === 'screenEmployees') renderEmployees();
       if (screenId === 'screenSalary') renderSalary();
       if (screenId === 'screenControl') renderControlPoints();
-      if (screenId === 'screenCreator') renderCreatorScreen();
+      if (screenId === 'screenCreator') { renderCreatorScreen(); refreshPeekAccounts(); }
       if (screenId === 'screenAdminKeys') renderAdminKeysScreen();
       if (screenId === 'screenAI') initAiScreen();
       if (screenId === 'screenAdmin' || screenId === 'screenControl' || screenId === 'screenLocations' || screenId === 'screenEmployees' || screenId === 'screenPointDetail' || screenId === 'screenCreator') {
@@ -5593,6 +5641,159 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       );
     }
 
+
+
+
+    function parseMaybeJson(v) {
+      if (v == null) return null;
+      if (typeof v === 'object') return v;
+      try { return JSON.parse(v); } catch (e) { return null; }
+    }
+
+    function summarizePayload(payload) {
+      const data = parseMaybeJson(payload && payload.ios_multitool_data) || { shifts: [], deductions: [] };
+      const paid = parseFloat(payload && payload.ios_paid_amount != null ? payload.ios_paid_amount : 1300) || 1300;
+      const shifts = data.shifts || [];
+      const deductions = data.deductions || [];
+      let rev = 0, toPay = 0;
+      shifts.forEach(function(s) {
+        const total = Number(s.total) || 0;
+        rev += total;
+        toPay += 2300 + Math.round(total * 0.03);
+      });
+      let dedSum = 0;
+      deductions.forEach(function(d) { dedSum += Number(d.amount) || 0; });
+      const paidTotal = paid * shifts.length;
+      const remain = toPay - paidTotal - dedSum;
+      const archive = parseMaybeJson(payload && payload.ios_multitool_archive) || [];
+      return {
+        shifts: shifts,
+        deductions: deductions,
+        archive: Array.isArray(archive) ? archive : [],
+        paidRate: paid,
+        paid: paidTotal,
+        rev: rev,
+        toPay: toPay,
+        remain: remain,
+        savedAt: payload && payload._savedAt
+      };
+    }
+
+    async function refreshPeekAccounts() {
+      const box = document.getElementById('peekAccountsList');
+      if (!box) return;
+      box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Гружу аккаунты…</div>';
+      try {
+        const keys = await sbFetch('access_keys?select=*&order=created_at.desc') || [];
+        let dataRows = [];
+        try { dataRows = await sbFetch('key_data?select=code,payload,updated_at') || []; } catch (e) {}
+        const byCode = {};
+        dataRows.forEach(function(r) { byCode[r.code] = r; });
+        if (!keys.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Ключей пока нет</div>';
+          return;
+        }
+        let h = '';
+        keys.forEach(function(k) {
+          const row = byCode[k.code] || {};
+          const payload = row.payload || {};
+          const sum = summarizePayload(payload);
+          const when = sum.savedAt || row.updated_at;
+          const whenTxt = when ? formatStoryTimeSafe(when) : 'ещё не заходил';
+          const codeSafe = String(k.code || '').replace(/'/g, '');
+          h += '<div class="key-item" onclick="openPeekAccount(\'' + codeSafe + '\')" style="cursor:pointer;">' +
+            '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(k.name || 'Без имени') + '</div>' +
+            (k.active === false ? '<span class="key-badge off">выкл</span>' : '<span class="key-badge ok">аккаунт</span>') + '</div>' +
+            '<div class="key-item-code">' + escapeHtml(k.code || '') + '</div>' +
+            '<div class="key-item-meta">' + sum.shifts.length + ' смен · ' + Number(sum.rev).toLocaleString('ru-RU') + ' ₽ · ' + escapeHtml(whenTxt) + '</div>' +
+            '</div>';
+        });
+        box.innerHTML = h;
+      } catch (e) {
+        box.innerHTML = '<div style="color:var(--accent-orange);font-size:13px;">' + escapeHtml(e.message || 'ошибка базы') + '</div>';
+      }
+    }
+
+    function formatStoryTimeSafe(iso) {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      const t = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      const now = new Date();
+      if (d.toDateString() === now.toDateString()) return 'сегодня ' + t;
+      return d.toLocaleDateString('ru-RU') + ' ' + t;
+    }
+
+    async function openPeekAccount(code) {
+      if (!code) return;
+      openScreen('screenPeekAccount');
+      const nameEl = document.getElementById('peekName');
+      const metaEl = document.getElementById('peekMeta');
+      const statsEl = document.getElementById('peekStats');
+      const weekEl = document.getElementById('peekWeek');
+      const dedEl = document.getElementById('peekDeductions');
+      const arcEl = document.getElementById('peekArchive');
+      if (nameEl) nameEl.textContent = 'Загрузка…';
+      if (weekEl) weekEl.textContent = '';
+      try {
+        const keys = await sbFetch('access_keys?code=eq.' + encodeURIComponent(code) + '&select=*');
+        const rec = keys && keys[0] ? keys[0] : { code: code, name: code };
+        const rows = await sbFetch('key_data?code=eq.' + encodeURIComponent(code) + '&select=payload,updated_at');
+        const payload = rows && rows[0] && rows[0].payload ? rows[0].payload : {};
+        const sum = summarizePayload(payload);
+        if (nameEl) nameEl.textContent = rec.name || 'Сотрудник';
+        if (metaEl) metaEl.textContent = rec.code + (sum.savedAt || (rows && rows[0] && rows[0].updated_at) ? ' · обновлено ' + formatStoryTimeSafe(sum.savedAt || rows[0].updated_at) : ' · пустой профиль');
+        if (statsEl) {
+          statsEl.innerHTML =
+            '<div class="stat-box"><div class="card-title" style="margin:0;">Смен</div><div class="stat-num">' + sum.shifts.length + '</div></div>' +
+            '<div class="stat-box"><div class="card-title" style="margin:0;">Выручка</div><div class="stat-num">' + Number(sum.rev).toLocaleString('ru-RU') + ' ₽</div></div>' +
+            '<div class="stat-box"><div class="card-title" style="margin:0;">К выплате</div><div class="stat-num">' + Number(sum.toPay).toLocaleString('ru-RU') + ' ₽</div></div>' +
+            '<div class="stat-box"><div class="card-title" style="margin:0;">Выплачено</div><div class="stat-num">' + Number(sum.paid).toLocaleString('ru-RU') + ' ₽</div></div>' +
+            '<div class="stat-box" style="grid-column:1 / -1;"><div class="card-title" style="margin:0;">Остаток</div><div class="stat-num" style="color:var(--accent-green);">' + Number(sum.remain).toLocaleString('ru-RU') + ' ₽</div></div>';
+        }
+        if (weekEl) {
+          if (!sum.shifts.length) weekEl.innerHTML = '<span style="color:var(--text-sec);">Неделя пустая</span>';
+          else {
+            let htmlw = '';
+            sum.shifts.forEach(function(s, i) {
+              const total = Number(s.total) || 0;
+              const toPay = 2300 + Math.round(total * 0.03);
+              htmlw += '<div class="peek-shift">' +
+                '<div><b>' + escapeHtml(s.date || ('Смена ' + (i+1))) + '</b><div class="peek-sub">выручка</div></div>' +
+                '<div class="peek-sum">' + total.toLocaleString('ru-RU') + ' ₽<div class="peek-sub">к выплате ' + toPay.toLocaleString('ru-RU') + ' ₽</div></div>' +
+                '</div>';
+            });
+            weekEl.innerHTML = htmlw;
+          }
+        }
+        const dedCard = document.getElementById('peekDedCard');
+        if (dedEl) {
+          if (!sum.deductions.length) {
+            if (dedCard) dedCard.style.display = 'none';
+          } else {
+            if (dedCard) dedCard.style.display = '';
+            dedEl.innerHTML = sum.deductions.map(function(d) {
+              return '<div class="peek-shift"><div><b>' + escapeHtml(d.reason || 'Вычет') + '</b></div><div class="peek-sum" style="color:var(--accent-orange);">−' + Number(d.amount || 0).toLocaleString('ru-RU') + ' ₽</div></div>';
+            }).join('');
+          }
+        }
+        const arcCard = document.getElementById('peekArcCard');
+        if (arcEl) {
+          if (!sum.archive.length) {
+            if (arcCard) arcCard.style.display = 'none';
+          } else {
+            if (arcCard) arcCard.style.display = '';
+            arcEl.innerHTML = sum.archive.map(function(w, i) {
+              const n = (w.shifts && w.shifts.length) || w.shiftsCount || 0;
+              const label = w.from && w.to ? (w.from + ' — ' + w.to) : ('Неделя ' + (i+1));
+              return '<div class="peek-shift"><div><b>' + escapeHtml(label) + '</b></div><div class="peek-sum">' + n + ' смен</div></div>';
+            }).join('');
+          }
+        }
+      } catch (e) {
+        if (nameEl) nameEl.textContent = 'Ошибка';
+        if (weekEl) weekEl.textContent = e.message || 'нет данных';
+      }
+    }
 
 
     render();
