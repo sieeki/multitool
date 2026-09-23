@@ -1941,6 +1941,9 @@
         <label>Срок (дней)</label>
         <input type="number" id="adminNewKeyDays" value="30" min="1" max="3650">
       </div>
+      <div class="option-btn" id="adminEternalOpt" onclick="toggleEternalKey()">
+        <span>Вечный ключ (без срока)</span>
+      </div>
       <button class="btn btn-orange" onclick="createAccessKey('admin')">Сгенерировать ключ</button>
       <div id="adminNewKeyResult" style="display:none;margin-top:12px;text-align:center;">
         <div style="font-size:12px;color:var(--text-sec);">Новый ключ</div>
@@ -2018,7 +2021,7 @@
         <span>Только по ключу</span>
       </div>
       <p style="font-size:12px;color:var(--text-sec);margin-top:8px;line-height:1.4;">
-        Пока друг пользуется — держи «Открытый». Когда раздашь ключи — включи «Только по ключу».
+        Переключатель общий для всех. Включил здесь — у друга и остальных сразу просит ключ (после обновления страницы).
       </p>
     </div>
 
@@ -2541,6 +2544,15 @@
       if (screenId === 'screenCreator') renderCreatorScreen();
       if (screenId === 'screenAdminKeys') renderAdminKeysScreen();
       if (screenId === 'screenAI') initAiScreen();
+      if (screenId === 'screenAdmin' || screenId === 'screenControl' || screenId === 'screenLocations' || screenId === 'screenEmployees' || screenId === 'screenPointDetail' || screenId === 'screenCreator') {
+        pullAdminSharedData().then(function(changed) {
+          if (!changed) return;
+          if (screenId === 'screenControl') renderControlPoints();
+          if (screenId === 'screenLocations') renderLocationsList();
+          if (screenId === 'screenEmployees') renderEmployees();
+          if (screenId === 'screenPointDetail') renderPointDetail();
+        });
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2885,6 +2897,7 @@
       all[key] = data;
       localStorage.setItem('ios_point_data', JSON.stringify(all));
       scheduleCloudSave();
+      scheduleAdminCloudSave();
     }
 
     function renderLocationsList() {
@@ -3319,6 +3332,7 @@
     function saveEmployees(list) {
       localStorage.setItem('ios_employees', JSON.stringify(list));
       scheduleCloudSave();
+      scheduleAdminCloudSave();
     }
     function getEmployeeById(id) {
       if (!id) return null;
@@ -3433,6 +3447,7 @@
       });
       localStorage.setItem('ios_point_data', JSON.stringify(all));
       scheduleCloudSave();
+      scheduleAdminCloudSave();
 
       closeConfirm();
       renderEmployees();
@@ -4550,11 +4565,42 @@
     function isGateEnabled() {
       return localStorage.getItem('ios_gate_enabled') === '1';
     }
-    function setGateEnabled(on) {
+    function cacheGateEnabled(on) {
       localStorage.setItem('ios_gate_enabled', on ? '1' : '0');
+    }
+    async function fetchGateFromCloud() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.gate_enabled&select=value');
+        if (rows && rows[0] && rows[0].value != null) {
+          const on = String(rows[0].value) === '1' || String(rows[0].value) === 'true';
+          cacheGateEnabled(on);
+          updateGateModeUI();
+          return on;
+        }
+      } catch (e) {
+        console.warn('gate fetch', e);
+      }
+      return isGateEnabled();
+    }
+    async function setGateEnabled(on) {
+      cacheGateEnabled(on);
       updateGateModeUI();
       playAppStoreSound();
-      showToast(on ? 'Вход только по ключу' : 'Открытый режим', true);
+      showToast('Сохраняю режим на сервер…');
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({
+            key: 'gate_enabled',
+            value: on ? '1' : '0',
+            updated_at: new Date().toISOString()
+          })
+        });
+        showToast(on ? 'У всех вход только по ключу' : 'У всех открытый режим', true);
+      } catch (e) {
+        showToast('Не записалось в базу: ' + (e.message || 'ошибка'));
+      }
     }
     function updateGateModeUI() {
       const on = isGateEnabled();
@@ -4632,6 +4678,70 @@
       if (!getSbConfig()) return;
       clearTimeout(cloudSaveTimer);
       cloudSaveTimer = setTimeout(function() { pushKeyDataToCloud(); }, 800);
+    }
+
+    let adminSaveTimer = null;
+    function scheduleAdminCloudSave() {
+      clearTimeout(adminSaveTimer);
+      adminSaveTimer = setTimeout(function() { pushAdminSharedData(); }, 400);
+    }
+
+    function collectAdminSharedPayload() {
+      return {
+        ios_employees: localStorage.getItem('ios_employees'),
+        ios_point_data: localStorage.getItem('ios_point_data'),
+        _savedAt: new Date().toISOString()
+      };
+    }
+
+    function applyAdminSharedPayload(payload) {
+      if (!payload || typeof payload !== 'object') return false;
+      let changed = false;
+      if (payload.ios_employees !== undefined && payload.ios_employees !== null) {
+        if (localStorage.getItem('ios_employees') !== payload.ios_employees) {
+          localStorage.setItem('ios_employees', payload.ios_employees);
+          changed = true;
+        }
+      }
+      if (payload.ios_point_data !== undefined && payload.ios_point_data !== null) {
+        if (localStorage.getItem('ios_point_data') !== payload.ios_point_data) {
+          localStorage.setItem('ios_point_data', payload.ios_point_data);
+          changed = true;
+        }
+      }
+      return changed;
+    }
+
+    async function pushAdminSharedData() {
+      try {
+        const payload = collectAdminSharedPayload();
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({
+            key: 'admin_shared',
+            value: JSON.stringify(payload),
+            updated_at: new Date().toISOString()
+          })
+        });
+      } catch (e) {
+        console.warn('admin shared save', e);
+      }
+    }
+
+    async function pullAdminSharedData() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.admin_shared&select=value');
+        if (!rows || !rows[0] || !rows[0].value) return false;
+        let payload = rows[0].value;
+        if (typeof payload === 'string') {
+          try { payload = JSON.parse(payload); } catch (e) { return false; }
+        }
+        return applyAdminSharedPayload(payload);
+      } catch (e) {
+        console.warn('admin shared pull', e);
+        return false;
+      }
     }
 
     async function pushKeyDataToCloud() {
@@ -4775,16 +4885,15 @@
       const nameEl = document.getElementById(isAdmin ? 'adminNewKeyName' : 'newKeyName');
       const daysEl = document.getElementById(isAdmin ? 'adminNewKeyDays' : 'newKeyDays');
       const name = (nameEl && nameEl.value || '').trim();
+      const eternal = !!window._eternalKey;
       const days = parseInt((daysEl && daysEl.value || '30'), 10);
       if (!name) return showToast('Укажи имя');
-      if (!days || days < 1) return showToast('Срок в днях');
+      if (!eternal && (!days || days < 1)) return showToast('Срок в днях или вечный');
       const code = genAccessCode();
-      const expires = new Date();
-      expires.setDate(expires.getDate() + days);
       const rec = {
         code: code,
         name: name,
-        expires_at: expires.toISOString(),
+        expires_at: eternal ? null : (function(){ const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString(); })(),
         active: true,
         created_at: new Date().toISOString()
       };
@@ -4873,13 +4982,16 @@
           h += '<div class="key-item">' +
             '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(k.name || '') + '</div>' + badge + '</div>' +
             '<div class="key-item-code">' + escapeHtml(k.code || '') + '</div>' +
-            '<div class="key-item-meta">до ' + exp + '</div>' +
-            '<div style="display:flex;gap:8px;margin-top:8px;">' +
-              '<button type="button" class="btn btn-green" style="height:36px;font-size:13px;margin:0;" data-code="' +
+            '<div class="key-item-meta">' + (k.expires_at ? ('до ' + exp) : 'вечный') + '</div>' +
+            '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">' +
+              '<button type="button" class="btn btn-green" style="height:36px;font-size:13px;margin:0;flex:1;" data-code="' +
                 escapeHtml(codeSafe) + '" onclick="copyAccessKeyCode(this)">Копировать</button>' +
               (k.active === false
-                ? '<button type="button" class="btn btn-blue" style="height:36px;font-size:13px;margin:0;" onclick="setKeyActive(\'' + codeSafe + '\',true)">Включить</button>'
-                : '<button type="button" class="btn btn-red-soft" style="height:36px;font-size:13px;margin:0;" onclick="setKeyActive(\'' + codeSafe + '\',false)">Отключить</button>') +
+                ? '<button type="button" class="btn btn-blue" style="height:36px;font-size:13px;margin:0;flex:1;" onclick="setKeyActive(\'' + codeSafe + '\',true)">Включить</button>'
+                : '<button type="button" class="btn btn-red-soft" style="height:36px;font-size:13px;margin:0;flex:1;" onclick="setKeyActive(\'' + codeSafe + '\',false)">Отключить</button>') +
+              '<button type="button" class="btn btn-blue" style="height:36px;font-size:13px;margin:0;flex:1;" onclick="extendAccessKey(\'' + codeSafe + '\',30)">+30 дней</button>' +
+              '<button type="button" class="btn btn-purple" style="height:36px;font-size:13px;margin:0;flex:1;" onclick="makeKeyEternal(\'' + codeSafe + '\')">Вечный</button>' +
+              '<button type="button" class="btn btn-red" style="height:36px;font-size:13px;margin:0;flex:1;" onclick="deleteAccessKey(\'' + codeSafe + '\')">Удалить</button>' +
             '</div></div>';
         });
         box.innerHTML = h;
@@ -4921,6 +5033,71 @@
       refreshAccessKeysList();
     }
 
+    function toggleEternalKey() {
+      window._eternalKey = !window._eternalKey;
+      const el = document.getElementById('adminEternalOpt');
+      if (el) el.classList.toggle('selected', !!window._eternalKey);
+      const days = document.getElementById('adminNewKeyDays');
+      if (days) days.disabled = !!window._eternalKey;
+    }
+
+    async function patchKeyCloud(code, patch) {
+      await sbFetch('access_keys?code=eq.' + encodeURIComponent(code), {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify(patch)
+      });
+      let list = getLocalKeys();
+      list = list.map(function(k) {
+        if (k.code === code) Object.assign(k, patch);
+        return k;
+      });
+      saveLocalKeys(list);
+    }
+
+    async function extendAccessKey(code, days) {
+      days = days || 30;
+      try {
+        const rows = await sbFetch('access_keys?code=eq.' + encodeURIComponent(code) + '&select=expires_at');
+        let base = new Date();
+        if (rows && rows[0] && rows[0].expires_at) {
+          const prev = new Date(rows[0].expires_at);
+          if (prev.getTime() > base.getTime()) base = prev;
+        }
+        base.setDate(base.getDate() + days);
+        await patchKeyCloud(code, { expires_at: base.toISOString() });
+        showToast('Продлён на ' + days + ' дн.', true);
+        refreshAccessKeysList();
+      } catch (e) {
+        showToast('Не продлилось: ' + (e.message || 'ошибка'));
+      }
+    }
+
+    async function makeKeyEternal(code) {
+      try {
+        await patchKeyCloud(code, { expires_at: null });
+        showToast('Ключ теперь вечный', true);
+        refreshAccessKeysList();
+      } catch (e) {
+        showToast('Не вышло: ' + (e.message || 'ошибка'));
+      }
+    }
+
+    async function deleteAccessKey(code) {
+      if (!confirm('Удалить ключ ' + code + '? Данные ключа тоже пропадут из облака.')) return;
+      try {
+        try {
+          await sbFetch('key_data?code=eq.' + encodeURIComponent(code), { method: 'DELETE' });
+        } catch (e) {}
+        await sbFetch('access_keys?code=eq.' + encodeURIComponent(code), { method: 'DELETE' });
+        saveLocalKeys(getLocalKeys().filter(function(k) { return k.code !== code; }));
+        showToast('Ключ удалён', true);
+        refreshAccessKeysList();
+      } catch (e) {
+        showToast('Не удалился: ' + (e.message || 'ошибка'));
+      }
+    }
+
     function creatorGoBack() {
       if (isGateEnabled() && !getSession()) openScreen('screenGate');
       else openScreen('screenMenu');
@@ -4932,6 +5109,7 @@
       updateGateModeUI();
       testSupabaseConnection(false);
       refreshAccessKeysList();
+      fetchGateFromCloud();
       fetchAdminPinFromCloud().then(function(p) {
         if (el) el.textContent = p || getAdminPin();
       });
@@ -4942,8 +5120,8 @@
       refreshAccessKeysList();
     }
 
-    function bootAccessGate() {
-      // Creator path always available via online bar
+    async function bootAccessGate() {
+      try { await fetchGateFromCloud(); } catch (e) {}
       if (!isGateEnabled()) {
         // open mode — show menu
         document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
@@ -5204,6 +5382,7 @@
     renderNotes();
     bootAccessGate();
     fetchAdminPinFromCloud();
+    pullAdminSharedData();
     updateAddHomeFabVisibility();
     window.matchMedia('(display-mode: standalone)').addEventListener('change', updateAddHomeFabVisibility);
   </script>
