@@ -164,6 +164,87 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: relative;
+    }
+
+
+
+    #screenCreator {
+      padding-top: 0 !important;
+    }
+    .cr-top {
+      position: sticky; top: 0; z-index: 20;
+      padding: calc(10px + env(safe-area-inset-top)) 16px 12px;
+      background: linear-gradient(180deg, #1a140c 0%, #0d0d0f 100%);
+      border-bottom: 1px solid rgba(255,159,10,0.22);
+    }
+    .cr-top-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .cr-back {
+      display: flex; align-items: center; gap: 4px;
+      color: var(--accent-orange); font-weight: 700; font-size: 15px;
+      background: none; border: none; padding: 6px 0; cursor: pointer;
+    }
+    .cr-back svg { width: 22px; height: 22px; fill: currentColor; }
+    .cr-mark {
+      font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+      color: #111; background: var(--accent-orange); padding: 4px 8px; border-radius: 7px;
+    }
+    .cr-title { margin-top: 10px; }
+    .cr-title h1 {
+      font-size: 26px; font-weight: 800; letter-spacing: -0.4px;
+      background: linear-gradient(90deg, #fff 0%, #ff9f0a 70%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .cr-title p { color: var(--text-sec); font-size: 13px; margin-top: 2px; }
+    .cr-nav {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+      margin-top: 14px;
+    }
+    .cr-nav-item {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px; padding: 10px 6px 8px;
+      text-align: center; cursor: pointer; color: var(--text-sec);
+      font-size: 11px; font-weight: 700;
+    }
+    .cr-nav-item svg { width: 18px; height: 18px; fill: currentColor; display: block; margin: 0 auto 5px; }
+    .cr-nav-item.on {
+      background: rgba(255,159,10,0.16);
+      border-color: rgba(255,159,10,0.45);
+      color: var(--accent-orange);
+    }
+    .cr-body { padding: 14px 16px 90px; }
+    .cr-panel { display: none; }
+    .cr-panel.on { display: block; animation: shopItemIn 0.28s ease; }
+
+    .role-badge {
+      display: none;
+      position: absolute;
+      left: auto;
+      right: 148px;
+      top: 2px;
+      z-index: 5;
+      width: fit-content;
+      max-width: 92px;
+      margin: 0;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+    .role-badge.on { display: block; }
+    .role-badge.shine {
+      background-size: 220% 100% !important;
+      animation: shopLetters 4s ease-in-out infinite;
     }
 
     .header-title h1 {
@@ -1679,6 +1760,7 @@
   <!-- МЕНЮ -->
   <div id="screenMenu" class="screen">
     <div class="header">
+      <div class="role-badge" id="roleBadge"></div>
       <div class="header-title">
         <h1 id="brandTitle">Мультитул</h1>
         <p>Рабочий набор</p>
@@ -2209,90 +2291,139 @@
 
   <!-- МЕНЮ СОЗДАТЕЛЯ -->
   <div id="screenCreator" class="screen">
-    <div class="back-btn" onclick="creatorGoBack()">
-      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Назад
-    </div>
-    <div class="header">
-      <div class="header-title">
-        <h1>Создатель</h1>
-        <p>Ключи и облако</p>
+    <div class="cr-top">
+      <div class="cr-top-row">
+        <button type="button" class="cr-back" onclick="creatorGoBack()">
+          <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+          Назад
+        </button>
+        <div class="cr-mark">Creator</div>
+      </div>
+      <div class="cr-title">
+        <h1>Панель создателя</h1>
+        <p>Ключи, люди, облако</p>
+      </div>
+      <div class="cr-nav">
+        <div class="cr-nav-item on" id="crNavOverview" onclick="showCreatorTab('overview')">
+          <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          Обзор
+        </div>
+        <div class="cr-nav-item" id="crNavPeople" onclick="showCreatorTab('people')">
+          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          Люди
+        </div>
+        <div class="cr-nav-item" id="crNavKeys" onclick="showCreatorTab('keys')">
+          <svg viewBox="0 0 24 24"><path d="M12.65 10A5.99 5.99 0 007 6c-3.31 0-6 2.69-6 6s2.69 6 6 6a5.99 5.99 0 005.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+          Ключи
+        </div>
+        <div class="cr-nav-item" id="crNavPlay" onclick="showCreatorTab('play')">
+          <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1L12 16.9 5.7 20.7 8 13.6 2 9.2h7.6z"/></svg>
+          Игра
+        </div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Текущий PIN админки</div>
-      <div style="text-align:center; padding: 12px;">
-        <div id="creatorPinDisplay" style="font-size:36px; font-weight:800; letter-spacing:6px; color:var(--accent-orange);">••••</div>
+    <div class="cr-body">
+      <div class="cr-panel on" id="crPanelOverview">
+        <div class="card">
+          <div class="card-title">PIN админки</div>
+          <div style="text-align:center; padding: 12px;">
+            <div id="creatorPinDisplay" style="font-size:36px; font-weight:800; letter-spacing:6px; color:var(--accent-orange);">••••</div>
+          </div>
+          <button class="btn btn-green" onclick="copyCreatorPin()">Скопировать PIN</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Статус базы</div>
+          <div id="sbStatus" style="font-size:14px;line-height:1.45;color:var(--text-sec);">Проверка…</div>
+          <button class="btn btn-blue" onclick="testSupabaseConnection(true)" style="margin-top:12px;">Проверить подключение</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Режим входа</div>
+          <div class="option-btn" id="gateModeOff" onclick="setGateEnabled(false)">
+            <span>Открытый (без ключа)</span>
+          </div>
+          <div class="option-btn" id="gateModeOn" onclick="setGateEnabled(true)">
+            <span>Только по ключу</span>
+          </div>
+          <p style="font-size:12px;color:var(--text-sec);margin-top:8px;line-height:1.4;">
+            Общий переключатель. Включил здесь — у всех просит ключ.
+          </p>
+        </div>
       </div>
-      <button class="btn btn-green" onclick="copyCreatorPin()">Скопировать PIN</button>
-    </div>
 
-    <div class="card">
-      <div class="card-title">Статус базы</div>
-      <div id="sbStatus" style="font-size:14px;line-height:1.45;color:var(--text-sec);">Проверка…</div>
-      <button class="btn btn-blue" onclick="testSupabaseConnection(true)" style="margin-top:12px;">Проверить подключение</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Режим входа</div>
-      <div class="option-btn" id="gateModeOff" onclick="setGateEnabled(false)">
-        <span>Открытый (без ключа)</span>
+      <div class="cr-panel" id="crPanelPeople">
+        <div class="card">
+          <div class="card-title">Устройства на сайте</div>
+          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
+            Онлайн — был активен за последнюю минуту. «Выбить» сбросит ключ.
+          </p>
+          <div id="deviceSessionsList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
+          <button class="btn btn-blue" onclick="void refreshDeviceSessions()" style="margin-top:10px;">Обновить устройства</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Аккаунты и недельки</div>
+          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
+            Тап по человеку — его смена, твои данные не трогаются.
+          </p>
+          <div id="peekAccountsList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
+          <button class="btn btn-blue" onclick="void refreshPeekAccounts()" style="margin-top:10px;">Обновить аккаунты</button>
+        </div>
       </div>
-      <div class="option-btn" id="gateModeOn" onclick="setGateEnabled(true)">
-        <span>Только по ключу</span>
+
+      <div class="cr-panel" id="crPanelKeys">
+        <div class="card">
+          <div class="card-title">Все ключи</div>
+          <div id="accessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
+          <button class="btn btn-blue" onclick="void refreshAccessKeysList()" style="margin-top:10px;">Обновить список</button>
+        </div>
       </div>
-      <p style="font-size:12px;color:var(--text-sec);margin-top:8px;line-height:1.4;">
-        Переключатель общий для всех. Включил здесь — у друга и остальных сразу просит ключ (после обновления страницы).
-      </p>
-    </div>
 
-    <div class="card">
-      <div class="card-title">Устройства на сайте</div>
-      <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-        Онлайн — был активен за последнюю минуту. «Выбить» сбросит ключ, человеку нужно войти снова.
-      </p>
-      <div id="deviceSessionsList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
-      <button class="btn btn-blue" onclick="void refreshDeviceSessions()" style="margin-top:10px;">Обновить устройства</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Выдать монеты</div>
-      <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-        По ключу человека. Упадёт ему в рулетку после обновления / открытия колеса.
-      </p>
-      <div class="input-group"><label>Ключ</label><input type="text" id="grantCoinKey" placeholder="MT-XXXX-XXXX" autocapitalize="characters"></div>
-      <div class="input-group"><label>Сколько монет</label><input type="text" inputmode="numeric" id="grantCoinAmt" placeholder="50"></div>
-      <button class="btn btn-purple" onclick="grantCoinsToKey()">Начислить</button>
-      <div class="card-title" style="margin-top:18px;">Шансы рулетки по ключу</div>
-      <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-        Веса, не проценты. Чем больше число — тем чаще выпадает. Пусто = стандарт.
-      </p>
-      <div id="wheelOddsGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
-        <div class="input-group" style="margin:0;"><label>Пусто (0)</label><input type="text" inputmode="numeric" id="odd_0" placeholder="30"></div>
-        <div class="input-group" style="margin:0;"><label>5</label><input type="text" inputmode="numeric" id="odd_5" placeholder="20"></div>
-        <div class="input-group" style="margin:0;"><label>8</label><input type="text" inputmode="numeric" id="odd_8" placeholder="15"></div>
-        <div class="input-group" style="margin:0;"><label>10</label><input type="text" inputmode="numeric" id="odd_10" placeholder="15"></div>
-        <div class="input-group" style="margin:0;"><label>15</label><input type="text" inputmode="numeric" id="odd_15" placeholder="10"></div>
-        <div class="input-group" style="margin:0;"><label>25</label><input type="text" inputmode="numeric" id="odd_25" placeholder="7"></div>
-        <div class="input-group" style="margin:0;"><label>50</label><input type="text" inputmode="numeric" id="odd_50" placeholder="3"></div>
+      <div class="cr-panel" id="crPanelPlay">
+        <div class="card">
+          <div class="card-title">Роль по ключу</div>
+          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
+            Квадратик над «Мультитул» у этого ключа.
+          </p>
+          <div class="input-group"><label>Ключ</label><input type="text" id="roleKey" placeholder="MT-XXXX-XXXX" autocapitalize="characters"></div>
+          <div class="input-group"><label>Название роли</label><input type="text" id="roleName" placeholder="Админ"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div class="input-group" style="margin:0;"><label>Цвет</label><input type="color" id="roleColor" value="#0a84ff"></div>
+            <div class="input-group" style="margin:0;"><label>Второй цвет</label><input type="color" id="roleColor2" value="#bf5af2"></div>
+          </div>
+          <div class="input-group" style="margin-top:10px;"><label>Прозрачность <span id="roleAlphaVal">80%</span></label>
+            <input type="range" id="roleAlpha" min="20" max="100" value="80" oninput="document.getElementById('roleAlphaVal').textContent=this.value+'%'"></div>
+          <div class="option-btn" id="roleShineBtn" onclick="this.classList.toggle('selected')">
+            <span>Переливание букв</span>
+          </div>
+          <button class="btn btn-blue" onclick="loadRoleForKey()" style="margin-top:10px;">Подтянуть роль</button>
+          <button class="btn btn-green" onclick="saveRoleForKey()">Сохранить роль</button>
+          <button class="btn btn-red-soft" onclick="clearRoleForKey()">Снять роль</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Выдать монеты</div>
+          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
+            По ключу. Увидит, когда откроет рулетку.
+          </p>
+          <div class="input-group"><label>Ключ</label><input type="text" id="grantCoinKey" placeholder="MT-XXXX-XXXX" autocapitalize="characters"></div>
+          <div class="input-group"><label>Сколько монет</label><input type="text" inputmode="numeric" id="grantCoinAmt" placeholder="50"></div>
+          <button class="btn btn-purple" onclick="grantCoinsToKey()">Начислить</button>
+          <div class="card-title" style="margin-top:18px;">Шансы рулетки</div>
+          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
+            Веса, не проценты. Больше число — чаще выпадает.
+          </p>
+          <div id="wheelOddsGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+            <div class="input-group" style="margin:0;"><label>Пусто (0)</label><input type="text" inputmode="numeric" id="odd_0" placeholder="30"></div>
+            <div class="input-group" style="margin:0;"><label>5</label><input type="text" inputmode="numeric" id="odd_5" placeholder="20"></div>
+            <div class="input-group" style="margin:0;"><label>8</label><input type="text" inputmode="numeric" id="odd_8" placeholder="15"></div>
+            <div class="input-group" style="margin:0;"><label>10</label><input type="text" inputmode="numeric" id="odd_10" placeholder="15"></div>
+            <div class="input-group" style="margin:0;"><label>15</label><input type="text" inputmode="numeric" id="odd_15" placeholder="10"></div>
+            <div class="input-group" style="margin:0;"><label>25</label><input type="text" inputmode="numeric" id="odd_25" placeholder="7"></div>
+            <div class="input-group" style="margin:0;"><label>50</label><input type="text" inputmode="numeric" id="odd_50" placeholder="3"></div>
+          </div>
+          <button class="btn btn-blue" onclick="loadWheelOddsForKey()" style="margin-top:10px;">Подтянуть шансы</button>
+          <button class="btn btn-green" onclick="saveWheelOddsForKey()">Сохранить шансы</button>
+        </div>
       </div>
-      <button class="btn btn-blue" onclick="loadWheelOddsForKey()" style="margin-top:10px;">Подтянуть шансы ключа</button>
-      <button class="btn btn-green" onclick="saveWheelOddsForKey()">Сохранить шансы</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Аккаунты и недельки</div>
-      <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-        Открой профиль — увидишь смены человека, не трогая свои данные.
-      </p>
-      <div id="peekAccountsList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
-      <button class="btn btn-blue" onclick="void refreshPeekAccounts()" style="margin-top:10px;">Обновить аккаунты</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Все ключи (из базы)</div>
-      <div id="accessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
-      <button class="btn btn-blue" onclick="void refreshAccessKeysList()" style="margin-top:10px;">Обновить список</button>
     </div>
   </div>
 
@@ -5516,6 +5647,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     async function heartbeatDeviceSession() {
+      try { pullMyRole(); } catch (e) {}
       try {
         await validateCurrentSession();
         const rows = await sbFetch('device_sessions?id=eq.' + encodeURIComponent(getDeviceId()) + '&select=revoked');
@@ -5596,18 +5728,38 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       }
     }
 
+
+    function showCreatorTab(id) {
+      const map = { overview: 'Overview', people: 'People', keys: 'Keys', play: 'Play' };
+      ['overview','people','keys','play'].forEach(function(k) {
+        const panel = document.getElementById('crPanel' + map[k]);
+        const nav = document.getElementById('crNav' + map[k].charAt(0).toUpperCase() + map[k].slice(1));
+        if (panel) panel.classList.toggle('on', k === id);
+        if (nav) nav.classList.toggle('on', k === id);
+      });
+      const ids = { overview: 'crNavOverview', people: 'crNavPeople', keys: 'crNavKeys', play: 'crNavPlay' };
+      Object.keys(ids).forEach(function(k) {
+        const nav = document.getElementById(ids[k]);
+        if (nav) nav.classList.toggle('on', k === id);
+      });
+      const screen = document.getElementById('screenCreator');
+      if (screen) screen.scrollTop = 0;
+      window.scrollTo(0, 0);
+      if (id === 'people') { refreshDeviceSessions(); refreshPeekAccounts(); }
+      if (id === 'keys') refreshAccessKeysList();
+    }
+
     function creatorGoBack() {
       if (isGateEnabled() && !getSession()) openScreen('screenGate');
       else openScreen('screenMenu');
     }
 
     function renderCreatorScreen() {
+      showCreatorTab('overview');
       const el = document.getElementById('creatorPinDisplay');
       if (el) el.textContent = getAdminPin();
       updateGateModeUI();
       testSupabaseConnection(false);
-      refreshAccessKeysList();
-      refreshDeviceSessions();
       fetchGateFromCloud();
       fetchAdminPinFromCloud().then(function(p) {
         if (el) el.textContent = p || getAdminPin();
@@ -6059,6 +6211,138 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       scheduleCloudSave();
       applyShopCosmetics();
     }
+
+    function hexToRgba(hex, a) {
+      hex = String(hex || '#0a84ff').replace('#','');
+      if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      const n = parseInt(hex, 16);
+      const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+    }
+
+    async function fetchAllRoles() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.user_roles&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return {};
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return {}; } }
+        return v && typeof v === 'object' ? v : {};
+      } catch (e) { return {}; }
+    }
+
+    async function saveAllRoles(map) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'user_roles',
+          value: JSON.stringify(map),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+
+    function applyRoleBadge(role) {
+      const el = document.getElementById('roleBadge');
+      if (!el) return;
+      if (!role || !role.name) {
+        el.className = 'role-badge';
+        el.style.display = 'none';
+        el.textContent = '';
+        return;
+      }
+      const alpha = Math.max(0.2, Math.min(1, Number(role.alpha != null ? role.alpha : 0.8)));
+      const c1 = role.color || '#0a84ff';
+      const c2 = role.color2 || c1;
+      el.textContent = role.name;
+      el.className = 'role-badge on' + (role.shine ? ' shine' : '');
+      el.style.display = 'block';
+      el.style.opacity = String(alpha);
+      if (role.shine) {
+        el.style.color = 'transparent';
+        el.style.background = 'linear-gradient(90deg,' + c1 + ',' + c2 + ',' + c1 + ')';
+        el.style.webkitBackgroundClip = 'text';
+        el.style.backgroundClip = 'text';
+        el.style.webkitTextFillColor = 'transparent';
+        el.style.border = '1px solid ' + hexToRgba(c1, 0.45);
+        el.style.backgroundColor = hexToRgba(c1, 0.12);
+      } else {
+        el.style.webkitTextFillColor = '';
+        el.style.backgroundClip = '';
+        el.style.webkitBackgroundClip = '';
+        el.style.color = c1;
+        el.style.background = hexToRgba(c1, 0.16);
+        el.style.border = '1px solid ' + hexToRgba(c1, 0.4);
+        el.style.animation = 'none';
+      }
+    }
+
+    async function pullMyRole() {
+      const sess = getSession();
+      if (!sess || !sess.code) { applyRoleBadge(null); return; }
+      const map = await fetchAllRoles();
+      const role = map[sess.code] || map[String(sess.code).toUpperCase()] || null;
+      if (role) localStorage.setItem('ios_my_role', JSON.stringify(role));
+      else localStorage.removeItem('ios_my_role');
+      applyRoleBadge(role);
+    }
+
+    async function loadRoleForKey() {
+      const code = (document.getElementById('roleKey').value || '').trim().toUpperCase();
+      if (!code) return showToast('Введи ключ');
+      const map = await fetchAllRoles();
+      const r = map[code];
+      if (!r) return showToast('Роли на ключе нет');
+      document.getElementById('roleName').value = r.name || '';
+      document.getElementById('roleColor').value = r.color || '#0a84ff';
+      document.getElementById('roleColor2').value = r.color2 || '#bf5af2';
+      const al = Math.round((r.alpha != null ? r.alpha : 0.8) * 100);
+      document.getElementById('roleAlpha').value = al;
+      document.getElementById('roleAlphaVal').textContent = al + '%';
+      document.getElementById('roleShineBtn').classList.toggle('selected', !!r.shine);
+      showToast('Роль загружена', true);
+    }
+
+    async function saveRoleForKey() {
+      const code = (document.getElementById('roleKey').value || '').trim().toUpperCase();
+      const name = (document.getElementById('roleName').value || '').trim();
+      if (!code) return showToast('Введи ключ');
+      if (!name) return showToast('Название роли');
+      try {
+        const rec = await findKeyRecord(code);
+        if (!rec) return showToast('Ключ не найден');
+        const map = await fetchAllRoles();
+        map[code] = {
+          name: name,
+          color: document.getElementById('roleColor').value || '#0a84ff',
+          color2: document.getElementById('roleColor2').value || '#bf5af2',
+          alpha: (parseInt(document.getElementById('roleAlpha').value, 10) || 80) / 100,
+          shine: document.getElementById('roleShineBtn').classList.contains('selected')
+        };
+        await saveAllRoles(map);
+        const sess = getSession();
+        if (sess && sess.code === code) applyRoleBadge(map[code]);
+        showToast('Роль сохранена', true);
+      } catch (e) {
+        showToast(e.message || 'не записалось');
+      }
+    }
+
+    async function clearRoleForKey() {
+      const code = (document.getElementById('roleKey').value || '').trim().toUpperCase();
+      if (!code) return showToast('Введи ключ');
+      try {
+        const map = await fetchAllRoles();
+        delete map[code];
+        await saveAllRoles(map);
+        const sess = getSession();
+        if (sess && sess.code === code) applyRoleBadge(null);
+        showToast('Роль снята', true);
+      } catch (e) {
+        showToast(e.message || 'ошибка');
+      }
+    }
+
     function applyShopCosmetics() {
       const on = getShopOn();
       const title = document.getElementById('brandTitle');
@@ -6492,6 +6776,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     renderNotes();
     updateRouletteUI();
     applyShopCosmetics();
+    try { applyRoleBadge(JSON.parse(localStorage.getItem('ios_my_role')||'null')); } catch(e) {}
+    pullMyRole();
     bootAccessGate();
     fetchAdminPinFromCloud();
     pullAdminSharedData();
