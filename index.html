@@ -1044,6 +1044,22 @@
       border: 1px solid rgba(255, 69, 58, 0.3);
       text-align: center;
     }
+    .ai-msg.ai strong { font-weight: 700; color: #fff; }
+    .ai-msg.ai em { font-style: italic; color: #e5e5ea; }
+    .ai-msg.ai code {
+      background: rgba(255,255,255,0.08);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: 0.92em;
+      font-family: "SF Mono", Menlo, monospace;
+    }
+    .ai-msg.ai ul, .ai-msg.ai ol {
+      margin: 6px 0 6px 18px;
+      padding: 0;
+    }
+    .ai-msg.ai li { margin: 3px 0; }
+    .ai-msg.ai p { margin: 0 0 8px 0; }
+    .ai-msg.ai p:last-child { margin-bottom: 0; }
     .ai-quick-btns {
       display: flex;
       gap: 6px;
@@ -3686,11 +3702,37 @@
         .replace(/"/g, '&quot;');
     }
 
+    function formatAiMarkdown(text) {
+      let s = escapeHtml(String(text || ''));
+      // code `inline`
+      s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // bold **text** or __text__
+      s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+      // italic *text* or _text_ (after bold)
+      s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+      // headers ### ## #
+      s = s.replace(/^###\s+(.+)$/gm, '<strong>$1</strong>');
+      s = s.replace(/^##\s+(.+)$/gm, '<strong>$1</strong>');
+      s = s.replace(/^#\s+(.+)$/gm, '<strong>$1</strong>');
+      // strip table pipes noise like | **5. ...** |
+      s = s.replace(/^\|\s*/gm, '');
+      s = s.replace(/\s*\|$/gm, '');
+      s = s.replace(/\|/g, ' · ');
+      // unordered lists - line starts with - or *
+      s = s.replace(/^(?:- |\* )(.+)$/gm, '• $1');
+      // numbered lists keep as is visually
+      // line breaks
+      s = s.replace(/\n\n+/g, '</p><p>');
+      s = s.replace(/\n/g, '<br>');
+      return '<p>' + s + '</p>';
+    }
+
     function renderAiMessages() {
       const box = document.getElementById('aiChatMessages');
       if (!box) return;
       if (aiMessages.length === 0) {
-        box.innerHTML = '<div class="ai-msg ai" style="opacity:0.7;">Привет! Я помощник на Groq. Спроси про смены, кассу, зарплату или что угодно по работе.</div>';
+        box.innerHTML = '<div class="ai-msg ai" style="opacity:0.7;">Привет! Я на Groq (Llama). Вижу твои смены, зарплату и графики из Мультитула. Спроси что угодно.</div>';
         return;
       }
       let html = '';
@@ -3698,7 +3740,7 @@
         if (m.role === 'user') {
           html += '<div class="ai-msg user">' + escapeHtml(m.content) + '</div>';
         } else if (m.role === 'assistant') {
-          html += '<div class="ai-msg ai">' + escapeHtml(m.content) + '</div>';
+          html += '<div class="ai-msg ai">' + formatAiMarkdown(m.content) + '</div>';
         } else if (m.role === 'error') {
           html += '<div class="ai-msg error">' + escapeHtml(m.content) + '</div>';
         }
@@ -3712,6 +3754,151 @@
       const input = document.getElementById('aiInput');
       if (input) input.value = text;
       sendAiMessage();
+    }
+
+    function buildAiSystemPrompt() {
+      let ctx = '';
+      try {
+        const store = (typeof getData === 'function') ? getData() : { shifts: [], deductions: [] };
+        const paid = (typeof getPaidAmount === 'function') ? getPaidAmount() : 0;
+        const shifts = store.shifts || [];
+        const deductions = store.deductions || [];
+
+        ctx += '=== ТЕКУЩАЯ НЕДЕЛЯ ===\n';
+        if (!shifts.length) {
+          ctx += 'Смен пока нет.\n';
+        } else {
+          ctx += 'Период: ' + shifts[0].date + ' — ' + shifts[shifts.length - 1].date + '\n';
+          ctx += 'Смен: ' + shifts.length + '/5\n';
+          let totalRev = 0;
+          let totalToPay = 0;
+          let totalRemain = 0;
+          shifts.forEach(function(s, i) {
+            const percent = Math.round(s.total * 0.03);
+            const toPay = 2300 + percent;
+            const remain = toPay - paid;
+            totalRev += s.total;
+            totalToPay += toPay;
+            totalRemain += remain;
+            ctx += (i + 1) + ') ' + s.date + ' · выручка ' + s.total + ' ₽ · к выплате ' + toPay + ' ₽ · остаток ' + remain + ' ₽\n';
+          });
+          if (deductions.length) {
+            deductions.forEach(function(d) {
+              totalRemain -= d.amount;
+              ctx += 'Вычет: −' + d.amount + ' ₽ (' + d.reason + ')\n';
+            });
+          }
+          ctx += 'Выручка недели: ' + totalRev + ' ₽\n';
+          ctx += 'К выплате всего: ' + totalToPay + ' ₽\n';
+          ctx += 'Выплачено за смену (ставка в настройках): ' + paid + ' ₽\n';
+          ctx += 'ОСТАТОК К ВЫПЛАТЕ ПО НЕДЕЛЕ: ' + totalRemain + ' ₽\n';
+        }
+
+        // Мои смены (календарь)
+        try {
+          const ms = (typeof getMonthShifts === 'function') ? getMonthShifts() : {};
+          const keys = Object.keys(ms || {});
+          ctx += '\n=== МОИ СМЕНЫ (КАЛЕНДАРЬ) ===\n';
+          ctx += 'Отмечено дней: ' + keys.length + '\n';
+          if (keys.length) ctx += 'Даты: ' + keys.slice(-15).join(', ') + (keys.length > 15 ? '…' : '') + '\n';
+        } catch (e) {}
+
+        // Архив
+        try {
+          const arc = (typeof getArchive === 'function') ? getArchive() : [];
+          ctx += '\n=== АРХИВ НЕДЕЛЬ ===\n';
+          if (!arc.length) ctx += 'Пусто\n';
+          else {
+            arc.slice(0, 6).forEach(function(w) {
+              ctx += w.dateRange + ' · ' + w.shiftsCount + ' смен · выручка ' + w.totalRevenue + ' ₽\n';
+            });
+          }
+        } catch (e) {}
+
+        // Зарплата текущего месяца
+        try {
+          const now = (typeof salaryMonthDate !== 'undefined') ? salaryMonthDate : new Date();
+          const year = now.getFullYear();
+          const month = now.getMonth();
+          const arc = (typeof getArchive === 'function') ? getArchive() : [];
+          const monthWeeks = arc.filter(function(w) {
+            const match = (w.dateRange || '').match(/(\d{2})\.(\d{2})\.(\d{4})/);
+            if (!match) return false;
+            return (parseInt(match[2], 10) - 1) === month && parseInt(match[3], 10) === year;
+          });
+          let totalShifts = 0, totalRevenue = 0, totalToPay = 0;
+          monthWeeks.forEach(function(w) {
+            totalShifts += w.shiftsCount;
+            totalRevenue += w.totalRevenue;
+            const avg = w.shiftsCount ? (w.totalRevenue / w.shiftsCount) : 0;
+            const percent = Math.round(avg * 0.03);
+            totalToPay += (2300 + percent) * w.shiftsCount;
+          });
+          const monthKey = String(month + 1).padStart(2, '0') + '.' + year;
+          const payouts = (typeof getPayouts === 'function') ? getPayouts().filter(function(p) { return p.monthKey === monthKey; }) : [];
+          const totalPaid = payouts.reduce(function(a, p) { return a + p.amount; }, 0);
+          const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+          ctx += '\n=== ЗАРПЛАТА ' + monthNames[month] + ' ' + year + ' ===\n';
+          ctx += 'Закрытых недель: ' + monthWeeks.length + '\n';
+          ctx += 'Смен: ' + totalShifts + '\n';
+          ctx += 'Выручка: ' + totalRevenue + ' ₽\n';
+          ctx += 'К выплате: ' + totalToPay + ' ₽\n';
+          ctx += 'Уже выплачено: ' + totalPaid + ' ₽\n';
+          ctx += 'Остаток: ' + (totalToPay - totalPaid) + ' ₽\n';
+        } catch (e) {}
+
+        // Контроль точек сегодня
+        try {
+          if (typeof POINTS !== 'undefined' && typeof getPointData === 'function') {
+            const now = new Date();
+            const d = String(now.getDate()).padStart(2, '0');
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const todayKey = d + '.' + m + '.' + now.getFullYear();
+            ctx += '\n=== СЕГОДНЯ НА ТОЧКАХ (' + todayKey + ') ===\n';
+            Object.keys(POINTS).forEach(function(key) {
+              const p = POINTS[key];
+              const pd = getPointData(key);
+              const st = (pd.days && pd.days[todayKey]) || '';
+              let who = 'никого';
+              if (st === 'green') who = (typeof getEmployeeName === 'function' ? getEmployeeName(pd.greenName) : '') || 'зелёный';
+              if (st === 'red') who = (typeof getEmployeeName === 'function' ? getEmployeeName(pd.redName) : '') || 'красный';
+              ctx += p.name + ': ' + who + ' · ' + p.time + '\n';
+            });
+          }
+        } catch (e) {}
+
+        // Заметки
+        try {
+          const notes = (typeof getNotes === 'function') ? getNotes() : [];
+          const open = notes.filter(function(n) { return !n.done; });
+          ctx += '\n=== ЗАМЕТКИ ===\n';
+          if (!open.length) ctx += 'Активных нет\n';
+          else open.slice(0, 10).forEach(function(n) { ctx += '- ' + n.text + '\n'; });
+        } catch (e) {}
+
+        // Сотрудники
+        try {
+          const emps = (typeof getEmployees === 'function') ? getEmployees() : [];
+          ctx += '\n=== СОТРУДНИКИ ===\n';
+          if (!emps.length) ctx += 'Список пуст\n';
+          else ctx += emps.map(function(e) { return e.name; }).join(', ') + '\n';
+        } catch (e) {}
+
+      } catch (e) {
+        ctx += '(не удалось собрать данные приложения)\n';
+      }
+
+      return (
+        'Ты обычный умный ассистент. Работаешь через Groq API. Сейчас твоя модель: ' + GROQ_MODEL + '.\n' +
+        'Отвечай по-русски, живо и по делу — как нормальный чат, не как робот-скрипт.\n' +
+        'Если спрашивают какая ты модель — честно скажи название модели (сейчас: ' + GROQ_MODEL + ') и что ты на Groq.\n' +
+        'Ты встроен в приложение «Мультитул» (учёт смен, касса, графики, зарплата).\n' +
+        'Когда вопрос про смены/деньги/график — используй блок ДАННЫЕ ниже и считай по ним.\n' +
+        'Формула смены: к выплате = 2300 + 3% от выручки; остаток = к выплате − ставка «выплачено» из настроек.\n' +
+        'Цифры не выдумывай. Если в данных пусто — так и скажи.\n' +
+        'На обычные вопросы (модель, шутки, советы) отвечай свободно, не повторяй одну и ту же фразу.\nФорматирование: можно **жирный** и списки через дефис. Не используй таблицы markdown и символы | .\n\n' +
+        'ДАННЫЕ ПРИЛОЖЕНИЯ:\n' + ctx
+      );
     }
 
     async function sendAiMessage() {
@@ -3735,11 +3922,12 @@
       if (sendBtn) sendBtn.disabled = true;
       renderAiMessages();
 
-      const systemPrompt = 'Ты помощник сотрудника в торговом/сервисном заведении. Отвечай кратко, по-русски, по делу. Можешь помогать с расчётом смен, кассой, сдачей, графиками, общением с клиентами. Не выдумывай юридические факты. Если вопрос не про работу — всё равно отвечай полезно и коротко.';
+      const systemPrompt = buildAiSystemPrompt();
 
       const apiMessages = [
         { role: 'system', content: systemPrompt }
       ];
+      // не тащим в API старые error-сообщения
       aiMessages.forEach(m => {
         if (m.role === 'user' || m.role === 'assistant') {
           apiMessages.push({ role: m.role, content: m.content });
@@ -3759,7 +3947,7 @@
             body: JSON.stringify({
               model: model,
               messages: apiMessages,
-              temperature: 0.6,
+              temperature: 0.75,
               max_tokens: 1024
             })
           });
@@ -3778,6 +3966,10 @@
         }
         if (reply == null) throw new Error(lastErr || 'Нет доступных моделей');
         aiMessages.push({ role: 'assistant', content: reply });
+        try {
+          const sub = document.querySelector('#screenAI .header-title p');
+          if (sub) sub.textContent = 'Groq · ' + GROQ_MODEL;
+        } catch (e) {}
         playAppStoreSound();
       } catch (e) {
         aiMessages.push({ role: 'error', content: 'Ошибка: ' + (e.message || 'сеть / ключ') });
