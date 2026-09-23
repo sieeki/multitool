@@ -2026,6 +2026,15 @@
     </div>
 
     <div class="card">
+      <div class="card-title">Устройства на сайте</div>
+      <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
+        Онлайн — был активен за последнюю минуту. «Выбить» сбросит ключ, человеку нужно войти снова.
+      </p>
+      <div id="deviceSessionsList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
+      <button class="btn btn-blue" onclick="void refreshDeviceSessions()" style="margin-top:10px;">Обновить устройства</button>
+    </div>
+
+    <div class="card">
       <div class="card-title">Все ключи (из базы)</div>
       <div id="accessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
       <button class="btn btn-blue" onclick="void refreshAccessKeysList()" style="margin-top:10px;">Обновить список</button>
@@ -4456,7 +4465,18 @@
       'ios_groq_key'
     ];
 
-    const SUPABASE_SQL = `-- Выполни в Supabase → SQL Editor\ncreate table if not exists access_keys (\n  code text primary key,\n  name text not null,\n  expires_at timestamptz,\n  active boolean default true,\n  created_at timestamptz default now()\n);\ncreate table if not exists key_data (\n  code text primary key references access_keys(code) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz default now()\n);\nalter table access_keys enable row level security;\nalter table key_data enable row level security;\ncreate policy "anon_all_keys" on access_keys for all using (true) with check (true);\ncreate policy "anon_all_data" on key_data for all using (true) with check (true);`;
+    const SUPABASE_SQL = `-- Выполни в Supabase → SQL Editor\ncreate table if not exists access_keys (\n  code text primary key,\n  name text not null,\n  expires_at timestamptz,\n  active boolean default true,\n  created_at timestamptz default now()\n);\ncreate table if not exists key_data (\n  code text primary key references access_keys(code) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz default now()\n);\nalter table access_keys enable row level security;\nalter table key_data enable row level security;\ncreate policy "anon_all_keys" on access_keys for all using (true) with check (true);\ncreate policy "anon_all_data" on key_data for all using (true) with check (true);
+create table if not exists device_sessions (
+  id text primary key,
+  access_code text,
+  access_name text,
+  device_name text,
+  last_seen timestamptz default now(),
+  revoked boolean default false,
+  created_at timestamptz default now()
+);
+alter table device_sessions enable row level security;
+create policy "anon_all_devices" on device_sessions for all using (true) with check (true);`;
 
     // Вшито в код — одна база на всех, кто открыл этот HTML
     const DEFAULT_SB_URL = 'https://slbjwfdgoptqdchethch.supabase.co';
@@ -4872,6 +4892,7 @@
       renderNotes();
       openScreen('screenMenu');
       showToast('Вход выполнен', true);
+      registerDeviceSession();
     }
 
     function logoutAccessKey() {
@@ -5098,6 +5119,151 @@
       }
     }
 
+    function getDeviceId() {
+      let id = localStorage.getItem('ios_device_id');
+      if (!id) {
+        id = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('ios_device_id', id);
+      }
+      return id;
+    }
+
+    function guessDeviceName() {
+      const ua = navigator.userAgent || '';
+      const custom = (localStorage.getItem('ios_device_name') || '').trim();
+      if (custom) return custom;
+      if (/iPhone/i.test(ua)) return 'iPhone';
+      if (/iPad/i.test(ua)) return 'iPad';
+      if (/Android/i.test(ua)) {
+        const m = ua.match(/Android\s([\d.]+)/);
+        return m ? ('Android ' + m[1]) : 'Android';
+      }
+      if (/Macintosh|Mac OS X/i.test(ua)) return 'Mac';
+      if (/Windows/i.test(ua)) return 'Windows';
+      if (/Linux/i.test(ua)) return 'Linux';
+      return 'Устройство';
+    }
+
+    function formatLastSeen(iso) {
+      if (!iso) return 'давно';
+      const t = new Date(iso).getTime();
+      if (isNaN(t)) return 'давно';
+      const sec = Math.max(0, Math.round((Date.now() - t) / 1000));
+      if (sec < 60) return 'только что';
+      const min = Math.round(sec / 60);
+      if (min < 60) return min + ' мин. назад';
+      const hrs = Math.round(min / 60);
+      if (hrs < 24) return hrs + ' ч. назад';
+      const days = Math.round(hrs / 24);
+      return days + ' дн. назад';
+    }
+
+    function isDeviceOnline(iso) {
+      if (!iso) return false;
+      const t = new Date(iso).getTime();
+      return !isNaN(t) && (Date.now() - t) < 70000;
+    }
+
+    async function registerDeviceSession() {
+      try {
+        const sess = getSession();
+        await sbFetch('device_sessions?on_conflict=id', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
+          body: JSON.stringify({
+            id: getDeviceId(),
+            access_code: sess ? sess.code : null,
+            access_name: sess ? sess.name : null,
+            device_name: guessDeviceName(),
+            last_seen: new Date().toISOString(),
+            revoked: false
+          })
+        });
+      } catch (e) {
+        console.warn('device register', e);
+      }
+    }
+
+    async function heartbeatDeviceSession() {
+      try {
+        const rows = await sbFetch('device_sessions?id=eq.' + encodeURIComponent(getDeviceId()) + '&select=revoked');
+        if (rows && rows[0] && rows[0].revoked) {
+          clearSession();
+          showToast('Сессию сбросил создатель');
+          document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+          const gate = document.getElementById('screenGate');
+          if (gate) gate.classList.add('active');
+          return;
+        }
+        const sess = getSession();
+        await sbFetch('device_sessions?on_conflict=id', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({
+            id: getDeviceId(),
+            access_code: sess ? sess.code : null,
+            access_name: sess ? sess.name : null,
+            device_name: guessDeviceName(),
+            last_seen: new Date().toISOString(),
+            revoked: false
+          })
+        });
+      } catch (e) {
+        console.warn('device beat', e);
+      }
+    }
+
+    async function refreshDeviceSessions() {
+      const box = document.getElementById('deviceSessionsList');
+      if (!box) return;
+      box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Обновляю…</div>';
+      try {
+        const list = await sbFetch('device_sessions?select=*&order=last_seen.desc') || [];
+        if (!list.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Пока никого. Нужна таблица device_sessions в Supabase.</div>';
+          return;
+        }
+        const myId = getDeviceId();
+        let h = '';
+        list.forEach(function(d) {
+          const online = !d.revoked && isDeviceOnline(d.last_seen);
+          const who = d.access_name ? (d.access_name + (d.access_code ? ' · ' + d.access_code : '')) : 'без ключа';
+          const mine = d.id === myId ? ' · это ты' : '';
+          const status = d.revoked
+            ? '<span class="key-badge off">выбит</span>'
+            : (online ? '<span class="key-badge ok">в сети</span>' : '<span class="key-badge exp">оффлайн</span>');
+          const meta = d.revoked
+            ? 'нужно войти заново'
+            : (online ? 'сейчас на сайте' : ('был ' + formatLastSeen(d.last_seen)));
+          h += '<div class="key-item">' +
+            '<div class="key-item-top"><div class="key-item-name">' + escapeHtml((d.device_name || 'Устройство') + mine) + '</div>' + status + '</div>' +
+            '<div class="key-item-meta">' + escapeHtml(who) + '</div>' +
+            '<div class="key-item-meta">' + escapeHtml(meta) + '</div>' +
+            (d.id === myId ? '' :
+              '<button type="button" class="btn btn-red-soft" style="height:36px;font-size:13px;margin-top:8px;" onclick="kickDevice(\'' + String(d.id).replace(/'/g,'') + '\')">Выбить / разлогинить</button>') +
+            '</div>';
+        });
+        box.innerHTML = h;
+      } catch (e) {
+        box.innerHTML = '<div style="color:var(--accent-orange);font-size:13px;">База: ' + escapeHtml(e.message || 'ошибка') + '. Выполни SQL таблицы device_sessions.</div>';
+      }
+    }
+
+    async function kickDevice(id) {
+      if (!id) return;
+      try {
+        await sbFetch('device_sessions?id=eq.' + encodeURIComponent(id), {
+          method: 'PATCH',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ revoked: true })
+        });
+        showToast('Устройство выбито', true);
+        refreshDeviceSessions();
+      } catch (e) {
+        showToast('Не выбилось: ' + (e.message || 'ошибка'));
+      }
+    }
+
     function creatorGoBack() {
       if (isGateEnabled() && !getSession()) openScreen('screenGate');
       else openScreen('screenMenu');
@@ -5109,6 +5275,7 @@
       updateGateModeUI();
       testSupabaseConnection(false);
       refreshAccessKeysList();
+      refreshDeviceSessions();
       fetchGateFromCloud();
       fetchAdminPinFromCloud().then(function(p) {
         if (el) el.textContent = p || getAdminPin();
@@ -5383,6 +5550,8 @@
     bootAccessGate();
     fetchAdminPinFromCloud();
     pullAdminSharedData();
+    registerDeviceSession();
+    setInterval(heartbeatDeviceSession, 20000);
     updateAddHomeFabVisibility();
     window.matchMedia('(display-mode: standalone)').addEventListener('change', updateAddHomeFabVisibility);
   </script>
