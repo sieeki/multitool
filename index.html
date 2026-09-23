@@ -1060,6 +1060,116 @@
     .ai-msg.ai li { margin: 3px 0; }
     .ai-msg.ai p { margin: 0 0 8px 0; }
     .ai-msg.ai p:last-child { margin-bottom: 0; }
+    .ai-msg.ai p:last-child { margin-bottom: 0; }
+
+    .ai-tutorial {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(10, 132, 255, 0.25);
+      background:
+        radial-gradient(circle at 100% 0%, rgba(191, 90, 242, 0.18), transparent 45%),
+        radial-gradient(circle at 0% 100%, rgba(10, 132, 255, 0.16), transparent 50%),
+        var(--card-bg);
+    }
+    .ai-tutorial-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(10, 132, 255, 0.15);
+      color: var(--accent-blue);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      letter-spacing: 0.2px;
+    }
+    .ai-tutorial-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+    }
+    .ai-tutorial-sub {
+      font-size: 13px;
+      color: var(--text-sec);
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+    .ai-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+    .ai-step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #0a84ff, #bf5af2);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(10, 132, 255, 0.35);
+    }
+    .ai-step-body { flex: 1; min-width: 0; padding-top: 3px; }
+    .ai-step-body h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .ai-step-body p {
+      font-size: 12px;
+      color: var(--text-sec);
+      line-height: 1.4;
+    }
+    .ai-step-body a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .ai-tutorial-link-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(10, 132, 255, 0.35);
+      background: rgba(10, 132, 255, 0.12);
+      color: var(--accent-blue);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .ai-tutorial-link-btn:active {
+      transform: scale(0.97);
+      background: rgba(10, 132, 255, 0.2);
+    }
+    .ai-tutorial-link-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .ai-key-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--accent-green);
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    .ai-key-status.off { color: var(--text-sec); font-weight: 500; }
+
     .ai-quick-btns {
       display: flex;
       gap: 6px;
@@ -1524,22 +1634,56 @@
         <p>Groq · Llama</p>
       </div>
       <div class="header-actions">
+        <div class="icon-btn" onclick="toggleAiTutorial()" title="Как получить ключ" style="color:var(--accent-blue);">
+          <svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+        </div>
         <div class="icon-btn" onclick="clearAiChat()" title="Очистить чат" style="color:var(--accent-red);">
           <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
         </div>
       </div>
     </div>
 
-    <div class="card" id="aiKeyCard" style="display:none; margin-bottom:12px;">
-      <div class="card-title">Ключ Groq API</div>
-      <p style="font-size:13px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-        Бесплатный ключ: console.groq.com → API Keys
-      </p>
+    <div class="card ai-tutorial" id="aiKeyCard" style="display:none; margin-bottom:12px;">
+      <div class="ai-tutorial-badge">
+        <svg style="width:12px;height:12px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        Бесплатно · 2 минуты
+      </div>
+      <div class="ai-tutorial-title">Как включить AI</div>
+      <div class="ai-tutorial-sub">Нужен ключ Groq — один раз, хранится только на этом устройстве.</div>
+
+      <div class="ai-step">
+        <div class="ai-step-num">1</div>
+        <div class="ai-step-body">
+          <h4>Зайди на сайт Groq</h4>
+          <p>Открой <a href="https://console.groq.com" target="_blank" rel="noopener">console.groq.com</a> и зарегистрируйся (Google / GitHub).</p>
+        </div>
+      </div>
+      <div class="ai-step">
+        <div class="ai-step-num">2</div>
+        <div class="ai-step-body">
+          <h4>Создай API Key</h4>
+          <p>Слева <b>API Keys</b> → <b>Create API Key</b> → скопируй ключ (начинается с <code style="color:#fff;">gsk_</code>).</p>
+        </div>
+      </div>
+      <div class="ai-step">
+        <div class="ai-step-num">3</div>
+        <div class="ai-step-body">
+          <h4>Вставь сюда</h4>
+          <p>Ключ никуда не отправляется, кроме самих запросов к Groq.</p>
+        </div>
+      </div>
+
+      <button type="button" class="ai-tutorial-link-btn" onclick="window.open('https://console.groq.com/keys','_blank','noopener')">
+        <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+        Открыть console.groq.com
+      </button>
+
       <div class="input-group">
         <label>API Key</label>
         <input type="password" id="groqApiKeyInput" placeholder="gsk_..." autocomplete="off">
       </div>
-      <button class="btn btn-purple" onclick="saveGroqKey()">Сохранить ключ</button>
+      <button class="btn btn-purple" onclick="saveGroqKey()" style="margin-top:0;">Сохранить и начать</button>
+      <div class="ai-key-status off" id="aiKeyStatus">Ключ пока не сохранён</div>
     </div>
 
     <div class="card" style="padding:12px; margin-bottom:12px;">
@@ -3664,10 +3808,19 @@
       const el = document.getElementById('groqApiKeyInput');
       const key = (el && el.value || '').trim();
       if (!key) return showToast('Вставьте ключ');
+      if (!/^gsk_/i.test(key)) {
+        showToast('Обычно ключ начинается с gsk_');
+      }
       setGroqKey(key);
       playAppStoreSound();
+      if (typeof triggerSuccessFlash === 'function') triggerSuccessFlash();
       showToast('Ключ сохранён', true);
       initAiScreen();
+      // после сохранения прячем туториал через мгновение
+      setTimeout(function() {
+        const keyCard = document.getElementById('aiKeyCard');
+        if (keyCard && getGroqKey()) keyCard.style.display = 'none';
+      }, 600);
     }
 
     function saveGroqKeyFromAccount() {
@@ -3684,8 +3837,33 @@
       const keyCard = document.getElementById('aiKeyCard');
       if (keyCard) keyCard.style.display = hasKey ? 'none' : 'block';
       const keyInput = document.getElementById('groqApiKeyInput');
-      if (keyInput && hasKey) keyInput.value = getGroqKey();
+      if (keyInput) keyInput.value = hasKey ? getGroqKey() : '';
+      const st = document.getElementById('aiKeyStatus');
+      if (st) {
+        if (hasKey) {
+          st.className = 'ai-key-status';
+          st.textContent = 'Ключ сохранён на этом устройстве';
+        } else {
+          st.className = 'ai-key-status off';
+          st.textContent = 'Ключ пока не сохранён';
+        }
+      }
       renderAiMessages();
+    }
+
+    function toggleAiTutorial() {
+      const keyCard = document.getElementById('aiKeyCard');
+      if (!keyCard) return;
+      const open = keyCard.style.display === 'none' || !keyCard.style.display;
+      keyCard.style.display = open ? 'block' : 'none';
+      if (open) {
+        const keyInput = document.getElementById('groqApiKeyInput');
+        if (keyInput) {
+          keyInput.value = getGroqKey() || '';
+          setTimeout(function() { keyInput.focus(); }, 200);
+        }
+        keyCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }
 
     function clearAiChat() {
