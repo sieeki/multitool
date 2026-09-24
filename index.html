@@ -302,6 +302,27 @@
 
     .back-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
+
+    .supply-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 14px 14px 10px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .supply-head {
+      font-size: 12px; color: var(--text-sec); font-weight: 600;
+      margin-bottom: 10px; letter-spacing: 0.2px;
+    }
+    .supply-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 8px 0;
+    }
+    .supply-row + .supply-row { border-top: 1px solid rgba(255,255,255,0.06); }
+    .supply-name { font-size: 14px; font-weight: 650; }
+    .supply-meta { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+    .supply-ago { font-size: 16px; font-weight: 800; color: var(--accent-blue); font-variant-numeric: tabular-nums; }
+
     .menu-item {
       background: var(--card-bg);
       border-radius: 16px;
@@ -856,6 +877,200 @@
       -webkit-text-fill-color: transparent;
       animation: shopLetters 4.5s ease-in-out infinite;
     }
+
+
+    body.dev-outlines .btn,
+    body.dev-outlines .menu-item,
+    body.dev-outlines .icon-btn,
+    body.dev-outlines .card,
+    body.dev-outlines .option-btn,
+    body.dev-outlines .add-home-fab,
+    body.dev-outlines .shop-btn,
+    body.dev-outlines .dev-row,
+    body.dev-outlines .dev-sw,
+    body.dev-outlines .dev-link,
+    body.dev-outlines .dev-group,
+    body.dev-outlines .dev-nav {
+      outline: 1px dashed rgba(255,214,10,0.7) !important;
+      outline-offset: 1px;
+    }
+    #devCoords {
+      display: none;
+      position: fixed; left: 8px; top: 8px; z-index: 9800;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 11px; color: #ffd60a;
+      background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 8px;
+      pointer-events: none;
+    }
+    body.dev-coords #devCoords { display: block; }
+
+    #devMenu {
+      display: none;
+      position: fixed; inset: 0; z-index: 9500;
+      background: #000;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #devMenu.on { display: block; }
+    .dev-sheet {
+      min-height: 100%;
+      background: #000;
+      padding: calc(8px + env(safe-area-inset-top)) 16px 40px;
+      position: relative; z-index: 1;
+    }
+    .dev-nav {
+      display: flex; align-items: center; gap: 4px;
+      color: #0a84ff; font-size: 17px; font-weight: 400;
+      background: none; border: none; padding: 8px 0 4px; cursor: pointer;
+    }
+    .dev-nav svg { width: 22px; height: 22px; fill: currentColor; }
+    .dev-big { font-size: 34px; font-weight: 800; letter-spacing: -0.6px; margin: 6px 0 18px; }
+    .dev-group {
+      background: #1c1c1e;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .dev-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 16px; min-height: 44px;
+      font-size: 17px; font-weight: 400;
+      background: #1c1c1e;
+    }
+    .dev-row + .dev-row { border-top: 0.5px solid rgba(84,84,88,0.65); }
+    .dev-sw {
+      width: 51px; height: 31px; border-radius: 16px; flex-shrink: 0;
+      border: none; padding: 0; margin: 0;
+      background: #39393d; position: relative; transition: background 0.2s;
+    }
+    .dev-sw::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 27px; height: 27px; border-radius: 50%; background: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: left 0.2s ease;
+    }
+    .dev-sw.on { background: #30d158; }
+    .dev-sw.on::after { left: 22px; }
+    .btn-dev {
+      background: linear-gradient(105deg, #2c2c2e 0%, #48484a 35%, #636366 50%, #3a3a3c 70%, #1c1c1e 100%);
+      background-size: 200% 100%;
+      color: #f2f2f7;
+      animation: shopLetters 6s ease-in-out infinite;
+      border: 1px solid #8e8e93;
+    }
+    .dev-link {
+      width: 100%; text-align: left; border: none; color: #0a84ff;
+      background: #1c1c1e; font-size: 17px; padding: 12px 16px;
+    }
+    .dev-link + .dev-link { border-top: 0.5px solid rgba(84,84,88,0.65); }
+    .dev-foot { font-size: 13px; color: #8e8e93; padding: 0 4px; margin-top: -18px; margin-bottom: 24px; line-height: 1.35; }
+    #devFps, #devHud {
+      display: none; position: fixed; z-index: 9800; pointer-events: none;
+      font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: #ffd60a;
+      background: rgba(0,0,0,0.65); padding: 3px 7px; border-radius: 7px;
+      z-index: 9800;
+    }
+    #devFps { top: 8px; right: 8px; }
+    #devHud { top: 32px; right: 8px; text-align: right; }
+    body.dev-fps #devFps, body.dev-hud #devHud { display: block; }
+    #devGrid {
+      display: none; position: fixed; inset: 0; z-index: 9700; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,214,10,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,214,10,0.08) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    body.dev-grid #devGrid { display: block; }
+    body.dev-slow * { animation-duration: 0s !important; transition-duration: 0s !important; }
+    .dev-hit {
+      position: fixed; width: 22px; height: 22px; margin: -11px 0 0 -11px;
+      border: 2px solid #ffd60a; border-radius: 50%; pointer-events: none; z-index: 9850;
+      animation: devHit 0.35s ease forwards; z-index: 9850;
+    }
+    @keyframes devHit { to { transform: scale(2.2); opacity: 0; } }
+
+    #devConsole {
+      display: none;
+      position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 9800;
+      height: 120px; z-index: 9800; background: rgba(12,12,14,0.92);
+      border: 1px solid rgba(255,214,10,0.25); border-radius: 12px;
+      padding: 8px; overflow: auto;
+      font-family: ui-monospace, Menlo, monospace; font-size: 10px; line-height: 1.35;
+      color: #d1d1d6;
+    }
+    body.dev-console #devConsole { display: block; }
+    body.dev-console .dev-sheet { padding-bottom: 160px; }
+    #devConsole .l-ok { color: #30d158; }
+    #devConsole .l-warn { color: #ffd60a; }
+    #devConsole .l-err { color: #ff453a; }
+
+    #shopList { max-height: 52vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    #brandTitle.shop-outline,
+    #brandTitle.shop-cold,
+    #brandTitle.shop-warm,
+    #brandTitle.shop-glass {
+      display: inline-block;
+      color: transparent;
+      background-size: 220% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shopLetters 4.5s ease-in-out infinite;
+    }
+    #brandTitle.shop-cold {
+      background-image: linear-gradient(90deg, #ffffff 0%, #0a84ff 40%, #64d2ff 70%, #ffffff 100%);
+    }
+    #brandTitle.shop-warm {
+      background-image: linear-gradient(90deg, #ffffff 0%, #ff9f0a 40%, #ffd60a 70%, #ffffff 100%);
+    }
+    #brandTitle.shop-glass {
+      background-image: linear-gradient(90deg, rgba(255,255,255,0.55) 0%, #d1d1d6 40%, #ffffff 70%, #8e8e93 100%);
+    }
+    body.shop-menu-glow .menu-item {
+      border-color: rgba(10, 132, 255, 0.28);
+      box-shadow: 0 0 0 1px rgba(10,132,255,0.08);
+    }
+    body.shop-online-gold .online-dot {
+      background-color: #ffd60a;
+      box-shadow: 0 0 8px #ffd60a;
+    }
+    body.shop-online-purple .online-dot {
+      background-color: var(--accent-purple);
+      box-shadow: 0 0 8px var(--accent-purple);
+    }
+    body.shop-icon-alt .icon-btn[title="Рулетка"] { color: var(--accent-purple) !important; }
+    body.shop-wheel-blue .roulette-wheel {
+      background: conic-gradient(#0b1c33 0deg 45deg,#124a8a 45deg 90deg,#1a2a44 90deg 135deg,#0d3d2a 135deg 180deg,#0b1c33 180deg 225deg,#16324f 225deg 270deg,#124a8a 270deg 315deg,#1a2a44 315deg 360deg);
+    }
+    body.shop-wheel-amber .roulette-wheel {
+      background: conic-gradient(#2a1e0a 0deg 45deg,#5a3a10 45deg 90deg,#3a2222 90deg 135deg,#2a3010 135deg 180deg,#2a1e0a 180deg 225deg,#4a320c 225deg 270deg,#5a3a10 270deg 315deg,#3a2222 315deg 360deg);
+    }
+    body.shop-wheel-dark .roulette-wheel {
+      background: conic-gradient(#141416 0deg 45deg,#1c1c1e 45deg 90deg,#111 90deg 135deg,#1a1a1c 135deg 180deg,#141416 180deg 225deg,#0d0d0f 225deg 270deg,#1c1c1e 270deg 315deg,#111 315deg 360deg);
+    }
+    body.shop-role-pulse .role-badge.on {
+      animation: rolePulse 1.8s ease-in-out infinite;
+    }
+    @keyframes rolePulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.0); transform: scale(1); }
+      50% { box-shadow: 0 0 10px rgba(255,255,255,0.18); transform: scale(1.06); }
+    }
+    body.shop-quiet-season .particle { opacity: 0.18 !important; }
+    body.shop-premium-tap .menu-item,
+    body.shop-premium-tap .btn,
+    body.shop-premium-tap .icon-btn {
+      transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), background 0.15s ease;
+    }
+    body.shop-premium-tap .menu-item:active,
+    body.shop-premium-tap .btn:active,
+    body.shop-premium-tap .icon-btn:active { transform: scale(0.94); }
+    body.shop-cards-soft .card, body.shop-cards-soft .menu-item {
+      background: #2c2c2e;
+    }
+    body.shop-cards-deep .card, body.shop-cards-deep .menu-item {
+      background: #161618;
+    }
+
     @keyframes shopLetters {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -1718,6 +1933,46 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="appPrefsModal" onclick="if(event.target===this) closeAppPrefs()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-title">Настройки</div>
+      <button class="btn btn-dev" onclick="openDevMenu()">Режим разработчика</button>
+      <button class="btn btn-red-soft" onclick="closeAppPrefs()" style="margin-top:8px;">Закрыть</button>
+    </div>
+  </div>
+  <div id="devMenu">
+    <div class="dev-sheet">
+      <button type="button" class="dev-nav" onclick="closeDevMenu()">
+        <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+        Настройки
+      </button>
+      <div class="dev-big">Разработчик</div>
+      <div class="dev-group">
+        <div class="dev-row" data-dev="outlines"><span>Границы элементов</span><button type="button" class="dev-sw" id="swOutlines"></button></div>
+        <div class="dev-row" data-dev="coords"><span>Координаты касания</span><button type="button" class="dev-sw" id="swCoords"></button></div>
+        <div class="dev-row" data-dev="hits"><span>Подсветка нажатий</span><button type="button" class="dev-sw" id="swHits"></button></div>
+      </div>
+      <div class="dev-foot">Включается сразу в этом меню.</div>
+      <div class="dev-group">
+        <div class="dev-row" data-dev="console"><span>Консоль</span><button type="button" class="dev-sw" id="swConsole"></button></div>
+        <div class="dev-row" data-dev="fps"><span>Счётчик FPS</span><button type="button" class="dev-sw" id="swFps"></button></div>
+        <div class="dev-row" data-dev="hud"><span>HUD экрана</span><button type="button" class="dev-sw" id="swHud"></button></div>
+        <div class="dev-row" data-dev="grid"><span>Сетка</span><button type="button" class="dev-sw" id="swGrid"></button></div>
+        <div class="dev-row" data-dev="slow"><span>Без анимаций</span><button type="button" class="dev-sw" id="swSlow"></button></div>
+      </div>
+      <div class="dev-group">
+        <button type="button" class="dev-link" onclick="showToast('Проверка уведомления', true)">Проверить уведомление</button>
+        <button type="button" class="dev-link" onclick="devDumpInfo()">Служебная информация</button>
+        <button type="button" class="dev-link" onclick="clearDevConsole()">Очистить консоль</button>
+      </div>
+    </div>
+  </div>
+  <div id="devCoords">x 0 · y 0</div>
+  <div id="devFps">60</div>
+  <div id="devHud"></div>
+  <div id="devGrid"></div>
+  <div id="devConsole"></div>
+
   <div class="online-bar" id="onlineBar" onclick="openCreatorAuthModal()">
     <div class="online-dot"></div>
     <span id="onlineCount">1 в сети</span>
@@ -1763,7 +2018,7 @@
       <div class="role-badge" id="roleBadge"></div>
       <div class="header-title">
         <h1 id="brandTitle">Мультитул</h1>
-        <p>Рабочий набор</p>
+        <p id="brandSub">Рабочий набор</p>
       </div>
       <div class="header-actions">
         <div class="icon-btn" onclick="openRoulette()" title="Рулетка" style="color:#ffd60a;position:relative;">
@@ -1790,8 +2045,30 @@
               <svg style="width:16px; height:16px; fill:var(--accent-purple);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
               Аккаунт
             </div>
+            <div onclick="openAppPrefs(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+              <svg style="width:16px; height:16px; fill:var(--accent-orange);" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+              Настройки
+            </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="supply-card" id="supplyCard">
+      <div class="supply-head">С последней поставки</div>
+      <div class="supply-row">
+        <div>
+          <div class="supply-name">Сигареты</div>
+          <div class="supply-meta" id="supplyCigDate">даты нет</div>
+        </div>
+        <div class="supply-ago" id="supplyCigAgo">—</div>
+      </div>
+      <div class="supply-row">
+        <div>
+          <div class="supply-name">Одноразки · снюс · табак</div>
+          <div class="supply-meta" id="supplyOtherDate">даты нет</div>
+        </div>
+        <div class="supply-ago" id="supplyOtherAgo">—</div>
       </div>
     </div>
 
@@ -2150,6 +2427,11 @@
         <h1>Админ-панель</h1>
         <p>Управление и графики</p>
       </div>
+      <div class="header-actions">
+        <div class="icon-btn" onclick="openScreen('screenSupply')" title="Поставки">
+          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        </div>
+      </div>
     </div>
 
     <div class="menu-item" onclick="openScreen('screenControl')" style="border-color: rgba(10, 132, 255, 0.35);">
@@ -2216,6 +2498,29 @@
       </div>
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
+  </div>
+
+  <div id="screenSupply" class="screen">
+    <div class="back-btn" onclick="openScreen('screenAdmin')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админка
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1>Поставки</h1>
+        <p>Последние даты</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Сигареты</div>
+      <div class="input-group"><label>Дата последней поставки</label><input type="date" id="supplyCigInput"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Одноразки, снюс, табак</div>
+      <div class="input-group"><label>Дата последней поставки</label><input type="date" id="supplyOtherInput"></div>
+    </div>
+    <button class="btn btn-blue" onclick="saveSupplyDates()">Сохранить</button>
+    <button class="btn btn-green" onclick="markSupplyToday('cig')" style="margin-top:8px;">Сиги приехали сегодня</button>
+    <button class="btn btn-green" onclick="markSupplyToday('other')" style="margin-top:8px;">Остальное приехало сегодня</button>
   </div>
 
   <!-- КЛЮЧИ (АДМИН) -->
@@ -2911,6 +3216,7 @@
     }
 
     function showToast(text, isSuccess) {
+      try { devLog(String(text || ''), isSuccess ? 'ok' : 'warn'); } catch (e) {}
       const toast = document.getElementById('toast');
       const textEl = document.getElementById('toastText');
       if (textEl) textEl.textContent = text;
@@ -2925,6 +3231,7 @@
 
     let screenTransitionLock = false;
     function openScreen(screenId) {
+      try { devLog('screen ' + screenId); } catch (e) {}
       if (screenTransitionLock) return;
       const current = document.querySelector('.screen.active');
       const target = document.getElementById(screenId);
@@ -2966,6 +3273,8 @@
       if (screenId === 'screenCreator') { renderCreatorScreen(); refreshPeekAccounts(); }
       if (screenId === 'screenAdminKeys') renderAdminKeysScreen();
       if (screenId === 'screenAI') initAiScreen();
+      if (screenId === 'screenMenu') { renderSupplyCard(); pullSupplyDates(); }
+      if (screenId === 'screenSupply') { fillSupplyForm(); pullSupplyDates().then(fillSupplyForm); }
       if (screenId === 'screenAdmin' || screenId === 'screenControl' || screenId === 'screenLocations' || screenId === 'screenEmployees' || screenId === 'screenPointDetail' || screenId === 'screenCreator') {
         pullAdminSharedData().then(function(changed) {
           if (!changed) return;
@@ -4770,15 +5079,33 @@
       }
 
       return (
-        'Ты обычный умный ассистент. Работаешь через Groq API. Сейчас твоя модель: ' + GROQ_MODEL + '.\n' +
-        'Отвечай по-русски, живо и по делу — как нормальный чат, не как робот-скрипт.\n' +
-        'Если спрашивают какая ты модель — честно скажи название модели (сейчас: ' + GROQ_MODEL + ') и что ты на Groq.\n' +
-        'Ты встроен в приложение «Мультитул» (учёт смен, касса, графики, зарплата).\n' +
-        'Когда вопрос про смены/деньги/график — используй блок ДАННЫЕ ниже и считай по ним.\n' +
-        'Формула смены: к выплате = 2300 + 3% от выручки; остаток = к выплате − ставка «выплачено» из настроек.\n' +
-        'Цифры не выдумывай. Если в данных пусто — так и скажи.\n' +
-        'На обычные вопросы (модель, шутки, советы) отвечай свободно, не повторяй одну и ту же фразу.\nФорматирование: можно **жирный** и списки через дефис. Не используй таблицы markdown и символы | .\n\n' +
-        'ДАННЫЕ ПРИЛОЖЕНИЯ:\n' + ctx
+        'Ты помощник приложения «Мультитул» (Groq, модель ' + GROQ_MODEL + '). Отвечай по-русски живым текстом.\n' +
+        'ГЛАВНОЕ ПРАВИЛО:\n' +
+        '1) Вопрос что это за сайт / какие разделы / как пользоваться / где кнопка — отвечай по инструкции ниже. Запрещено писать одно слово «Пусто». Расскажи разделы своими словами.\n' +
+        '2) Вопрос сколько заработал / сколько смен / остаток / зарплата в рублях — смотри только блок ДАННЫЕ. Если там пусто, тогда скажи что в учёте пока нет смен.\n' +
+        '3) Приветствие и «але» — ответь нормально и предложи помочь по учёту, кассе или зарплате.\n' +
+        'Формат: **жирный**, списки через дефис. Без таблиц и без |.\n\n' +
+        'ГДЕ ЧТО ЛЕЖИТ В ПРИЛОЖЕНИИ\n' +
+        'Главный экран. Заголовок «Мультитул», подпись «Рабочий набор». Справа иконки: рулетка (монеты), магазин, шестерёнка. Шестерёнка открывает меню: «Мои смены», «Эффекты», «Аккаунт», «Настройки». Ниже список разделов. Внизу счётчик «в сети» и при необходимости кнопка «на экран Домой».\n\n' +
+        'Вход. Если включён вход по ключу — экран с полем ключа вида MT-XXXX-XXXX. Ключ хранится на устройстве, заново вводить не нужно, пока не выйдут или ключ не отзовут. Выйти из ключа можно в Аккаунте.\n\n' +
+        'Учёт недельной. Сюда заносят смены текущей недели: дата и выручка. Сумма «выплачено за смену» (по умолчанию 1300 ₽) меняется шестерёнкой в этом же разделе «Учёт недельной» — не путать с шестерёнкой на главном экране. Там варианты 1300, 1000 или своя сумма. Это то, что человеку уже выдают наличными за одну смену. Формула одной смены: к выплате = 2300 + 3% от выручки этой смены. Выплачено за смену = ставка × количество смен (ставка из настроек). Остаток = к выплате − выплачено. Можно добавить удержания (минус к остатку). Кнопка выгрузки делает красивую картинку-отчёт недели. «Завершить неделю и в архив» закрывает неделю и кладёт итог в архив, текущий список смен очищается.\n\n' +
+        'Мои смены. Из шестерёнки. Календарь/список своих смен по месяцу, не путать с учётом текущей недели.\n\n' +
+        'Заметки смены. Список напоминаний и дел на смену: добавить текст, сохранить, открыть позже. Это не учёт денег.\n\n' +
+        'Расчёт сдачи. Калькулятор кассы: внести сумму и получить сдачу, без связи со сменами.\n\n' +
+        'Статистика и архив. Итоги прошлых закрытых недель: период, число смен, выручка. Берётся из архива после «завершить неделю».\n\n' +
+        'Зарплата. Итоги по месяцам из архива. К выплате за месяц считается по закрытым неделям того месяца: на каждую смену 2300 + 3% от средней выручки недели. Можно отметить фактические выплаты за месяц и видеть остаток.\n\n' +
+        'Помощь AI. Ты здесь. Ключ Groq (gsk_…) хранится на устройстве: в этом разделе есть туториал как его взять, либо поле в Аккаунте. Без ключа ответы не уходят.\n\n' +
+        'Аккаунт (шестерёнка). Сохранить ключ Groq, сделать резервную копию всех данных в файл, выйти из ключа доступа.\n\n' +
+        'Эффекты (шестерёнка). Три режима фона: выкл, снег, листья. Только визуал.\n\n' +
+        'Настройки (шестерёнка) → Режим разработчика. Служебные тумблеры: границы элементов, координаты касания, подсветка нажатий, консоль, FPS, HUD экрана, сетка, без анимаций. Это отладка, на зарплату не влияет. Эффекты видно на главном экране после «Назад».\n\n' +
+        'Рулетка. Иконка с монетами на главной. Каждый день можно забрать монеты по серии: день 1 = 5, 2 = 10, 3 = 15, 4 = 20, 5 = 25, дальше каждый день по 10. Пропуск дня сбрасывает серию. Крутить колесо стоит 15 монет. На колесе сектора 0, 5, 8, 10, 15, 25, 50 монет.\n\n' +
+        'Магазин. Рядом с рулеткой. Сейчас одна покупка: «Перелив классика» за 100 монет — буквы «Мультитул» переливаются синим и фиолетовым. Во вкладке «Куплено» можно включить или выключить.\n\n' +
+        'Поставки. На главной карточка: сколько прошло с последней поставки сигарет и отдельно одноразок/снюса/табака. Даты ставит админ шестерёнкой в админке → Поставки.\n\n' +
+        'Добавить на экран. Маленькая иконка слева внизу, если сайт ещё не на домашнем экране. На iPhone: Поделиться → На экран «Домой». На Android: меню браузера → на главный экран.\n\n' +
+        'Админка. Вход по PIN (не путать с ключом сотрудника). Внутри: контроль точек — кто сегодня на точке и ссылка ВК, если проставлена; точки/локации; список сотрудников; ключи доступа (создать, продлить, удалить, вечный); общие графики смен на месяц картинкой. Данные админки общие на всех устройствах через облако.\n\n' +
+        'Облако. Смены, архив, заметки, монеты, магазин и админские списки синхронизируются с ключом. Если цифры в ДАННЫХ пустые — человек ещё ничего не внёс или данные не подтянулись.\n\n' +
+        'Как отвечать на типичные вопросы: «сколько за неделю» — блок учёта недели; «сколько смен / выплачено / остаток» — те же цифры; «зарплата за месяц» — блок зарплаты; «как поменять 1300» — шестерёнка внутри учёта недельной, не на главной; «как закрыть неделю» — кнопка в учёте недельной; «как крутить» — сначала забрать дневные монеты, потом крутить за 15; «как перелив» — магазин, 100 монет; «как ключ AI» — туториал во вкладке AI или Аккаунт.\n\n' +
+        'Ниже живые цифры этого человека. Они НЕ значат что приложение пустое.\nДАННЫЕ:\n' + ctx
       );
     }
 
@@ -4829,7 +5156,7 @@
               model: model,
               messages: apiMessages,
               temperature: 0.75,
-              max_tokens: 1024
+              max_tokens: 1600
             })
           });
           const data = await res.json().catch(() => ({}));
@@ -4881,7 +5208,9 @@
       'ios_reward_streak',
       'ios_wheel_weights',
       'ios_shop_owned',
-      'ios_shop_on'
+      'ios_shop_on',
+      'ios_luck_until',
+      'ios_shop_status'
     ];
 
     const SUPABASE_SQL = `-- Выполни в Supabase → SQL Editor\ncreate table if not exists access_keys (\n  code text primary key,\n  name text not null,\n  expires_at timestamptz,\n  active boolean default true,\n  created_at timestamptz default now()\n);\ncreate table if not exists key_data (\n  code text primary key references access_keys(code) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz default now()\n);\nalter table access_keys enable row level security;\nalter table key_data enable row level security;\ncreate policy "anon_all_keys" on access_keys for all using (true) with check (true);\ncreate policy "anon_all_data" on key_data for all using (true) with check (true);
@@ -5124,6 +5453,97 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       clearTimeout(adminSaveTimer);
       adminSaveTimer = setTimeout(function() { pushAdminSharedData(); }, 400);
     }
+
+
+    function getSupplyDates() {
+      try { return JSON.parse(localStorage.getItem('ios_supply_dates') || '{}'); }
+      catch (e) { return {}; }
+    }
+    function setSupplyDatesLocal(d) {
+      localStorage.setItem('ios_supply_dates', JSON.stringify(d || {}));
+    }
+    function fmtSupplyDate(iso) {
+      if (!iso) return 'даты нет';
+      const p = String(iso).split('-');
+      if (p.length !== 3) return iso;
+      return p[2] + '.' + p[1] + '.' + p[0];
+    }
+    function supplyAgo(iso) {
+      if (!iso) return '—';
+      const t = new Date(iso + 'T12:00:00');
+      if (isNaN(t.getTime())) return '—';
+      const now = new Date();
+      let diff = now.getTime() - t.getTime();
+      if (diff < 0) diff = 0;
+      const mins = Math.floor(diff / 60000);
+      const hours = Math.floor(mins / 60);
+      const days = Math.floor(hours / 24);
+      if (days <= 0 && hours < 12) return 'сегодня';
+      if (days <= 0) return hours + ' ч';
+      if (days === 1) return '1 день';
+      if (days < 5) return days + ' дня';
+      return days + ' дней';
+    }
+    function renderSupplyCard() {
+      const d = getSupplyDates();
+      const cigD = document.getElementById('supplyCigDate');
+      const othD = document.getElementById('supplyOtherDate');
+      const cigA = document.getElementById('supplyCigAgo');
+      const othA = document.getElementById('supplyOtherAgo');
+      if (cigD) cigD.textContent = d.cig ? fmtSupplyDate(d.cig) : 'даты нет';
+      if (othD) othD.textContent = d.other ? fmtSupplyDate(d.other) : 'даты нет';
+      if (cigA) cigA.textContent = supplyAgo(d.cig);
+      if (othA) othA.textContent = supplyAgo(d.other);
+    }
+    function fillSupplyForm() {
+      const d = getSupplyDates();
+      const a = document.getElementById('supplyCigInput');
+      const b = document.getElementById('supplyOtherInput');
+      if (a) a.value = d.cig || '';
+      if (b) b.value = d.other || '';
+    }
+    async function pullSupplyDates() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.supply_dates&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) { renderSupplyCard(); return; }
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = {}; } }
+        if (v && typeof v === 'object') {
+          setSupplyDatesLocal(v);
+          renderSupplyCard();
+        }
+      } catch (e) { renderSupplyCard(); }
+    }
+    async function saveSupplyDates() {
+      const d = {
+        cig: (document.getElementById('supplyCigInput') || {}).value || '',
+        other: (document.getElementById('supplyOtherInput') || {}).value || ''
+      };
+      setSupplyDatesLocal(d);
+      renderSupplyCard();
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({
+            key: 'supply_dates',
+            value: JSON.stringify(d),
+            updated_at: new Date().toISOString()
+          })
+        });
+        showToast('Даты сохранены', true);
+      } catch (e) {
+        showToast('Сохранил локально, облако мимо');
+      }
+    }
+    function markSupplyToday(kind) {
+      const today = new Date();
+      const iso = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+      const el = document.getElementById(kind === 'cig' ? 'supplyCigInput' : 'supplyOtherInput');
+      if (el) el.value = iso;
+      saveSupplyDates();
+    }
+    setInterval(renderSupplyCard, 60000);
 
     function collectAdminSharedPayload() {
       return {
@@ -5804,6 +6224,136 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
 
     // ============ АККАУНТ ============
+
+    function getDev() {
+      try { return JSON.parse(localStorage.getItem('ios_dev') || '{}'); }
+      catch (e) { return {}; }
+    }
+    function setDev(d) {
+      localStorage.setItem('ios_dev', JSON.stringify(d));
+      applyDevMode();
+      updateDevMenuUI();
+    }
+    function toggleDevFlag(key) {
+      if (!key) return;
+      const d = getDev();
+      d.mode = true;
+      d[key] = !d[key];
+      try { localStorage.setItem('ios_dev', JSON.stringify(d)); } catch (e) {}
+      applyDevMode();
+      updateDevMenuUI();
+      try { devLog('mod ' + key + ' = ' + !!d[key], d[key] ? 'ok' : 'warn'); } catch (e) {}
+    }
+    function updateDevMenuUI() {
+      const d = getDev();
+      const map = { swOutlines: 'outlines', swCoords: 'coords', swConsole: 'console', swFps: 'fps', swGrid: 'grid', swHud: 'hud', swHits: 'hits', swSlow: 'slow' };
+      Object.keys(map).forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('on', !!d[map[id]]);
+      });
+      const hud = document.getElementById('devHud');
+      if (hud) {
+        const sess = getSession();
+        hud.innerHTML = (document.querySelector('.screen.active') || {}).id +
+          '<br>' + ((sess && sess.code) ? sess.code : 'no-key');
+      }
+    }
+    function applyDevMode() {
+      const d = getDev();
+      document.body.classList.toggle('dev-outlines', !!d.outlines);
+      document.body.classList.toggle('dev-coords', !!d.coords);
+      document.body.classList.toggle('dev-console', !!d.console);
+      document.body.classList.toggle('dev-fps', !!d.fps);
+      document.body.classList.toggle('dev-grid', !!d.grid);
+      document.body.classList.toggle('dev-hud', !!d.hud);
+      document.body.classList.toggle('dev-slow', !!d.slow);
+    }
+    function openAppPrefs() {
+      const m = document.getElementById('appPrefsModal');
+      if (m) m.classList.add('active');
+    }
+    function closeAppPrefs() {
+      const m = document.getElementById('appPrefsModal');
+      if (m) m.classList.remove('active');
+    }
+    function openDevMenu() {
+      closeAppPrefs();
+      const d = getDev();
+      d.mode = true;
+      setDev(d);
+      updateDevMenuUI();
+      document.getElementById('devMenu').classList.add('on');
+      devLog('mod menu open', 'ok');
+    }
+    function closeDevMenu() {
+      const m = document.getElementById('devMenu');
+      if (m) m.classList.remove('on');
+    }
+    document.addEventListener('click', function(e) {
+      const row = e.target.closest && e.target.closest('#devMenu .dev-row[data-dev]');
+      if (!row) return;
+      e.preventDefault();
+      e.stopPropagation();
+      toggleDevFlag(row.getAttribute('data-dev'));
+    }, true);
+    function devLog(msg, kind) {
+      const box = document.getElementById('devConsole');
+      if (!box) return;
+      const t = new Date();
+      const ts = String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0') + ':' + String(t.getSeconds()).padStart(2,'0');
+      const line = document.createElement('div');
+      line.className = kind === 'err' ? 'l-err' : (kind === 'ok' ? 'l-ok' : (kind === 'warn' ? 'l-warn' : ''));
+      line.textContent = ts + '  ' + msg;
+      box.appendChild(line);
+      box.scrollTop = box.scrollHeight;
+      while (box.children.length > 80) box.removeChild(box.firstChild);
+    }
+    function clearDevConsole() {
+      const box = document.getElementById('devConsole');
+      if (box) box.innerHTML = '';
+    }
+    function devGiveCoins(n) {
+      setCoins(getCoins() + n);
+      showToast('+' + n + ' монет', true);
+    }
+    function devDumpInfo() {
+      const sess = getSession();
+      const keys = Object.keys(localStorage).length;
+      devLog('ls keys ' + keys + ' · coins ' + getCoins() + ' · ' + ((sess && sess.code) || 'no-key'), 'warn');
+      showToast('Смотри консоль');
+    }
+    let devFpsLast = performance.now(), devFpsFrames = 0;
+    function tickDevFps(now) {
+      devFpsFrames++;
+      if (now - devFpsLast >= 500) {
+        const el = document.getElementById('devFps');
+        if (el) el.textContent = String(Math.round(devFpsFrames * 1000 / (now - devFpsLast)));
+        devFpsFrames = 0;
+        devFpsLast = now;
+      }
+      requestAnimationFrame(tickDevFps);
+    }
+    requestAnimationFrame(tickDevFps);
+    document.addEventListener('pointermove', function(e) {
+      const el = document.getElementById('devCoords');
+      if (el && document.body.classList.contains('dev-coords')) {
+        el.textContent = 'x ' + Math.round(e.clientX) + ' · y ' + Math.round(e.clientY);
+      }
+    }, { passive: true });
+    document.addEventListener('click', function(e) {
+      const d = getDev();
+      if (d.hits) {
+        const dot = document.createElement('div');
+        dot.className = 'dev-hit';
+        dot.style.left = e.clientX + 'px';
+        dot.style.top = e.clientY + 'px';
+        document.body.appendChild(dot);
+        setTimeout(function(){ dot.remove(); }, 360);
+      }
+      const t = e.target.closest('button, .btn, .menu-item, .icon-btn, .option-btn');
+      if (t) devLog('tap ' + (t.className || t.tagName).toString().slice(0,36));
+    }, true);
+
     function openAccountModal() {
       const k = document.getElementById('accountGroqKey');
       if (k) k.value = getGroqKey() || '';
@@ -6190,8 +6740,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
 
     const SHOP_ITEMS = [
-      { id: 'title_outline', name: 'Обводка Мультитул', desc: 'Буквы названия спокойно переливаются синим и фиолетовым', price: 100 }
+      { id: 'title_outline', name: 'Перелив классика', desc: 'Синий и фиолетовый на буквах Мультитул', price: 100 }
     ];
+    const SHOP_GROUPS = {};
     let shopTab = 'buy';
 
     function getOwned() {
@@ -6210,6 +6761,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       localStorage.setItem('ios_shop_on', JSON.stringify(map));
       scheduleCloudSave();
       applyShopCosmetics();
+    applyDevMode();
+    renderSupplyCard();
+    pullSupplyDates();
     }
 
     function hexToRgba(hex, a) {
@@ -6343,10 +6897,36 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       }
     }
 
+    function shopOn(id) {
+      return !!(getShopOn()[id] && getOwned().indexOf(id) >= 0);
+    }
+    function luckActive() { return false; }
+    function getSpinCost() { return 15; }
     function applyShopCosmetics() {
-      const on = getShopOn();
       const title = document.getElementById('brandTitle');
-      if (title) title.classList.toggle('shop-outline', !!(on.title_outline && getOwned().indexOf('title_outline') >= 0));
+      if (title) {
+        title.classList.remove('shop-outline','shop-cold','shop-warm','shop-glass');
+        if (shopOn('title_outline')) title.classList.add('shop-outline');
+      }
+      const body = document.body;
+      ['shop-menu-glow','shop-online-gold','shop-online-purple','shop-icon-alt','shop-wheel-dark','shop-wheel-blue','shop-wheel-amber','shop-role-pulse','shop-quiet-season','shop-premium-tap','shop-cards-soft','shop-cards-deep'].forEach(function(c){ body.classList.remove(c); });
+      const sub = document.getElementById('brandSub');
+      if (sub) sub.textContent = 'Рабочий набор';
+    }
+    function exclusiveOn(id) {
+      const item = SHOP_ITEMS.filter(function(x){ return x.id === id; })[0];
+      const on = getShopOn();
+      if (item && item.group && SHOP_GROUPS[item.group]) {
+        SHOP_GROUPS[item.group].forEach(function(k) { on[k] = false; });
+      }
+      on[id] = true;
+      if (id === 'luck_day') localStorage.setItem('ios_luck_until', String(Date.now() + 86400000));
+      if (id === 'custom_status') {
+        const cur = localStorage.getItem('ios_shop_status') || '';
+        const t = prompt('Статус, до 12 символов', cur);
+        if (t != null) localStorage.setItem('ios_shop_status', t.trim().slice(0, 12));
+      }
+      setShopOn(on);
     }
     function setShopTab(tab) {
       shopTab = tab;
@@ -6403,15 +6983,19 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       owned.push(id);
       setOwned(owned);
       const on = getShopOn();
-      on[id] = true;
-      setShopOn(on);
+      exclusiveOn(id);
       showToast('Куплено', true);
       setShopTab('own');
     }
     function toggleShopItem(id) {
       const on = getShopOn();
-      on[id] = !on[id];
-      setShopOn(on);
+      if (on[id]) {
+        on[id] = false;
+        if (id === 'luck_day') localStorage.removeItem('ios_luck_until');
+        setShopOn(on);
+      } else {
+        exclusiveOn(id);
+      }
       renderShop();
     }
 
@@ -6425,7 +7009,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       { label: '10', coins: 10 },
       { label: '0', coins: 0 }
     ];
-    const SPIN_COST = 15;
+    const SPIN_COST = 15; // fallback, use getSpinCost()
     let wheelBusy = false;
     let wheelAngle = 0;
 
@@ -6528,7 +7112,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       let total = 0;
       WHEEL_PRIZES.forEach(function(p, i) {
         const weight = Number(w[String(p.coins)]);
-        const ww = (!isNaN(weight) && weight > 0) ? weight : Number(DEFAULT_WEIGHTS[String(p.coins)] || 1);
+        let ww = (!isNaN(weight) && weight > 0) ? weight : Number(DEFAULT_WEIGHTS[String(p.coins)] || 1);
+        if (luckActive() && (p.coins === 25 || p.coins === 50)) ww *= 3;
         items.push({ i: i, prize: p, w: ww });
         total += ww;
       });
@@ -6555,8 +7140,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         ? ('Сегодня уже забрано · день ' + (getStreak() || 1))
         : ('День ' + next + ' · можно забрать ' + amt + ' монет');
       if (btn) {
-        btn.textContent = 'Крутить за ' + SPIN_COST;
-        btn.disabled = wheelBusy || c < SPIN_COST;
+        btn.textContent = 'Крутить за ' + getSpinCost();
+        btn.disabled = wheelBusy || c < getSpinCost();
       }
       if (claim) {
         claim.style.display = claimedToday() ? 'none' : '';
@@ -6650,8 +7235,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
     async function spinRoulette() {
       if (wheelBusy) return;
-      if (getCoins() < SPIN_COST) return showToast('Сначала забери ежедневные монеты');
-      setCoins(getCoins() - SPIN_COST);
+      if (getCoins() < getSpinCost()) return showToast('Сначала забери ежедневные монеты');
+      setCoins(getCoins() - getSpinCost());
       wheelBusy = true;
       updateRouletteUI();
       const n = WHEEL_PRIZES.length;
