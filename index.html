@@ -2065,7 +2065,7 @@
       </div>
       <div class="supply-row">
         <div>
-          <div class="supply-name">Одноразки · снюс · табак</div>
+          <div class="supply-name">Одноразки · жижи · снюс · табак</div>
           <div class="supply-meta" id="supplyOtherDate">даты нет</div>
         </div>
         <div class="supply-ago" id="supplyOtherAgo">—</div>
@@ -2515,7 +2515,7 @@
       <div class="input-group"><label>Дата последней поставки</label><input type="date" id="supplyCigInput"></div>
     </div>
     <div class="card">
-      <div class="card-title">Одноразки, снюс, табак</div>
+      <div class="card-title">Одноразки, жижи, снюс, табак</div>
       <div class="input-group"><label>Дата последней поставки</label><input type="date" id="supplyOtherInput"></div>
     </div>
     <button class="btn btn-blue" onclick="saveSupplyDates()">Сохранить</button>
@@ -5502,16 +5502,25 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (a) a.value = d.cig || '';
       if (b) b.value = d.other || '';
     }
+    function parseSupplyValue(v) {
+      if (v == null) return null;
+      if (typeof v === 'string') {
+        try { v = JSON.parse(v); } catch (e) { return null; }
+      }
+      if (v && typeof v.value !== 'undefined' && !v.cig && !v.other) {
+        return parseSupplyValue(v.value);
+      }
+      if (v && typeof v === 'object') return { cig: v.cig || '', other: v.other || '' };
+      return null;
+    }
     async function pullSupplyDates() {
       try {
         const rows = await sbFetch('app_settings?key=eq.supply_dates&select=value');
-        if (!rows || !rows[0] || rows[0].value == null) { renderSupplyCard(); return; }
-        let v = rows[0].value;
-        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = {}; } }
-        if (v && typeof v === 'object') {
-          setSupplyDatesLocal(v);
-          renderSupplyCard();
+        const parsed = rows && rows[0] ? parseSupplyValue(rows[0].value) : null;
+        if (parsed && (parsed.cig || parsed.other)) {
+          setSupplyDatesLocal(parsed);
         }
+        renderSupplyCard();
       } catch (e) { renderSupplyCard(); }
     }
     async function saveSupplyDates() {
@@ -5532,7 +5541,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           })
         });
         showToast('Даты сохранены', true);
+        scheduleAdminCloudSave();
       } catch (e) {
+        scheduleAdminCloudSave();
         showToast('Сохранил локально, облако мимо');
       }
     }
@@ -5549,6 +5560,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       return {
         ios_employees: localStorage.getItem('ios_employees'),
         ios_point_data: localStorage.getItem('ios_point_data'),
+        ios_supply_dates: localStorage.getItem('ios_supply_dates'),
         _savedAt: new Date().toISOString()
       };
     }
@@ -5566,6 +5578,13 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         if (localStorage.getItem('ios_point_data') !== payload.ios_point_data) {
           localStorage.setItem('ios_point_data', payload.ios_point_data);
           changed = true;
+        }
+      }
+      if (payload.ios_supply_dates !== undefined && payload.ios_supply_dates !== null) {
+        if (localStorage.getItem('ios_supply_dates') !== payload.ios_supply_dates) {
+          localStorage.setItem('ios_supply_dates', payload.ios_supply_dates);
+          changed = true;
+          renderSupplyCard();
         }
       }
       return changed;
@@ -6068,6 +6087,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
     async function heartbeatDeviceSession() {
       try { pullMyRole(); } catch (e) {}
+      try { pullSupplyDates(); } catch (e) {}
       try {
         await validateCurrentSession();
         const rows = await sbFetch('device_sessions?id=eq.' + encodeURIComponent(getDeviceId()) + '&select=revoked');
@@ -6199,6 +6219,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
         const menu = document.getElementById('screenMenu');
         if (menu) menu.classList.add('active');
+        renderSupplyCard();
+        pullSupplyDates();
         return;
       }
       const session = getSession();
@@ -6215,6 +6237,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
         const menu = document.getElementById('screenMenu');
         if (menu) menu.classList.add('active');
+        renderSupplyCard();
+        pullSupplyDates();
         return;
       }
       document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
@@ -6761,9 +6785,6 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       localStorage.setItem('ios_shop_on', JSON.stringify(map));
       scheduleCloudSave();
       applyShopCosmetics();
-    applyDevMode();
-    renderSupplyCard();
-    pullSupplyDates();
     }
 
     function hexToRgba(hex, a) {
