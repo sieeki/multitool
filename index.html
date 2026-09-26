@@ -303,6 +303,16 @@
     .back-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
 
+
+    .act-row {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .act-row:last-child { border-bottom: none; }
+    .act-who { font-size: 13px; font-weight: 650; }
+    .act-what { font-size: 14px; margin-top: 2px; }
+    .act-when { font-size: 11px; color: var(--text-sec); margin-top: 3px; }
+
     .supply-card {
       background: var(--card-bg);
       border-radius: 16px;
@@ -2111,6 +2121,19 @@
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
 
+    <div class="menu-item" onclick="openScreen('screenPayQr')">
+      <div class="menu-item-left">
+        <div class="menu-icon icon-blue">
+          <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm12-2h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 0h2v6h-6v-2h2v-2h2v-2zm-4 4h2v2h-2v-2z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Мой QR</h3>
+          <p>Перевод на свой номер</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+
     <div class="menu-item" onclick="openScreen('screenStats')">
       <div class="menu-item-left">
         <div class="menu-icon icon-blue">
@@ -2266,6 +2289,27 @@
   </div>
 
   <!-- СТАТИСТИКА -->
+  <div id="screenPayQr" class="screen">
+    <div class="back-btn" onclick="openScreen('screenMenu')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
+    </div>
+    <div class="header"><div class="header-title"><h1>Мой QR</h1><p>Только твой, на этом ключе</p></div></div>
+    <div class="card">
+      <div class="input-group"><label>Телефон</label><input type="tel" id="payQrPhone" placeholder="+7 900 000 00 00"></div>
+      <div class="input-group"><label>Банк</label><input type="text" id="payQrBank" placeholder="Тинькофф"></div>
+      <div class="input-group"><label>Ссылка из банка (если есть)</label><input type="url" id="payQrLink" placeholder="https://..."></div>
+      <div class="input-group"><label>Сумма, если надо (необязательно)</label><input type="text" inputmode="decimal" id="payQrSum" placeholder="пусто = без суммы"></div>
+      <button class="btn btn-blue" onclick="buildPayQr()">Показать QR</button>
+    </div>
+    <div class="card" id="payQrBox" style="display:none;text-align:center;">
+      <img id="payQrImg" alt="QR" style="width:220px;height:220px;border-radius:12px;background:#fff;padding:8px;">
+      <div id="payQrText" style="margin-top:10px;font-size:13px;color:var(--text-sec);white-space:pre-line;"></div>
+    </div>
+    <div style="font-size:12px;color:var(--text-sec);padding:0 4px 20px;line-height:1.4;">
+      Если вставишь ссылку из своего банка — скан откроет перевод. Если только номер и банк — на коде будет текст, человек сам вбьёт в СБП.
+    </div>
+  </div>
+
   <div id="screenStats" class="screen">
     <div class="back-btn" onclick="openScreen('screenMenu')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
@@ -2625,6 +2669,10 @@
           <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1L12 16.9 5.7 20.7 8 13.6 2 9.2h7.6z"/></svg>
           Игра
         </div>
+        <div class="cr-nav-item" id="crNavLog" onclick="showCreatorTab('log')">
+          <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+          Лог
+        </div>
       </div>
     </div>
 
@@ -2729,6 +2777,17 @@
           <button class="btn btn-green" onclick="saveWheelOddsForKey()">Сохранить шансы</button>
         </div>
       </div>
+
+      <div class="cr-panel" id="crPanelLog">
+        <div class="card">
+          <div class="card-title">Действия на сайте</div>
+          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">Кто чем тыкнул. Общее на всех.</p>
+          <button class="btn btn-blue" onclick="refreshActivityLog()">Обновить лог</button>
+          <button class="btn btn-red-soft" onclick="clearActivityLog()">Очистить</button>
+          <div id="activityLogList" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -3256,6 +3315,7 @@
         target.classList.add('active');
         afterScreenOpen(screenId);
         screenTransitionLock = false;
+        try { if (screenId !== 'screenCreator') logAction('открыл «' + screenLabel(screenId) + '»'); } catch (e) {}
       }
     }
 
@@ -3274,6 +3334,7 @@
       if (screenId === 'screenAdminKeys') renderAdminKeysScreen();
       if (screenId === 'screenAI') initAiScreen();
       if (screenId === 'screenMenu') { renderSupplyCard(); pullSupplyDates(); }
+      if (screenId === 'screenPayQr') fillPayQrForm();
       if (screenId === 'screenSupply') { fillSupplyForm(); pullSupplyDates().then(fillSupplyForm); }
       if (screenId === 'screenAdmin' || screenId === 'screenControl' || screenId === 'screenLocations' || screenId === 'screenEmployees' || screenId === 'screenPointDetail' || screenId === 'screenCreator') {
         pullAdminSharedData().then(function(changed) {
@@ -4343,6 +4404,7 @@
 
     // ============ СМЕНЫ ============
     function addShift() {
+      try { logAction('добавил смену'); } catch (e) {}
       const dateInput = document.getElementById('shiftDate').value;
       const total = parseNum(document.getElementById('shiftTotal').value);
       if (!dateInput || isNaN(total)) return showToast('Заполните поле!');
@@ -4367,6 +4429,7 @@
     }
 
     function addDeduction() {
+      try { logAction('добавил вычет'); } catch (e) {}
       const reason = document.getElementById('deductionReason').value.trim();
       const amount = parseNum(document.getElementById('deductionAmount').value);
       if (!reason || isNaN(amount)) return showToast('Заполните поле!');
@@ -4613,6 +4676,7 @@
     }
 
     function archiveWeek() {
+      try { logAction('закрыл неделю в архив'); } catch (e) {}
       const store = getData();
       if (store.shifts.length === 0) return showToast('Нечего сохранять');
       const arc = getArchive();
@@ -4711,6 +4775,7 @@
       scheduleCloudSave();
     }
     function addNote() {
+      try { logAction('сохранил заметку'); } catch (e) {}
       const val = document.getElementById('noteInput').value.trim();
       if (!val) return;
       const notes = getNotes();
@@ -5210,7 +5275,8 @@
       'ios_shop_owned',
       'ios_shop_on',
       'ios_luck_until',
-      'ios_shop_status'
+      'ios_shop_status',
+      'ios_pay_qr'
     ];
 
     const SUPABASE_SQL = `-- Выполни в Supabase → SQL Editor\ncreate table if not exists access_keys (\n  code text primary key,\n  name text not null,\n  expires_at timestamptz,\n  active boolean default true,\n  created_at timestamptz default now()\n);\ncreate table if not exists key_data (\n  code text primary key references access_keys(code) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz default now()\n);\nalter table access_keys enable row level security;\nalter table key_data enable row level security;\ncreate policy "anon_all_keys" on access_keys for all using (true) with check (true);\ncreate policy "anon_all_data" on key_data for all using (true) with check (true);
@@ -5331,7 +5397,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     function isGateEnabled() {
-      return localStorage.getItem('ios_gate_enabled') === '1';
+      return localStorage.getItem('ios_gate_enabled') !== '0';
     }
     function cacheGateEnabled(on) {
       localStorage.setItem('ios_gate_enabled', on ? '1' : '0');
@@ -5340,9 +5406,13 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       try {
         const rows = await sbFetch('app_settings?key=eq.gate_enabled&select=value');
         if (rows && rows[0] && rows[0].value != null) {
-          const on = String(rows[0].value) === '1' || String(rows[0].value) === 'true';
+          let raw = rows[0].value;
+          if (typeof raw === 'object') raw = raw.value != null ? raw.value : JSON.stringify(raw);
+          raw = String(raw).replace(/"/g,'').trim().toLowerCase();
+          const on = raw === '1' || raw === 'true' || raw === 'on';
           cacheGateEnabled(on);
           updateGateModeUI();
+          enforceGateScreen();
           return on;
         }
       } catch (e) {
@@ -5455,6 +5525,181 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
 
+
+
+    function actorLabel() {
+      try {
+        const s = (typeof getSession === 'function') ? getSession() : null;
+        if (s && (s.name || s.code)) return (s.name || 'без имени') + (s.code ? ' · ' + s.code : '');
+      } catch (e) {}
+      return 'гость';
+    }
+    function screenLabel(id) {
+      const m = {
+        screenMenu: 'Главная', screenShifts: 'Учёт недели', screenNotes: 'Заметки',
+        screenChange: 'Сдача', screenStats: 'Архив', screenSalary: 'Зарплата',
+        screenAI: 'AI', screenAdmin: 'Админка', screenControl: 'Контроль точек',
+        screenLocations: 'Графики точек', screenEmployees: 'Сотрудники',
+        screenAdminKeys: 'Ключи админа', screenAdminPin: 'Смена PIN',
+        screenSupply: 'Поставки', screenPayQr: 'Мой QR', screenMyShifts: 'Мои смены',
+        screenCreator: 'Создатель', screenGate: 'Вход по ключу', screenPeekAccount: 'Профиль ключа'
+      };
+      return m[id] || id || '';
+    }
+    function formatActTime(iso) {
+      try {
+        const d = new Date(iso);
+        const p = function(n){ return String(n).padStart(2,'0'); };
+        return p(d.getDate()) + '.' + p(d.getMonth()+1) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+      } catch (e) { return iso; }
+    }
+    let actPushTimer = null;
+    let actCache = null;
+    function logAction(what, extra) {
+      if (!what) return;
+      const ev = {
+        t: new Date().toISOString(),
+        who: actorLabel(),
+        what: String(what),
+        extra: extra ? String(extra) : '',
+        screen: (document.querySelector('.screen.active') || {}).id || ''
+      };
+      try {
+        const q = JSON.parse(localStorage.getItem('ios_act_queue') || '[]');
+        q.unshift(ev);
+        localStorage.setItem('ios_act_queue', JSON.stringify(q.slice(0, 40)));
+      } catch (e) {}
+      if (actCache && actCache.length) {
+        actCache.unshift(ev);
+        actCache = actCache.slice(0, 300);
+      }
+      clearTimeout(actPushTimer);
+      actPushTimer = setTimeout(flushActivityLog, 700);
+    }
+    async function flushActivityLog() {
+      let local = [];
+      try { local = JSON.parse(localStorage.getItem('ios_act_queue') || '[]'); } catch (e) { local = []; }
+      if (!local.length && actCache) return;
+      try {
+        const rows = await sbFetch('app_settings?key=eq.activity_log&select=value');
+        let list = [];
+        if (rows && rows[0] && rows[0].value != null) {
+          let v = rows[0].value;
+          if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = []; } }
+          if (Array.isArray(v)) list = v;
+          else if (v && Array.isArray(v.items)) list = v.items;
+        }
+        const seen = {};
+        const merged = local.concat(list).filter(function(e) {
+          const k = (e && e.t || '') + '|' + (e && e.what || '') + '|' + (e && e.who || '');
+          if (seen[k]) return false;
+          seen[k] = 1;
+          return !!(e && e.t);
+        });
+        merged.sort(function(a,b){ return String(b.t).localeCompare(String(a.t)); });
+        actCache = merged.slice(0, 300);
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({
+            key: 'activity_log',
+            value: JSON.stringify(actCache),
+            updated_at: new Date().toISOString()
+          })
+        });
+        localStorage.setItem('ios_act_queue', '[]');
+      } catch (e) {}
+    }
+    async function refreshActivityLog() {
+      const box = document.getElementById('activityLogList');
+      if (box) box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Гружу…</div>';
+      try { await flushActivityLog(); } catch (e) {}
+      try {
+        const rows = await sbFetch('app_settings?key=eq.activity_log&select=value');
+        let list = actCache || [];
+        if (rows && rows[0] && rows[0].value != null) {
+          let v = rows[0].value;
+          if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = list; } }
+          if (Array.isArray(v)) list = v;
+        }
+        actCache = list;
+        if (!box) return;
+        if (!list.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Пока пусто. Как кто-то тыкнет — появится.</div>';
+          return;
+        }
+        box.innerHTML = list.slice(0, 200).map(function(e) {
+          return '<div class="act-row"><div class="act-who">' + escapeHtml(e.who || 'гость') +
+            '</div><div class="act-what">' + escapeHtml(e.what || '') +
+            (e.extra ? ' · ' + escapeHtml(e.extra) : '') +
+            '</div><div class="act-when">' + escapeHtml(formatActTime(e.t)) +
+            (e.screen ? ' · ' + escapeHtml(screenLabel(e.screen)) : '') +
+            '</div></div>';
+        }).join('');
+      } catch (e) {
+        if (box) box.innerHTML = '<div style="color:#ff453a;font-size:13px;">Не смог прочитать лог</div>';
+      }
+    }
+    async function clearActivityLog() {
+      if (!confirm('Стереть весь лог?')) return;
+      actCache = [];
+      localStorage.setItem('ios_act_queue', '[]');
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'activity_log', value: '[]', updated_at: new Date().toISOString() })
+        });
+      } catch (e) {}
+      refreshActivityLog();
+    }
+
+    function getPayQr() {
+      try { return JSON.parse(localStorage.getItem('ios_pay_qr') || '{}'); }
+      catch (e) { return {}; }
+    }
+    function setPayQr(d) {
+      localStorage.setItem('ios_pay_qr', JSON.stringify(d || {}));
+      if (typeof scheduleCloudSave === 'function') scheduleCloudSave();
+    }
+    function fillPayQrForm() {
+      const d = getPayQr();
+      const p = document.getElementById('payQrPhone');
+      const b = document.getElementById('payQrBank');
+      const l = document.getElementById('payQrLink');
+      const s = document.getElementById('payQrSum');
+      if (p) p.value = d.phone || '';
+      if (b) b.value = d.bank || '';
+      if (l) l.value = d.link || '';
+      if (s) s.value = d.sum || '';
+      if (d.phone || d.link) buildPayQr(true);
+    }
+    function buildPayQr(silent) {
+      if (!silent) { try { logAction('собрал QR перевода'); } catch (e) {} }
+      const phone = ((document.getElementById('payQrPhone') || {}).value || '').trim();
+      const bank = ((document.getElementById('payQrBank') || {}).value || '').trim();
+      const link = ((document.getElementById('payQrLink') || {}).value || '').trim();
+      const sum = ((document.getElementById('payQrSum') || {}).value || '').trim();
+      if (!phone && !link) {
+        if (!silent) showToast('Нужен телефон или ссылка');
+        return;
+      }
+      setPayQr({ phone: phone, bank: bank, link: link, sum: sum });
+      let payload = link;
+      if (!payload) {
+        payload = 'Перевод СБП\nТел: ' + phone + (bank ? '\nБанк: ' + bank : '') + (sum ? '\nСумма: ' + sum + ' ₽' : '');
+      } else if (sum && payload.indexOf('sum') === -1) {
+        payload = link;
+      }
+      const img = document.getElementById('payQrImg');
+      const box = document.getElementById('payQrBox');
+      const txt = document.getElementById('payQrText');
+      if (img) img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&ecc=M&data=' + encodeURIComponent(payload);
+      if (box) box.style.display = 'block';
+      if (txt) txt.textContent = (phone ? phone : '') + (bank ? ' · ' + bank : '') + (sum ? '\n' + sum + ' ₽' : '') + (link ? '\nссылка из банка' : '');
+      if (!silent) showToast('QR готов', true);
+    }
+
     function getSupplyDates() {
       try { return JSON.parse(localStorage.getItem('ios_supply_dates') || '{}'); }
       catch (e) { return {}; }
@@ -5524,6 +5769,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       } catch (e) { renderSupplyCard(); }
     }
     async function saveSupplyDates() {
+      try { logAction('сменил даты поставок'); } catch (e) {}
       const d = {
         cig: (document.getElementById('supplyCigInput') || {}).value || '',
         other: (document.getElementById('supplyOtherInput') || {}).value || ''
@@ -5788,6 +6034,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     function logoutAccessKey() {
+      try { logAction('вышел из ключа'); } catch (e) {}
       clearSession();
       showToast('Вы вышли');
       bootAccessGate();
@@ -6088,6 +6335,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     async function heartbeatDeviceSession() {
       try { pullMyRole(); } catch (e) {}
       try { pullSupplyDates(); } catch (e) {}
+      try { await fetchGateFromCloud(); enforceGateScreen(); } catch (e) {}
       try {
         await validateCurrentSession();
         const rows = await sbFetch('device_sessions?id=eq.' + encodeURIComponent(getDeviceId()) + '&select=revoked');
@@ -6170,14 +6418,14 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
 
     function showCreatorTab(id) {
-      const map = { overview: 'Overview', people: 'People', keys: 'Keys', play: 'Play' };
-      ['overview','people','keys','play'].forEach(function(k) {
+      const map = { overview: 'Overview', people: 'People', keys: 'Keys', play: 'Play', log: 'Log' };
+      ['overview','people','keys','play','log'].forEach(function(k) {
         const panel = document.getElementById('crPanel' + map[k]);
         const nav = document.getElementById('crNav' + map[k].charAt(0).toUpperCase() + map[k].slice(1));
         if (panel) panel.classList.toggle('on', k === id);
         if (nav) nav.classList.toggle('on', k === id);
       });
-      const ids = { overview: 'crNavOverview', people: 'crNavPeople', keys: 'crNavKeys', play: 'crNavPlay' };
+      const ids = { overview: 'crNavOverview', people: 'crNavPeople', keys: 'crNavKeys', play: 'crNavPlay', log: 'crNavLog' };
       Object.keys(ids).forEach(function(k) {
         const nav = document.getElementById(ids[k]);
         if (nav) nav.classList.toggle('on', k === id);
@@ -6187,6 +6435,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       window.scrollTo(0, 0);
       if (id === 'people') { refreshDeviceSessions(); refreshPeekAccounts(); }
       if (id === 'keys') refreshAccessKeysList();
+      if (id === 'log') refreshActivityLog();
     }
 
     function creatorGoBack() {
@@ -6211,11 +6460,20 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       refreshAccessKeysList();
     }
 
+    function enforceGateScreen() {
+      if (!isGateEnabled()) return;
+      if (getSession()) return;
+      const creator = document.getElementById('screenCreator');
+      if (creator && creator.classList.contains('active')) return;
+      document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+      const gate = document.getElementById('screenGate');
+      if (gate) gate.classList.add('active');
+    }
+
     async function bootAccessGate() {
       try { await fetchGateFromCloud(); } catch (e) {}
       await validateCurrentSession();
       if (!isGateEnabled()) {
-        // open mode — show menu
         document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
         const menu = document.getElementById('screenMenu');
         if (menu) menu.classList.add('active');
@@ -6995,6 +7253,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.getElementById('shopOverlay').classList.remove('on');
     }
     function buyShopItem(id) {
+      try { logAction('покупка в магазине', id); } catch (e) {}
       const it = SHOP_ITEMS.filter(function(x){ return x.id === id; })[0];
       if (!it) return;
       if (getOwned().indexOf(id) >= 0) return showToast('Уже куплено');
@@ -7238,6 +7497,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     async function claimDailyCoins() {
+      try { logAction('забрал дневные монеты'); } catch (e) {}
       if (wheelBusy) return;
       await pullDailyLock();
       if (claimedToday()) {
@@ -7255,6 +7515,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     async function spinRoulette() {
+      try { logAction('крутанул рулетку'); } catch (e) {}
       if (wheelBusy) return;
       if (getCoins() < getSpinCost()) return showToast('Сначала забери ежедневные монеты');
       setCoins(getCoins() - getSpinCost());
@@ -7388,6 +7649,19 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     fetchAdminPinFromCloud();
     pullAdminSharedData();
     registerDeviceSession();
+
+    document.addEventListener('click', function(e) {
+      try {
+        if (e.target.closest && e.target.closest('#crPanelLog')) return;
+        const t = e.target.closest && e.target.closest('button, .btn, .menu-item, .option-btn, .cash-btn, .cr-nav-item');
+        if (!t) return;
+        let label = (t.innerText || t.getAttribute('title') || '').replace(/\s+/g, ' ').trim();
+        if (!label || label.length > 60) label = (t.className || 'кнопка').slice(0, 40);
+        if (/Назад|Мультитул|Обновить лог|Очистить/.test(label)) return;
+        logAction('нажал «' + label + '»');
+      } catch (err) {}
+    }, true);
+
     setInterval(heartbeatDeviceSession, 20000);
     updateAddHomeFabVisibility();
     window.matchMedia('(display-mode: standalone)').addEventListener('change', updateAddHomeFabVisibility);
