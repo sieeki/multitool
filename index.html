@@ -2529,7 +2529,7 @@
     <div class="back-btn" onclick="openScreen('screenMenu')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
     </div>
-    <div class="header"><div class="header-title"><h1>Заказать</h1><p>Общий список точки</p></div></div>
+    <div class="header"><div class="header-title"><h1 id="ordTitle">Заказать</h1><p id="ordSub">Сначала точка</p></div></div>
     <div class="card">
       <div class="ord-cats" id="ordCats"></div>
       <div class="input-group"><label>Точка</label>
@@ -2707,6 +2707,19 @@
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
 
+    <div class="menu-item" onclick="registerAdminFace()" style="border-color: rgba(10, 132, 255, 0.35);">
+      <div class="menu-item-left">
+        <div class="menu-icon icon-blue">
+          <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.93-1.38z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Привязать Face ID</h3>
+          <p>Вход в админку лицом</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+
     <div class="menu-item" onclick="openScreen('screenAdminPin')" style="border-color: rgba(142, 142, 147, 0.35);">
       <div class="menu-item-left">
         <div class="menu-icon" style="background:rgba(142,142,147,0.15);color:#8e8e93;">
@@ -2746,10 +2759,10 @@
 
   <!-- КЛЮЧИ (АДМИН) -->
   <div id="screenAdminOrders" class="screen">
-    <div class="back-btn" onclick="openScreen('screenAdmin')">
-      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админка
+    <div class="back-btn" id="adminOrdBack" onclick="backAdminOrders()">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> <span id="adminOrdBackLbl">Админка</span>
     </div>
-    <div class="header"><div class="header-title"><h1>Заказы</h1><p>По точкам</p></div></div>
+    <div class="header"><div class="header-title"><h1 id="adminOrdTitle">Заказы</h1><p id="adminOrdSub">Открой точку</p></div></div>
     <div class="card">
       <button class="btn btn-blue" onclick="pullOrderList()">Обновить</button>
       <div id="adminOrdList" style="margin-top:12px;"></div>
@@ -2823,6 +2836,8 @@
         <input type="password" id="pinNew2" placeholder="••••" maxlength="8" inputmode="numeric">
       </div>
       <button class="btn btn-blue" onclick="changeAdminPin()">Сохранить</button>
+      <button class="btn btn-green" onclick="registerAdminFace()" style="margin-top:8px;">Привязать Face ID</button>
+      <button class="btn btn-red-soft" onclick="setAdminFaceId('');showToast('Face ID снят');">Отвязать Face ID</button>
     </div>
   </div>
 
@@ -3182,6 +3197,8 @@
         <input type="password" id="adminPasswordInput" placeholder="••••" maxlength="8" inputmode="numeric" onkeydown="if(event.key==='Enter') checkAdminPassword()">
       </div>
       <button class="btn btn-orange" onclick="checkAdminPassword()" style="margin-top: 8px;">Войти</button>
+      <button class="btn btn-blue" id="adminFaceBtn" onclick="loginAdminFace()" style="margin-top: 8px;">Face ID / отпечаток</button>
+      <p style="font-size:12px;color:var(--text-sec);text-align:center;margin-top:8px;">Сначала один раз зайди PIN-ом и привяжи Face ID в админке.</p>
     </div>
   </div>
 
@@ -3573,8 +3590,8 @@
       if (screenId === 'screenAI') initAiScreen();
       if (screenId === 'screenMenu') { renderSupplyCard(); pullSupplyDates(); renderStreak(); }
       if (screenId === 'screenPayQr') fillPayQrForm();
-      if (screenId === 'screenOrder') { fillOrderPoints(); renderOrderCats(); pullOrderList(); }
-      if (screenId === 'screenAdminOrders') { pullOrderList().then(renderAdminOrders); }
+      if (screenId === 'screenOrder') { selectedOrderPoint = null; fillOrderPoints(); renderOrderCats(); pullOrderList(); }
+      if (screenId === 'screenAdminOrders') { selectedAdminOrderPoint = null; pullOrderList(); }
       if (screenId === 'screenSupply') { fillSupplyForm(); pullSupplyDates().then(fillSupplyForm); }
       if (screenId === 'screenAdmin' || screenId === 'screenControl' || screenId === 'screenLocations' || screenId === 'screenEmployees' || screenId === 'screenPointDetail' || screenId === 'screenCreator') {
         pullAdminSharedData().then(function(changed) {
@@ -3705,10 +3722,80 @@
       return getAdminPin();
     }
 
+    function getAdminFaceId() { return localStorage.getItem('ios_admin_webauthn') || ''; }
+    function setAdminFaceId(v) {
+      if (v) localStorage.setItem('ios_admin_webauthn', v);
+      else localStorage.removeItem('ios_admin_webauthn');
+    }
+    function b64url(buf) {
+      const b = btoa(String.fromCharCode.apply(null, new Uint8Array(buf)));
+      return b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    }
+    function fromB64url(s) {
+      s = (s || '').replace(/-/g,'+').replace(/_/g,'/');
+      while (s.length % 4) s += '=';
+      const bin = atob(s);
+      const out = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+    function faceError(e) {
+      const n = (e && e.name) || '';
+      if (!window.isSecureContext) return 'Нужен https. На этом localhost Face ID часто не стартует — залей на GitHub Pages и привяжи там.';
+      if (n === 'NotAllowedError') return 'Телефон не показал Face ID. Safari в превью/Local часто режет биометрию. Открой сайт в обычном Safari по https.';
+      if (n === 'InvalidStateError') return 'Уже привязано на этом телефоне';
+      if (n === 'NotSupportedError') return 'Этот браузер Face ID не умеет';
+      return (e && e.message) || n || 'не вышло';
+    }
+    async function registerAdminFace() {
+      if (!window.PublicKeyCredential) return showToast('Браузер без Face ID');
+      if (!window.isSecureContext) return showToast(faceError({ name: 'insecure' }));
+      const userId = crypto.getRandomValues(new Uint8Array(16));
+      const opts = {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp: { name: 'Мультитул' },
+        user: { id: userId, name: 'admin-' + Date.now(), displayName: 'Админ' },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+        authenticatorSelection: { userVerification: 'required' },
+        timeout: 90000
+      };
+      try {
+        const cred = await navigator.credentials.create({ publicKey: opts });
+        if (!cred) return showToast('Не вышло');
+        setAdminFaceId(b64url(cred.rawId));
+        showToast('Face ID привязан', true);
+      } catch (e) {
+        showToast(faceError(e));
+      }
+    }
+    async function loginAdminFace() {
+      if (!getAdminFaceId()) return showToast('Сначала привяжи Face ID в админке');
+      if (!window.PublicKeyCredential) return showToast('Браузер без Face ID');
+      try {
+        const assertion = await navigator.credentials.get({
+          publicKey: {
+            challenge: crypto.getRandomValues(new Uint8Array(32)),
+            allowCredentials: [{ type: 'public-key', id: fromB64url(getAdminFaceId()), transports: ['internal'] }],
+            userVerification: 'required',
+            timeout: 60000
+          }
+        });
+        if (!assertion) return showToast('Не вышло');
+        playAppStoreSound();
+        closeAdminAuthModal();
+        openScreen('screenAdmin');
+        showToast('Добро пожаловать!', true);
+      } catch (e) {
+        showToast(faceError(e));
+      }
+    }
     function openAdminAuthModal() {
       document.getElementById('adminPasswordInput').value = '';
       document.getElementById('adminAuthModal').classList.add('active');
+      const faceBtn = document.getElementById('adminFaceBtn');
+      if (faceBtn) faceBtn.style.display = getAdminFaceId() ? 'block' : 'none';
       setTimeout(function() { document.getElementById('adminPasswordInput').focus(); }, 200);
+      
       // подтянуть свежий PIN с сервера (тихо)
       fetchAdminPinFromCloud().then(function() {
         const el = document.getElementById('creatorPinDisplay');
@@ -6018,6 +6105,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     function setOrderList(arr) {
       localStorage.setItem('ios_order_list', JSON.stringify(arr || []));
       renderOrderList();
+      renderAdminOrders();
     }
     function fillOrderPoints() {
       const sel = document.getElementById('ordPoint');
@@ -6040,30 +6128,113 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       }).join('');
       renderOrderList();
     }
+
+    let selectedOrderPoint = null;
+    let selectedAdminOrderPoint = null;
+    function groupOrdersByPoint(list) {
+      const map = {};
+      const order = [];
+      (list || []).forEach(function(it) {
+        const key = it.point || it.pointName || 'none';
+        if (!map[key]) {
+          map[key] = { key: key, name: it.pointName || pointName(it.point), items: [] };
+          order.push(key);
+        }
+        map[key].items.push(it);
+      });
+      return order.map(function(k){ return map[k]; });
+    }
+    function renderPointCards(groups, admin) {
+      if (!groups.length) return '<div style="color:var(--text-sec);font-size:13px;">Заказов нет</div>';
+      return groups.map(function(g) {
+        const open = g.items.filter(function(it){ return !it.done; }).length;
+        const fn = admin ? 'openAdminPointOrder' : 'openPointOrder';
+        return '<div class="menu-item" onclick="' + fn + '(\'' + g.key + '\')" style="margin:0 0 10px;">' +
+          '<div class="menu-item-left"><div class="menu-text"><h3>' + escapeHtml(g.name) + '</h3>' +
+          '<p>' + open + ' открыто · ' + g.items.length + ' позиций</p></div></div>' +
+          '<div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div></div>';
+      }).join('');
+    }
+    function renderOnePointOrder(g, admin) {
+      if (!g) return '<div style="color:var(--text-sec);font-size:13px;">Пусто</div>';
+      const open = g.items.filter(function(it){ return !it.done; }).length;
+      const lines = g.items.map(function(it) {
+        return '<div class="ord-item' + (it.done ? ' done' : '') + '">' +
+          '<div style="flex:1;min-width:0;"><div class="ord-name">' + escapeHtml(it.text) +
+          ' <span style="font-size:11px;font-weight:700;color:var(--accent-orange);">' + escapeHtml(catName(it.cat)) + '</span></div>' +
+          (it.who ? '<div class="ord-meta">' + escapeHtml(it.who) + '</div>' : '') + '</div>' +
+          '<button class="btn btn-green" style="width:auto;padding:7px 10px;margin:0;" onclick="toggleOrderItem(\'' + it.id + '\')">' + (it.done ? 'Вернуть' : 'Ок') + '</button>' +
+          (admin ? '' : '<button class="btn btn-red-soft" style="width:auto;padding:7px 10px;margin:0;" onclick="removeOrderItem(\'' + it.id + '\')">×</button>') +
+          '</div>';
+      }).join('');
+      return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
+        '<div style="font-size:13px;color:var(--text-sec);">' + open + ' из ' + g.items.length + '</div>' +
+        '<button class="btn btn-green" style="width:auto;padding:8px 12px;margin:0;" onclick="togglePointOrders(\'' + g.key + '\')">Всё ок</button></div>' + lines;
+    }
+    function findPointGroup(key) {
+      return groupOrdersByPoint(getOrderList()).filter(function(g){ return g.key === key; })[0] || null;
+    }
+    function openPointOrder(key) {
+      selectedOrderPoint = key;
+      renderOrderList();
+    }
+    function openAdminPointOrder(key) {
+      selectedAdminOrderPoint = key;
+      renderAdminOrders();
+    }
+    function backAdminOrders() {
+      if (selectedAdminOrderPoint) {
+        selectedAdminOrderPoint = null;
+        renderAdminOrders();
+        return;
+      }
+      openScreen('screenAdmin');
+    }
+    function togglePointOrders(pointKey) {
+      const list = getOrderList();
+      const ofPoint = list.filter(function(it){ return (it.point || it.pointName || 'none') === pointKey; });
+      const allDone = ofPoint.every(function(it){ return it.done; });
+      list.forEach(function(it) {
+        if ((it.point || it.pointName || 'none') === pointKey) it.done = !allDone;
+      });
+      setOrderList(list); pushOrderList();
+    }
     function renderAdminOrders() {
       const box = document.getElementById('adminOrdList');
+      const title = document.getElementById('adminOrdTitle');
+      const sub = document.getElementById('adminOrdSub');
+      const backLbl = document.getElementById('adminOrdBackLbl');
       if (!box) return;
-      const list = getOrderList();
-      if (!list.length) { box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Заказов нет</div>'; return; }
-      box.innerHTML = list.map(function(it) {
-        return '<div class="ord-item' + (it.done ? ' done' : '') + '"><div style="flex:1;"><div class="ord-name">' + escapeHtml(it.text) +
-          '</div><div class="ord-meta">' + escapeHtml(it.pointName || pointName(it.point)) + ' · ' + escapeHtml(catName(it.cat)) +
-          (it.who ? ' · ' + escapeHtml(it.who) : '') + '</div></div>' +
-          '<button class="btn btn-green" style="width:auto;padding:8px 10px;margin:0;" onclick="toggleOrderItem(\'' + it.id + '\');renderAdminOrders();">' + (it.done ? 'Вернуть' : 'Ок') + '</button></div>';
-      }).join('');
+      if (!selectedAdminOrderPoint) {
+        if (title) title.textContent = 'Точки';
+        if (sub) sub.textContent = 'Открой точку — там заказ';
+        if (backLbl) backLbl.textContent = 'Админка';
+        box.innerHTML = renderPointCards(groupOrdersByPoint(getOrderList()), true);
+        return;
+      }
+      const g = findPointGroup(selectedAdminOrderPoint);
+      if (title) title.textContent = g ? g.name : 'Заказ';
+      if (sub) sub.textContent = 'Заказ точки';
+      if (backLbl) backLbl.textContent = 'Точки';
+      box.innerHTML = renderOnePointOrder(g, true);
     }
     function renderOrderList() {
       const box = document.getElementById('ordList');
+      const title = document.getElementById('ordTitle');
+      const sub = document.getElementById('ordSub');
       if (!box) return;
-      const list = getOrderList();
-      if (!list.length) { box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Пока пусто</div>'; return; }
-      box.innerHTML = list.map(function(it) {
-        return '<div class="ord-item' + (it.done ? ' done' : '') + '"><div style="flex:1;"><div class="ord-name">' + escapeHtml(it.text) +
-          '</div><div class="ord-meta">' + escapeHtml(pointName(it.point)) + ' · ' + escapeHtml(catName(it.cat)) + (it.who ? ' · ' + escapeHtml(it.who) : '') + '</div></div>' +
-          '<button class="btn btn-green" style="width:auto;padding:8px 10px;margin:0;" onclick="toggleOrderItem(\'' + it.id + '\')">' + (it.done ? 'Вернуть' : 'Ок') + '</button>' +
-          '<button class="btn btn-red-soft" style="width:auto;padding:8px 10px;margin:0;" onclick="removeOrderItem(\'' + it.id + '\')">×</button></div>';
-      }).join('');
+      if (!selectedOrderPoint) {
+        if (title) title.textContent = 'Заказать';
+        if (sub) sub.textContent = 'Выбери точку';
+        box.innerHTML = renderPointCards(groupOrdersByPoint(getOrderList()), false);
+        return;
+      }
+      const g = findPointGroup(selectedOrderPoint);
+      if (title) title.textContent = g ? g.name : 'Заказ';
+      if (sub) sub.textContent = 'Заказ точки';
+      box.innerHTML = '<button class="btn btn-red-soft" onclick="selectedOrderPoint=null;renderOrderList();">К точкам</button>' + renderOnePointOrder(g, false);
     }
+
     function addOrderItem() {
       const inp = document.getElementById('ordInput');
       const text = (inp && inp.value || '').trim();
