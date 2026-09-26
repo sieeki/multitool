@@ -43,6 +43,101 @@
       position: relative;
     }
 
+
+    body[data-theme="midnight"] {
+      --bg:#070b16; --card-bg:#12182a; --card-inner:#1c2540;
+      --accent-blue:#5b8cff; --accent-green:#3ee0a0; --accent-red:#ff5d6c;
+      --accent-orange:#ffb020; --accent-purple:#9b7dff; --text:#eef2ff; --text-sec:#8b93b0;
+    }
+    body[data-theme="graphite"] {
+      --bg:#121212; --card-bg:#1e1e1e; --card-inner:#2a2a2a;
+      --accent-blue:#64b5f6; --accent-green:#81c784; --accent-red:#e57373;
+      --accent-orange:#ffb74d; --accent-purple:#ba68c8; --text:#f5f5f5; --text-sec:#9e9e9e;
+    }
+    body[data-theme="forest"] {
+      --bg:#07140d; --card-bg:#102418; --card-inner:#183524;
+      --accent-blue:#6ec8ff; --accent-green:#3ddc84; --accent-red:#ff6b6b;
+      --accent-orange:#e6b35a; --accent-purple:#c09bff; --text:#e9f7ee; --text-sec:#86a392;
+    }
+    body[data-theme="wine"] {
+      --bg:#14060b; --card-bg:#241016; --card-inner:#331820;
+      --accent-blue:#7eb6ff; --accent-green:#7ddea0; --accent-red:#ff4d6d;
+      --accent-orange:#ff9f6b; --accent-purple:#e0aaff; --text:#ffe8ee; --text-sec:#b08b96;
+    }
+    body[data-theme="sand"] {
+      --bg:#16110b; --card-bg:#241c14; --card-inner:#32281d;
+      --accent-blue:#7ec8ff; --accent-green:#b6d67a; --accent-red:#ff7a59;
+      --accent-orange:#ffb347; --accent-purple:#d4a0ff; --text:#f6edd9; --text-sec:#a89478;
+    }
+    body[data-theme="neon"] {
+      --bg:#05050a; --card-bg:#101018; --card-inner:#1a1a28;
+      --accent-blue:#00e5ff; --accent-green:#39ff14; --accent-red:#ff2bd6;
+      --accent-orange:#ffea00; --accent-purple:#b14eff; --text:#f4f7ff; --text-sec:#8a8aaa;
+    }
+    body[data-theme="ice"] {
+      --bg:#0a1218; --card-bg:#12202b; --card-inner:#1b2e3d;
+      --accent-blue:#7ad7ff; --accent-green:#7dffc5; --accent-red:#ff8aa0;
+      --accent-orange:#ffd27a; --accent-purple:#c5b4ff; --text:#eaf6ff; --text-sec:#86a0b3;
+    }
+    body[data-theme="sunset"] {
+      --bg:#140c08; --card-bg:#241610; --card-inner:#332018;
+      --accent-blue:#7eb6ff; --accent-green:#9be38a; --accent-red:#ff5a4a;
+      --accent-orange:#ff7a18; --accent-purple:#ff8ad4; --text:#fff1e8; --text-sec:#b39484;
+    }
+    body[data-theme="lavender"] {
+      --bg:#100c16; --card-bg:#1c1626; --card-inner:#2a2138;
+      --accent-blue:#8ab4ff; --accent-green:#8ee0b5; --accent-red:#ff7b9c;
+      --accent-orange:#ffc36b; --accent-purple:#c77dff; --text:#f3eaff; --text-sec:#9a8bb0;
+    }
+    body[data-theme="matcha"] {
+      --bg:#0c1208; --card-bg:#171f12; --card-inner:#232e1b;
+      --accent-blue:#7ecbff; --accent-green:#9be15d; --accent-red:#ff7a6b;
+      --accent-orange:#e6c35c; --accent-purple:#c3a6ff; --text:#eef6e4; --text-sec:#8fa07a;
+    }
+    body[data-theme="crimson"] {
+      --bg:#120606; --card-bg:#221010; --card-inner:#321818;
+      --accent-blue:#7aa7ff; --accent-green:#7edc9a; --accent-red:#ff3b3b;
+      --accent-orange:#ff8a3d; --accent-purple:#ff7ad9; --text:#ffe9e9; --text-sec:#b08989;
+    }
+    body[data-theme="ocean"] {
+      --bg:#061016; --card-bg:#0e1e28; --card-inner:#162c3a;
+      --accent-blue:#2f9bff; --accent-green:#3ddeb5; --accent-red:#ff6b81;
+      --accent-orange:#ffc14d; --accent-purple:#9f8cff; --text:#e7f6ff; --text-sec:#7d9aab;
+    }
+    body[data-theme="amber"] {
+      --bg:#120e06; --card-bg:#221a0c; --card-inner:#322814;
+      --accent-blue:#6eb6ff; --accent-green:#b6e06a; --accent-red:#ff6a4a;
+      --accent-orange:#ffb000; --accent-purple:#d2a4ff; --text:#fff6df; --text-sec:#a89464;
+    }
+    body[data-theme="slate"] {
+      --bg:#0e1116; --card-bg:#181c24; --card-inner:#242a34;
+      --accent-blue:#6aa8ff; --accent-green:#5ee0a8; --accent-red:#ff6678;
+      --accent-orange:#ffb25a; --accent-purple:#b08cff; --text:#eef2f7; --text-sec:#8b93a1;
+    }
+    body[data-theme="rose"] {
+      --bg:#160910; --card-bg:#24141c; --card-inner:#341e28;
+      --accent-blue:#86b6ff; --accent-green:#8fe0b4; --accent-red:#ff5d8f;
+      --accent-orange:#ff9e6b; --accent-purple:#ff8cc8; --text:#ffecf3; --text-sec:#b08a9a;
+    }
+    .theme-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0 14px; max-height:46vh; overflow:auto; }
+    .theme-chip {
+      border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px 10px 8px;
+      text-align:left; background:var(--card-inner); color:var(--text); cursor:pointer;
+    }
+    .theme-chip.on { border-color:var(--accent-blue); }
+    .theme-dot { height:10px; border-radius:99px; margin-bottom:7px; }
+    .theme-chip b { font-size:13px; display:block; }
+    .ord-cats { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+    .ord-cat {
+      border:none; border-radius:999px; padding:7px 10px; font-size:12px; font-weight:650;
+      background:var(--card-inner); color:var(--text); cursor:pointer;
+    }
+    .ord-cat.on { background:var(--accent-blue); color:#fff; }
+    .ord-item { display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+    .ord-item.done .ord-name { text-decoration:line-through; opacity:.55; }
+    .ord-name { font-size:15px; font-weight:650; }
+    .ord-meta { font-size:12px; color:var(--text-sec); margin-top:2px; }
+
     .particle {
       position: fixed;
       top: -20px;
@@ -98,6 +193,12 @@
       pointer-events: auto;
       animation: screenEnter 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+    #screenGate.screen.active {
+      min-height: 100vh;
+      background: #000;
+      overflow: hidden;
+    }
+    body.on-gate .add-home-fab { display: none !important; }
 
     .screen.leaving {
       display: block;
@@ -1693,6 +1794,24 @@
     }
     .ai-key-status.off { color: var(--text-sec); font-weight: 500; }
 
+
+    #bootLoader {
+      position: fixed; inset: 0; z-index: 12000;
+      background: #000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 18px;
+    }
+    #bootLoader.off { display: none; }
+    .boot-spin {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.12);
+      border-top-color: #0a84ff;
+      animation: bootSpin 0.8s linear infinite;
+    }
+    @keyframes bootSpin { to { transform: rotate(360deg); } }
+    .boot-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+    .boot-sub { font-size: 13px; color: var(--text-sec); }
+
     .gate-wrap {
       min-height: 70vh;
       display: flex;
@@ -1946,6 +2065,8 @@
   <div class="modal-overlay" id="appPrefsModal" onclick="if(event.target===this) closeAppPrefs()">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-title">Настройки</div>
+      <div style="font-size:13px;color:var(--text-sec);margin-bottom:6px;">Тема оформления</div>
+      <div class="theme-grid" id="themeGrid"></div>
       <button class="btn btn-dev" onclick="openDevMenu()">Режим разработчика</button>
       <button class="btn btn-red-soft" onclick="closeAppPrefs()" style="margin-top:8px;">Закрыть</button>
     </div>
@@ -1994,6 +2115,13 @@
 
 
 
+
+  <div id="bootLoader">
+    <div class="boot-spin"></div>
+    <div class="boot-title">Мультитул</div>
+    <div class="boot-sub" id="bootLoaderText">Загрузка…</div>
+  </div>
+
   <!-- ВХОД ПО КЛЮЧУ -->
   <div id="screenGate" class="screen active">
     <div class="gate-wrap">
@@ -2029,6 +2157,10 @@
       <div class="header-title">
         <h1 id="brandTitle">Мультитул</h1>
         <p id="brandSub">Рабочий набор</p>
+        <div id="streakBtn" onclick="showStreakToast()" style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;background:rgba(255,122,24,.15);border:1px solid rgba(255,122,24,.45);border-radius:999px;padding:3px 10px 3px 8px;color:#ff7a18;font-weight:800;font-size:13px;cursor:pointer;width:fit-content;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 23c-4.2 0-7-2.8-7-6.6C5 12.2 8.4 9 12 4c3.6 5 7 8.2 7 12.4 0 3.8-2.8 6.6-7 6.6z"/></svg>
+          Огонёк <span id="streakBadge">0</span>
+        </div>
       </div>
       <div class="header-actions">
         <div class="icon-btn" onclick="openRoulette()" title="Рулетка" style="color:#ffd60a;position:relative;">
@@ -2155,6 +2287,19 @@
         <div class="menu-text">
           <h3>Зарплата</h3>
           <p>Итоги по месяцам</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+
+    <div class="menu-item" onclick="openScreen('screenOrder')">
+      <div class="menu-item-left">
+        <div class="menu-icon icon-orange">
+          <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0020 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Заказать</h3>
+          <p>Что кончилось на точке</p>
         </div>
       </div>
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
@@ -2380,6 +2525,25 @@
   </div>
 
   <!-- AI ЭКРАН -->
+  <div id="screenOrder" class="screen">
+    <div class="back-btn" onclick="openScreen('screenMenu')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
+    </div>
+    <div class="header"><div class="header-title"><h1>Заказать</h1><p>Общий список точки</p></div></div>
+    <div class="card">
+      <div class="ord-cats" id="ordCats"></div>
+      <div class="input-group"><label>Точка</label>
+        <select id="ordPoint" style="width:100%;background:var(--card-inner);color:var(--text);border:none;border-radius:12px;padding:12px;font-size:16px;"></select>
+      </div>
+      <div class="input-group"><label>Что нужно</label><input type="text" id="ordInput" placeholder="Parliament Aqua Blue 2бл"></div>
+      <button class="btn btn-orange" onclick="addOrderItem()">Добавить</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Список</div>
+      <div id="ordList"></div>
+    </div>
+  </div>
+
   <div id="screenAI" class="screen">
     <div class="back-btn" onclick="openScreen('screenMenu')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
@@ -2478,6 +2642,19 @@
       </div>
     </div>
 
+    <div class="menu-item" onclick="openScreen('screenAdminOrders')" style="border-color: rgba(255, 159, 10, 0.35);">
+      <div class="menu-item-left">
+        <div class="menu-icon icon-orange">
+          <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0020 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        </div>
+        <div class="menu-text">
+          <h3>Заказы точек</h3>
+          <p>Что просят привезти</p>
+        </div>
+      </div>
+      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    </div>
+
     <div class="menu-item" onclick="openScreen('screenControl')" style="border-color: rgba(10, 132, 255, 0.35);">
       <div class="menu-item-left">
         <div class="menu-icon icon-blue">
@@ -2568,6 +2745,17 @@
   </div>
 
   <!-- КЛЮЧИ (АДМИН) -->
+  <div id="screenAdminOrders" class="screen">
+    <div class="back-btn" onclick="openScreen('screenAdmin')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админка
+    </div>
+    <div class="header"><div class="header-title"><h1>Заказы</h1><p>По точкам</p></div></div>
+    <div class="card">
+      <button class="btn btn-blue" onclick="pullOrderList()">Обновить</button>
+      <div id="adminOrdList" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
   <div id="screenAdminKeys" class="screen">
     <div class="back-btn" onclick="openScreen('screenAdmin')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админ-панель
@@ -2760,6 +2948,7 @@
           <div class="input-group"><label>Ключ</label><input type="text" id="grantCoinKey" placeholder="MT-XXXX-XXXX" autocapitalize="characters"></div>
           <div class="input-group"><label>Сколько монет</label><input type="text" inputmode="numeric" id="grantCoinAmt" placeholder="50"></div>
           <button class="btn btn-purple" onclick="grantCoinsToKey()">Начислить</button>
+          <button class="btn btn-red-soft" onclick="takeCoinsFromKey()">Списать</button>
           <div class="card-title" style="margin-top:18px;">Шансы рулетки</div>
           <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
             Веса, не проценты. Больше число — чаще выпадает.
@@ -3034,6 +3223,12 @@
           Листья
         </span>
       </div>
+      <div class="option-btn" id="seasonOptHearts" onclick="selectSeasonMode('hearts')">
+        <span style="display:flex;align-items:center;gap:10px;">
+          <svg style="width:18px;height:18px;fill:#ff4d6d;" viewBox="0 0 24 24"><path d="M12 21s-6.7-4.35-9.33-8.1C.7 10.2 1.2 6.8 3.8 5.2 6 3.8 8.6 4.5 12 7.2 15.4 4.5 18 3.8 20.2 5.2c2.6 1.6 3.1 5 .13 7.7C18.7 16.65 12 21 12 21z"/></svg>
+          Сердечки
+        </span>
+      </div>
     </div>
   </div>
 
@@ -3133,11 +3328,13 @@
     })();
 
     // ===== Сезонные эффекты =====
-    const SEASON_MODES = ['off', 'snow', 'leaves'];
+    const SEASON_MODES = ['off', 'snow', 'leaves', 'hearts'];
     let seasonMode = localStorage.getItem('ios_season_mode') || 'off';
     let particleInterval = null;
 
     const LEAF_SVG = '<svg viewBox="0 0 24 24" fill="#e07a3a"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22.13C8.68 16.11 11 12.89 17 12V8M17 3C17 3 12 4 10 9C10 9 14.5 8 17 12C17 12 22 8 17 3Z"/></svg>';
+    const HEART_SVG = '<svg viewBox="0 0 24 24" fill="#ff4d6d"><path d="M12 21s-6.7-4.35-9.33-8.1C.7 10.2 1.2 6.8 3.8 5.2 6 3.8 8.6 4.5 12 7.2 15.4 4.5 18 3.8 20.2 5.2c2.6 1.6 3.1 5 .13 7.7C18.7 16.65 12 21 12 21z"/></svg>';
+    const HEART_ICON = '<path d="M12 21s-6.7-4.35-9.33-8.1C.7 10.2 1.2 6.8 3.8 5.2 6 3.8 8.6 4.5 12 7.2 15.4 4.5 18 3.8 20.2 5.2c2.6 1.6 3.1 5 .13 7.7C18.7 16.65 12 21 12 21z"/>';
     const SNOW_ICON = '<path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/>';
     const LEAF_ICON = '<path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22.13C8.68 16.11 11 12.89 17 12V8M17 3C17 3 12 4 10 9C10 9 14.5 8 17 12C17 12 22 8 17 3Z"/>';
     const OFF_ICON = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>';
@@ -3154,6 +3351,10 @@
         label.textContent = 'Эффекты: Листья';
         icon.innerHTML = LEAF_ICON;
         icon.style.fill = '#e07a3a';
+      } else if (seasonMode === 'hearts') {
+        label.textContent = 'Эффекты: Сердечки';
+        icon.innerHTML = HEART_ICON;
+        icon.style.fill = '#ff4d6d';
       } else {
         label.textContent = 'Эффекты: Выкл';
         icon.innerHTML = OFF_ICON;
@@ -3200,6 +3401,23 @@
       setTimeout(() => el.remove(), duration * 1000 + 100);
     }
 
+
+    function createHeart() {
+      const el = document.createElement('div');
+      el.className = 'particle leaf';
+      el.style.left = Math.random() * window.innerWidth + 'px';
+      const size = (Math.random() * 10 + 12) + 'px';
+      el.style.width = size;
+      el.style.height = size;
+      el.innerHTML = HEART_SVG;
+      const duration = Math.random() * 3.5 + 4;
+      el.style.animationDuration = duration + 's';
+      const colors = ['#ff4d6d', '#ff2d55', '#ff7aa2', '#ff3b5c', '#ff8fab'];
+      const svg = el.querySelector('svg');
+      if (svg) svg.setAttribute('fill', colors[Math.floor(Math.random() * colors.length)]);
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), duration * 1000 + 100);
+    }
     function startSeasonMode(mode) {
       clearParticles();
       seasonMode = mode;
@@ -3209,6 +3427,8 @@
         particleInterval = setInterval(createSnowflake, 160);
       } else if (mode === 'leaves') {
         particleInterval = setInterval(createLeaf, 280);
+      } else if (mode === 'hearts') {
+        particleInterval = setInterval(createHeart, 220);
       }
     }
 
@@ -3224,11 +3444,11 @@
     }
 
     function updateSeasonModalUI() {
-      ['seasonOptOff', 'seasonOptSnow', 'seasonOptLeaves'].forEach(id => {
+      ['seasonOptOff', 'seasonOptSnow', 'seasonOptLeaves', 'seasonOptHearts'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('selected');
       });
-      const map = { off: 'seasonOptOff', snow: 'seasonOptSnow', leaves: 'seasonOptLeaves' };
+      const map = { off: 'seasonOptOff', snow: 'seasonOptSnow', leaves: 'seasonOptLeaves', hearts: 'seasonOptHearts' };
       const active = document.getElementById(map[seasonMode] || 'seasonOptOff');
       if (active) active.classList.add('selected');
     }
@@ -3236,7 +3456,7 @@
     function selectSeasonMode(mode) {
       startSeasonMode(mode);
       updateSeasonModalUI();
-      const names = { off: 'Эффекты выключены', snow: 'Снег включён', leaves: 'Листья включены' };
+      const names = { off: 'Эффекты выключены', snow: 'Снег включён', leaves: 'Листья включены', hearts: 'Сердечки включены' };
       showToast(names[mode] || 'Готово', mode !== 'off');
       playAppStoreSound();
       setTimeout(() => closeSeasonModal({ target: document.getElementById('seasonModal') }), 180);
@@ -3289,6 +3509,14 @@
     }
 
     let screenTransitionLock = false;
+    function setOnlyScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(function(s) {
+        s.classList.remove('active', 'leaving');
+      });
+      const target = document.getElementById(screenId);
+      if (target) target.classList.add('active');
+      document.body.classList.toggle('on-gate', screenId === 'screenGate');
+    }
     function openScreen(screenId) {
       try { devLog('screen ' + screenId); } catch (e) {}
       if (screenTransitionLock) return;
@@ -3298,21 +3526,31 @@
         alert('Нет экрана: ' + screenId);
         return;
       }
-      if (current === target) return;
+      if (current === target) {
+        document.body.classList.toggle('on-gate', screenId === 'screenGate');
+        return;
+      }
 
       screenTransitionLock = true;
+      document.querySelectorAll('.screen').forEach(function(s) {
+        if (s !== current && s !== target) s.classList.remove('active', 'leaving');
+      });
 
       if (current) {
         current.classList.add('leaving');
         current.classList.remove('active');
         setTimeout(() => {
           current.classList.remove('leaving');
+          document.querySelectorAll('.screen').forEach(function(s) {
+            if (s !== target) s.classList.remove('active', 'leaving');
+          });
           target.classList.add('active');
+          document.body.classList.toggle('on-gate', screenId === 'screenGate');
           afterScreenOpen(screenId);
           screenTransitionLock = false;
         }, 200);
       } else {
-        target.classList.add('active');
+        setOnlyScreen(screenId);
         afterScreenOpen(screenId);
         screenTransitionLock = false;
         try { if (screenId !== 'screenCreator') logAction('открыл «' + screenLabel(screenId) + '»'); } catch (e) {}
@@ -3333,8 +3571,10 @@
       if (screenId === 'screenCreator') { renderCreatorScreen(); refreshPeekAccounts(); }
       if (screenId === 'screenAdminKeys') renderAdminKeysScreen();
       if (screenId === 'screenAI') initAiScreen();
-      if (screenId === 'screenMenu') { renderSupplyCard(); pullSupplyDates(); }
+      if (screenId === 'screenMenu') { renderSupplyCard(); pullSupplyDates(); renderStreak(); }
       if (screenId === 'screenPayQr') fillPayQrForm();
+      if (screenId === 'screenOrder') { fillOrderPoints(); renderOrderCats(); pullOrderList(); }
+      if (screenId === 'screenAdminOrders') { pullOrderList().then(renderAdminOrders); }
       if (screenId === 'screenSupply') { fillSupplyForm(); pullSupplyDates().then(fillSupplyForm); }
       if (screenId === 'screenAdmin' || screenId === 'screenControl' || screenId === 'screenLocations' || screenId === 'screenEmployees' || screenId === 'screenPointDetail' || screenId === 'screenCreator') {
         pullAdminSharedData().then(function(changed) {
@@ -4403,6 +4643,62 @@
     }
 
     // ============ СМЕНЫ ============
+
+    function todayISO() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+    function shiftDateToIso(raw) {
+      const d = String(raw || '').trim();
+      if (!d) return '';
+      if (d.charAt(4) === '-') return d.slice(0, 10);
+      const p = d.split('.');
+      if (p.length < 3) return '';
+      const dd = p[0].padStart(2,'0');
+      const mm = p[1].padStart(2,'0');
+      const yy = p[2].length === 2 ? ('20' + p[2]) : p[2];
+      return yy + '-' + mm + '-' + dd;
+    }
+    function countWeekStreak() {
+      let n = 0;
+      try { n += (getData().shifts || []).length; } catch (e) {}
+      try {
+        (getArchive() || []).forEach(function(w) {
+          n += (w.shifts && w.shifts.length) || w.shiftsCount || 0;
+        });
+      } catch (e) {}
+      return n;
+    }
+    function getStreak() { return { count: countWeekStreak() }; }
+    function persistStreakToCloudLocal() {
+      const n = countWeekStreak();
+      const last = (function(){
+        try {
+          const arr = (getData().shifts || []).map(function(s){ return shiftDateToIso(s.date); }).filter(Boolean).sort();
+          return arr[arr.length-1] || '';
+        } catch (e) { return ''; }
+      })();
+      localStorage.setItem('ios_shift_streak', JSON.stringify({ count: n, last: last, at: new Date().toISOString() }));
+      renderStreak();
+      return n;
+    }
+    function rebuildStreakFromShifts() {
+      return persistStreakToCloudLocal();
+    }
+    function bumpShiftStreak() { return rebuildStreakFromShifts(); }
+    function renderStreak() {
+      const n = countWeekStreak();
+      const btn = document.getElementById('streakBtn');
+      if (!btn) return;
+      btn.style.display = 'inline-flex';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 23c-4.2 0-7-2.8-7-6.6C5 12.2 8.4 9 12 4c3.6 5 7 8.2 7 12.4 0 3.8-2.8 6.6-7 6.6z"/></svg> Огонёк <span id="streakBadge">' + n + '</span>';
+      btn.style.color = n >= 2 ? '#ff7a18' : '#ff9f0a';
+    }
+    function showStreakToast() {
+      const n = countWeekStreak();
+      showToast(n ? ('Огонёк: ' + n + ' дн. подряд по сменам') : 'Нет подряд идущих смен', !!n);
+    }
+
     function addShift() {
       try { logAction('добавил смену'); } catch (e) {}
       const dateInput = document.getElementById('shiftDate').value;
@@ -4424,6 +4720,8 @@
       playAppStoreSound();
       triggerSuccessFlash();
       showToast('Смена добавлена', true);
+      const n = rebuildStreakFromShifts();
+      if (n) showToast('Огонёк ' + n + ' дн.', true);
       const btn = document.querySelector('#screenShifts .btn-blue');
       if (btn) { btn.classList.remove('success-pulse'); void btn.offsetWidth; btn.classList.add('success-pulse'); }
     }
@@ -4447,6 +4745,7 @@
     function deleteDeduction(idx) { let store = getData(); store.deductions.splice(idx, 1); saveData(store); render(); }
 
     function render() {
+      try { rebuildStreakFromShifts(); } catch (e) {}
       const store = getData();
       const listCard = document.getElementById('shiftsListCard');
       const reportCard = document.getElementById('reportCard');
@@ -4692,6 +4991,7 @@
       render();
       playAppStoreSound();
       triggerSuccessFlash();
+      persistStreakToCloudLocal();
       showToast('Неделя сохранена в архив', true);
     }
 
@@ -5276,7 +5576,9 @@
       'ios_shop_on',
       'ios_luck_until',
       'ios_shop_status',
-      'ios_pay_qr'
+      'ios_pay_qr',
+      'ios_theme',
+      'ios_shift_streak'
     ];
 
     const SUPABASE_SQL = `-- Выполни в Supabase → SQL Editor\ncreate table if not exists access_keys (\n  code text primary key,\n  name text not null,\n  expires_at timestamptz,\n  active boolean default true,\n  created_at timestamptz default now()\n);\ncreate table if not exists key_data (\n  code text primary key references access_keys(code) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz default now()\n);\nalter table access_keys enable row level security;\nalter table key_data enable row level security;\ncreate policy "anon_all_keys" on access_keys for all using (true) with check (true);\ncreate policy "anon_all_data" on key_data for all using (true) with check (true);
@@ -5492,6 +5794,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           localStorage.setItem(k, payload[k]);
         }
       });
+      try { persistStreakToCloudLocal(); } catch (e) {}
     }
 
     function hasLocalUserData() {
@@ -5652,6 +5955,160 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         });
       } catch (e) {}
       refreshActivityLog();
+    }
+
+
+    const THEMES = [
+      { id: 'classic', name: 'Классика', bar: 'linear-gradient(90deg,#0a84ff,#30d158)' },
+      { id: 'midnight', name: 'Полночь', bar: 'linear-gradient(90deg,#5b8cff,#9b7dff)' },
+      { id: 'graphite', name: 'Графит', bar: 'linear-gradient(90deg,#9e9e9e,#64b5f6)' },
+      { id: 'forest', name: 'Лес', bar: 'linear-gradient(90deg,#3ddc84,#6ec8ff)' },
+      { id: 'wine', name: 'Вино', bar: 'linear-gradient(90deg,#ff4d6d,#e0aaff)' },
+      { id: 'sand', name: 'Песок', bar: 'linear-gradient(90deg,#ffb347,#e6b35a)' },
+      { id: 'neon', name: 'Неон', bar: 'linear-gradient(90deg,#00e5ff,#ff2bd6)' },
+      { id: 'ice', name: 'Лёд', bar: 'linear-gradient(90deg,#7ad7ff,#7dffc5)' },
+      { id: 'sunset', name: 'Закат', bar: 'linear-gradient(90deg,#ff7a18,#ff8ad4)' },
+      { id: 'lavender', name: 'Лаванда', bar: 'linear-gradient(90deg,#c77dff,#8ab4ff)' },
+      { id: 'matcha', name: 'Матча', bar: 'linear-gradient(90deg,#9be15d,#7ecbff)' },
+      { id: 'crimson', name: 'Кримсон', bar: 'linear-gradient(90deg,#ff3b3b,#ff8a3d)' },
+      { id: 'ocean', name: 'Океан', bar: 'linear-gradient(90deg,#2f9bff,#3ddeb5)' },
+      { id: 'amber', name: 'Янтарь', bar: 'linear-gradient(90deg,#ffb000,#e6c35c)' },
+      { id: 'slate', name: 'Сланец', bar: 'linear-gradient(90deg,#6aa8ff,#b08cff)' },
+      { id: 'rose', name: 'Роза', bar: 'linear-gradient(90deg,#ff5d8f,#ff8cc8)' }
+    ];
+    function getTheme() { return localStorage.getItem('ios_theme') || 'classic'; }
+    function applyTheme(id) {
+      id = id || getTheme();
+      if (id === 'classic') document.body.removeAttribute('data-theme');
+      else document.body.setAttribute('data-theme', id);
+      localStorage.setItem('ios_theme', id);
+      try { if (typeof scheduleCloudSave === 'function') scheduleCloudSave(); } catch (e) {}
+      const grid = document.getElementById('themeGrid');
+      if (grid) {
+        grid.innerHTML = THEMES.map(function(t) {
+          return '<button type="button" class="theme-chip' + (t.id === id ? ' on' : '') + '" onclick="setTheme(\'' + t.id + '\')"><div class="theme-dot" style="background:' + t.bar + '"></div><b>' + t.name + '</b></button>';
+        }).join('');
+      }
+    }
+    function setTheme(id) { applyTheme(id); showToast('Тема: ' + ((THEMES.find(function(t){return t.id===id;})||{}).name || id), true); }
+
+    const ORDER_CATS = [
+      { id: 'cig', name: 'Сигареты' },
+      { id: 'disp', name: 'Одноразки' },
+      { id: 'liq', name: 'Жижи' },
+      { id: 'pods', name: 'Поды' },
+      { id: 'snus', name: 'Снюсы' },
+      { id: 'tob', name: 'Табаки' },
+      { id: 'cart', name: 'Картриджи' },
+      { id: 'hookah', name: 'Табак для кальяна' },
+      { id: 'gas', name: 'Газ' },
+      { id: 'benz', name: 'Бензин' },
+      { id: 'drink', name: 'Напитки' },
+      { id: 'other', name: 'Другое' }
+    ];
+    let orderCat = 'cig';
+    function catName(id) {
+      const c = ORDER_CATS.find(function(x){ return x.id === id; });
+      return c ? c.name : 'Другое';
+    }
+    function getOrderList() {
+      try { return JSON.parse(localStorage.getItem('ios_order_list') || '[]'); }
+      catch (e) { return []; }
+    }
+    function setOrderList(arr) {
+      localStorage.setItem('ios_order_list', JSON.stringify(arr || []));
+      renderOrderList();
+    }
+    function fillOrderPoints() {
+      const sel = document.getElementById('ordPoint');
+      if (!sel || typeof POINTS === 'undefined') return;
+      const prev = sel.value || localStorage.getItem('ios_order_point') || '';
+      sel.innerHTML = Object.keys(POINTS).map(function(k) {
+        return '<option value="' + k + '">' + POINTS[k].name + '</option>';
+      }).join('');
+      if (prev && POINTS[prev]) sel.value = prev;
+    }
+    function pointName(id) {
+      try { return (POINTS[id] && POINTS[id].name) || id || 'точка не указана'; }
+      catch (e) { return id || 'точка не указана'; }
+    }
+    function renderOrderCats() {
+      const box = document.getElementById('ordCats');
+      if (!box) return;
+      box.innerHTML = ORDER_CATS.map(function(c) {
+        return '<button type="button" class="ord-cat' + (c.id === orderCat ? ' on' : '') + '" onclick="orderCat=\'' + c.id + '\';renderOrderCats();">' + c.name + '</button>';
+      }).join('');
+      renderOrderList();
+    }
+    function renderAdminOrders() {
+      const box = document.getElementById('adminOrdList');
+      if (!box) return;
+      const list = getOrderList();
+      if (!list.length) { box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Заказов нет</div>'; return; }
+      box.innerHTML = list.map(function(it) {
+        return '<div class="ord-item' + (it.done ? ' done' : '') + '"><div style="flex:1;"><div class="ord-name">' + escapeHtml(it.text) +
+          '</div><div class="ord-meta">' + escapeHtml(it.pointName || pointName(it.point)) + ' · ' + escapeHtml(catName(it.cat)) +
+          (it.who ? ' · ' + escapeHtml(it.who) : '') + '</div></div>' +
+          '<button class="btn btn-green" style="width:auto;padding:8px 10px;margin:0;" onclick="toggleOrderItem(\'' + it.id + '\');renderAdminOrders();">' + (it.done ? 'Вернуть' : 'Ок') + '</button></div>';
+      }).join('');
+    }
+    function renderOrderList() {
+      const box = document.getElementById('ordList');
+      if (!box) return;
+      const list = getOrderList();
+      if (!list.length) { box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Пока пусто</div>'; return; }
+      box.innerHTML = list.map(function(it) {
+        return '<div class="ord-item' + (it.done ? ' done' : '') + '"><div style="flex:1;"><div class="ord-name">' + escapeHtml(it.text) +
+          '</div><div class="ord-meta">' + escapeHtml(pointName(it.point)) + ' · ' + escapeHtml(catName(it.cat)) + (it.who ? ' · ' + escapeHtml(it.who) : '') + '</div></div>' +
+          '<button class="btn btn-green" style="width:auto;padding:8px 10px;margin:0;" onclick="toggleOrderItem(\'' + it.id + '\')">' + (it.done ? 'Вернуть' : 'Ок') + '</button>' +
+          '<button class="btn btn-red-soft" style="width:auto;padding:8px 10px;margin:0;" onclick="removeOrderItem(\'' + it.id + '\')">×</button></div>';
+      }).join('');
+    }
+    function addOrderItem() {
+      const inp = document.getElementById('ordInput');
+      const text = (inp && inp.value || '').trim();
+      if (!text) return showToast('Напиши что заказать');
+      const list = getOrderList();
+      let who = 'сотрудник';
+      try { const s = getSession(); if (s) who = s.name || s.code || who; } catch (e) {}
+      const pointEl = document.getElementById('ordPoint');
+      const point = (pointEl && pointEl.value) || '';
+      if (point) localStorage.setItem('ios_order_point', point);
+      if (!point) return showToast('Выбери точку');
+      list.unshift({ id: 'o' + Date.now(), cat: orderCat, text: text, who: who, point: point, pointName: pointName(point), t: new Date().toISOString(), done: false });
+      setOrderList(list);
+      if (inp) inp.value = '';
+      pushOrderList();
+      try { logAction('заказал', text); } catch (e) {}
+      showToast('Добавлено', true);
+    }
+    function toggleOrderItem(id) {
+      const list = getOrderList().map(function(it){ if (it.id === id) it.done = !it.done; return it; });
+      setOrderList(list); pushOrderList();
+    }
+    function removeOrderItem(id) {
+      setOrderList(getOrderList().filter(function(it){ return it.id !== id; }));
+      pushOrderList();
+    }
+    async function pullOrderList() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.order_list&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) { renderOrderList(); return; }
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = []; } }
+        if (Array.isArray(v)) { localStorage.setItem('ios_order_list', JSON.stringify(v)); }
+        renderOrderList();
+        renderAdminOrders();
+      } catch (e) { renderOrderList(); renderAdminOrders(); }
+    }
+    async function pushOrderList() {
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'order_list', value: JSON.stringify(getOrderList()), updated_at: new Date().toISOString() })
+        });
+      } catch (e) {}
     }
 
     function getPayQr() {
@@ -5955,17 +6412,29 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       }
     }
 
+
+    function showBoot(text) {
+      const el = document.getElementById('bootLoader');
+      const t = document.getElementById('bootLoaderText');
+      if (t) t.textContent = text || 'Загрузка…';
+      if (el) el.classList.remove('off');
+    }
+    function hideBoot() {
+      const el = document.getElementById('bootLoader');
+      if (el) el.classList.add('off');
+    }
+
     let pendingBind = null;
 
     async function submitAccessKey() {
       const input = document.getElementById('gateKeyInput');
       const code = (input && input.value || '').trim().toUpperCase();
       if (!code) return showToast('Введи ключ');
-      showToast('Проверяем…');
+      showBoot('Проверяю ключ…');
       try {
         const rec = await findKeyRecord(code);
         const check = keyIsValid(rec);
-        if (!check.ok) return showToast(check.reason);
+        if (!check.ok) { hideBoot(); return showToast(check.reason); }
 
         const session = {
           code: rec.code,
@@ -5986,6 +6455,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           setSession(session);
           const card = document.getElementById('gateBindCard');
           if (card) card.style.display = 'block';
+          hideBoot();
           showToast('Найдены локальные данные');
           return;
         }
@@ -5998,6 +6468,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         playAppStoreSound();
         finishGateLogin();
       } catch (e) {
+        hideBoot();
         showToast(e.message || 'Ошибка входа');
       }
     }
@@ -6026,9 +6497,11 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     function finishGateLogin() {
+      showBoot('Собираю данные…');
       render();
       renderNotes();
       openScreen('screenMenu');
+      hideBoot();
       showToast('Вход выполнен', true);
       registerDeviceSession();
     }
@@ -6037,7 +6510,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       try { logAction('вышел из ключа'); } catch (e) {}
       clearSession();
       showToast('Вы вышли');
-      bootAccessGate();
+      applyTheme(getTheme());
+    rebuildStreakFromShifts();
+    bootAccessGate();
     }
 
     async function createAccessKey(source) {
@@ -6465,43 +6940,41 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (getSession()) return;
       const creator = document.getElementById('screenCreator');
       if (creator && creator.classList.contains('active')) return;
-      document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
-      const gate = document.getElementById('screenGate');
-      if (gate) gate.classList.add('active');
+      setOnlyScreen('screenGate');
     }
 
     async function bootAccessGate() {
-      try { await fetchGateFromCloud(); } catch (e) {}
-      await validateCurrentSession();
-      if (!isGateEnabled()) {
-        document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
-        const menu = document.getElementById('screenMenu');
-        if (menu) menu.classList.add('active');
-        renderSupplyCard();
-        pullSupplyDates();
-        return;
-      }
-      const session = getSession();
-      if (session) {
-        // re-validate expiry quickly from session field
-        if (session.expires_at && Date.now() > new Date(session.expires_at).getTime()) {
-          clearSession();
-          document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
-          const gate = document.getElementById('screenGate');
-          if (gate) gate.classList.add('active');
-          showToast('Срок ключа истёк');
+      showBoot(getSession() ? 'Входим…' : 'Загрузка…');
+      try {
+        try { await fetchGateFromCloud(); } catch (e) {}
+        await validateCurrentSession();
+        if (!isGateEnabled()) {
+          setOnlyScreen('screenMenu');
+          renderSupplyCard();
+          pullSupplyDates();
           return;
         }
-        document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
-        const menu = document.getElementById('screenMenu');
-        if (menu) menu.classList.add('active');
-        renderSupplyCard();
-        pullSupplyDates();
-        return;
+        const session = getSession();
+        if (session) {
+          if (session.expires_at && Date.now() > new Date(session.expires_at).getTime()) {
+            clearSession();
+            setOnlyScreen('screenGate');
+            showToast('Срок ключа истёк');
+            return;
+          }
+          showBoot('Подтягиваю смены…');
+          setOnlyScreen('screenMenu');
+          renderSupplyCard();
+          pullSupplyDates();
+          return;
+        }
+        setOnlyScreen('screenGate');
+      } finally {
+        hideBoot();
+        setTimeout(renderStreak, 50);
+        setTimeout(renderStreak, 400);
+        setTimeout(renderStreak, 1200);
       }
-      document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
-      const gate = document.getElementById('screenGate');
-      if (gate) gate.classList.add('active');
     }
 
 
@@ -6553,6 +7026,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     function openAppPrefs() {
       const m = document.getElementById('appPrefsModal');
       if (m) m.classList.add('active');
+      applyTheme(getTheme());
     }
     function closeAppPrefs() {
       const m = document.getElementById('appPrefsModal');
@@ -7608,6 +8082,34 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       }
     }
 
+
+    async function takeCoinsFromKey() {
+      const code = (document.getElementById('grantCoinKey').value || '').trim().toUpperCase();
+      const amt = parseInt((document.getElementById('grantCoinAmt').value || '').replace(/\s/g,''), 10);
+      if (!code) return showToast('Введи ключ');
+      if (!amt || amt < 1) return showToast('Сколько списать?');
+      try {
+        const rec = await findKeyRecord(code);
+        if (!rec) return showToast('Ключ не найден');
+        let payload = {};
+        try { payload = await pullKeyDataFromCloud(code) || {}; } catch (e) {}
+        const cur = parseInt(payload.ios_coins || '0', 10) || 0;
+        const next = Math.max(0, cur - amt);
+        payload.ios_coins = String(next);
+        payload._savedAt = new Date().toISOString();
+        await sbFetch('key_data?on_conflict=code', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ code: code, payload: payload, updated_at: new Date().toISOString() })
+        });
+        const sess = getSession();
+        if (sess && sess.code === code) setCoins(next);
+        showToast('Списал ' + amt + ' · было ' + cur + ', стало ' + next, true);
+        try { logAction('списал монеты', code + ' -' + amt); } catch (e) {}
+      } catch (e) {
+        showToast(e.message || 'не вышло');
+      }
+    }
     async function grantCoinsToKey() {
       const code = (document.getElementById('grantCoinKey').value || '').trim().toUpperCase();
       const amt = parseInt((document.getElementById('grantCoinAmt').value || '').replace(/\s/g,''), 10);
@@ -7645,6 +8147,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     applyShopCosmetics();
     try { applyRoleBadge(JSON.parse(localStorage.getItem('ios_my_role')||'null')); } catch(e) {}
     pullMyRole();
+    applyTheme(getTheme());
+    rebuildStreakFromShifts();
     bootAccessGate();
     fetchAdminPinFromCloud();
     pullAdminSharedData();
