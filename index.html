@@ -2260,7 +2260,7 @@
         </div>
         <div class="menu-text">
           <h3>Мой QR</h3>
-          <p>Перевод на свой номер</p>
+          <p>В разработке</p>
         </div>
       </div>
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
@@ -2438,20 +2438,14 @@
     <div class="back-btn" onclick="openScreen('screenMenu')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Мультитул
     </div>
-    <div class="header"><div class="header-title"><h1>Мой QR</h1><p>Только твой, на этом ключе</p></div></div>
-    <div class="card">
-      <div class="input-group"><label>Телефон</label><input type="tel" id="payQrPhone" placeholder="+7 900 000 00 00"></div>
-      <div class="input-group"><label>Банк</label><input type="text" id="payQrBank" placeholder="Тинькофф"></div>
-      <div class="input-group"><label>Ссылка из банка (если есть)</label><input type="url" id="payQrLink" placeholder="https://..."></div>
-      <div class="input-group"><label>Сумма, если надо (необязательно)</label><input type="text" inputmode="decimal" id="payQrSum" placeholder="пусто = без суммы"></div>
-      <button class="btn btn-blue" onclick="buildPayQr()">Показать QR</button>
-    </div>
-    <div class="card" id="payQrBox" style="display:none;text-align:center;">
-      <img id="payQrImg" alt="QR" style="width:220px;height:220px;border-radius:12px;background:#fff;padding:8px;">
-      <div id="payQrText" style="margin-top:10px;font-size:13px;color:var(--text-sec);white-space:pre-line;"></div>
-    </div>
-    <div style="font-size:12px;color:var(--text-sec);padding:0 4px 20px;line-height:1.4;">
-      Если вставишь ссылку из своего банка — скан откроет перевод. Если только номер и банк — на коде будет текст, человек сам вбьёт в СБП.
+    <div class="header"><div class="header-title"><h1>Мой QR</h1><p>Перевод на свой номер</p></div></div>
+    <div class="card" style="text-align:center;padding:36px 20px;">
+      <div style="width:64px;height:64px;border-radius:18px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;background:rgba(10,132,255,.15);color:#0a84ff;">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm12-2h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 0h2v6h-6v-2h2v-2h2v-2zm-4 4h2v2h-2v-2z"/></svg>
+      </div>
+      <div style="display:inline-block;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--accent-orange);background:rgba(255,159,10,.12);border-radius:999px;padding:5px 10px;margin-bottom:12px;">В разработке</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:6px;">Скоро</div>
+      <div style="font-size:14px;color:var(--text-sec);line-height:1.45;">QR на перевод пока выключен. Соберу нормально, без этой кривой формы.</div>
     </div>
   </div>
 
@@ -3439,6 +3433,7 @@
       clearParticles();
       seasonMode = mode;
       localStorage.setItem('ios_season_mode', mode);
+      try { if (typeof scheduleCloudSave === 'function') scheduleCloudSave(); } catch (e) {}
       updateSeasonMenuUI();
       if (mode === 'snow') {
         particleInterval = setInterval(createSnowflake, 160);
@@ -5650,8 +5645,6 @@
       'ios_paid_amount',
       'ios_month_shifts',
       'ios_notes',
-      'ios_point_data',
-      'ios_employees',
       'ios_payouts',
       'ios_season_mode',
       'ios_groq_key',
@@ -5665,7 +5658,8 @@
       'ios_shop_status',
       'ios_pay_qr',
       'ios_theme',
-      'ios_shift_streak'
+      'ios_shift_streak',
+      'ios_my_role'
     ];
 
     const SUPABASE_SQL = `-- Выполни в Supabase → SQL Editor\ncreate table if not exists access_keys (\n  code text primary key,\n  name text not null,\n  expires_at timestamptz,\n  active boolean default true,\n  created_at timestamptz default now()\n);\ncreate table if not exists key_data (\n  code text primary key references access_keys(code) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz default now()\n);\nalter table access_keys enable row level security;\nalter table key_data enable row level security;\ncreate policy "anon_all_keys" on access_keys for all using (true) with check (true);\ncreate policy "anon_all_data" on key_data for all using (true) with check (true);
@@ -5875,13 +5869,36 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     function applyUserPayload(payload) {
       if (!payload || typeof payload !== 'object') return;
       USER_DATA_KEYS.forEach(function(k) {
-        if (payload[k] === null || payload[k] === undefined) {
-          localStorage.removeItem(k);
-        } else {
-          localStorage.setItem(k, payload[k]);
+        if (!Object.prototype.hasOwnProperty.call(payload, k)) return;
+        if (payload[k] === null || payload[k] === undefined) return;
+        var val = payload[k];
+        if (typeof val !== 'string') {
+          try { val = JSON.stringify(val); } catch (e) { val = String(val); }
         }
+        localStorage.setItem(k, val);
       });
       try { persistStreakToCloudLocal(); } catch (e) {}
+    }
+    function refreshAfterCloud() {
+      try { applyTheme(getTheme()); } catch (e) {}
+      try { startSeasonMode(localStorage.getItem('ios_season_mode') || 'off'); } catch (e) {}
+      try { render(); } catch (e) {}
+      try { renderNotes(); } catch (e) {}
+      try { renderSupplyCard(); } catch (e) {}
+      try { applyShopCosmetics(); } catch (e) {}
+      try { updateRouletteUI(); } catch (e) {}
+      try { applyRoleBadge(JSON.parse(localStorage.getItem('ios_my_role')||'null')); } catch (e) {}
+      try { persistStreakToCloudLocal(); } catch (e) {}
+    }
+    async function syncUserFromCloud() {
+      const sess = getSession();
+      if (!sess || !sess.code || !getSbConfig()) return;
+      try {
+        const remote = await pullKeyDataFromCloud(sess.code);
+        if (!remote) return;
+        applyUserPayload(remote);
+        refreshAfterCloud();
+      } catch (e) {}
     }
 
     function hasLocalUserData() {
@@ -7116,6 +7133,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       setOnlyScreen('screenGate');
     }
 
+    async function syncCoinsFromCloud() { return syncUserFromCloud(); }
     function withTimeout(p, ms) {
       return Promise.race([
         Promise.resolve(p).catch(function(){ return null; }),
@@ -7128,6 +7146,10 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       try {
         await withTimeout(fetchGateFromCloud(), 4000);
         await withTimeout(validateCurrentSession(), 4000);
+        await withTimeout(syncUserFromCloud(), 5000);
+        await withTimeout(pullAdminSharedData(), 4000);
+        await withTimeout(pullOrderList(), 4000);
+        try { pullMyRole(); } catch (e) {}
         if (!isGateEnabled()) {
           setOnlyScreen('screenMenu');
           renderSupplyCard();
@@ -7773,6 +7795,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       const role = map[sess.code] || map[String(sess.code).toUpperCase()] || null;
       if (role) localStorage.setItem('ios_my_role', JSON.stringify(role));
       else localStorage.removeItem('ios_my_role');
+      try { if (typeof scheduleCloudSave === 'function') scheduleCloudSave(); } catch (e) {}
       applyRoleBadge(role);
     }
 
@@ -8124,7 +8147,10 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           const remote = await pullKeyDataFromCloud(sess.code);
           if (remote && remote.ios_coins != null) {
             const rc = parseInt(remote.ios_coins, 10);
-            if (!isNaN(rc) && rc > getCoins()) setCoins(rc);
+            if (!isNaN(rc)) {
+              localStorage.setItem('ios_coins', String(Math.max(0, rc)));
+              updateRouletteUI();
+            }
           }
           if (remote && remote.ios_wheel_weights) {
             localStorage.setItem('ios_wheel_weights', typeof remote.ios_wheel_weights === 'string' ? remote.ios_wheel_weights : JSON.stringify(remote.ios_wheel_weights));
@@ -8315,7 +8341,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           })
         });
         const sess = getSession();
-        if (sess && sess.code === code) setCoins(getCoins() + amt);
+        if (sess && sess.code === code) setCoins(cur + amt);
         showToast('Начислил ' + amt + ' · было ' + cur + ', стало ' + (cur + amt), true);
       } catch (e) {
         showToast(e.message || 'не вышло');
@@ -8335,6 +8361,12 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     fetchAdminPinFromCloud();
     pullAdminSharedData();
     registerDeviceSession();
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState !== 'visible') return;
+      syncUserFromCloud();
+      pullAdminSharedData();
+      pullOrderList();
+    });
 
     document.addEventListener('click', function(e) {
       try {
