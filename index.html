@@ -5760,7 +5760,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         'Accept': 'application/json'
       }, opts.headers || {});
       const ctrl = new AbortController();
-      const timer = setTimeout(function() { ctrl.abort(); }, 12000);
+      const timer = setTimeout(function() { ctrl.abort(); }, 6000);
       try {
         const res = await fetch(cfg.url + '/rest/v1/' + path, Object.assign({}, opts, {
           headers: headers,
@@ -5778,7 +5778,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         }
         return data;
       } catch (e) {
-        if (e && e.name === 'AbortError') throw new Error('Таймаут (12с) — база не ответила');
+        if (e && e.name === 'AbortError') throw new Error('Таймаут — база не ответила');
         throw e;
       } finally {
         clearTimeout(timer);
@@ -6588,11 +6588,13 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       const el = document.getElementById('bootLoader');
       const t = document.getElementById('bootLoaderText');
       if (t) t.textContent = text || 'Загрузка…';
-      if (el) el.classList.remove('off');
+      if (el) { el.classList.remove('off'); el.style.display = 'flex'; }
     }
     function hideBoot() {
       const el = document.getElementById('bootLoader');
-      if (el) el.classList.add('off');
+      if (!el) return;
+      el.classList.add('off');
+      el.style.display = 'none';
     }
 
     let pendingBind = null;
@@ -7114,11 +7116,18 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       setOnlyScreen('screenGate');
     }
 
+    function withTimeout(p, ms) {
+      return Promise.race([
+        Promise.resolve(p).catch(function(){ return null; }),
+        new Promise(function(res){ setTimeout(function(){ res(null); }, ms); })
+      ]);
+    }
     async function bootAccessGate() {
       showBoot(getSession() ? 'Входим…' : 'Загрузка…');
+      setTimeout(hideBoot, 2800);
       try {
-        try { await fetchGateFromCloud(); } catch (e) {}
-        await validateCurrentSession();
+        await withTimeout(fetchGateFromCloud(), 4000);
+        await withTimeout(validateCurrentSession(), 4000);
         if (!isGateEnabled()) {
           setOnlyScreen('screenMenu');
           renderSupplyCard();
@@ -7133,18 +7142,20 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
             showToast('Срок ключа истёк');
             return;
           }
-          showBoot('Подтягиваю смены…');
           setOnlyScreen('screenMenu');
           renderSupplyCard();
           pullSupplyDates();
           return;
         }
         setOnlyScreen('screenGate');
+      } catch (e) {
+        if (getSession()) setOnlyScreen('screenMenu');
+        else setOnlyScreen('screenGate');
       } finally {
         hideBoot();
+        setTimeout(hideBoot, 50);
         setTimeout(renderStreak, 50);
         setTimeout(renderStreak, 400);
-        setTimeout(renderStreak, 1200);
       }
     }
 
