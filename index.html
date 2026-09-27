@@ -135,7 +135,20 @@
     .ord-cat.on { background:var(--accent-blue); color:#fff; }
     .ord-item { display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid rgba(255,255,255,.06); }
     .ord-item.done .ord-name { text-decoration:line-through; opacity:.55; }
-    .ord-name { font-size:15px; font-weight:650; }
+    .ord-name { font-size:15px; font-weight:650; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .ord-cat-badge {
+      display:inline-block;
+      padding:2px 7px;
+      border-radius:6px;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.3px;
+      line-height:1.3;
+      color:var(--accent-orange);
+      background:rgba(255,159,10,.16);
+      border:1px solid rgba(255,159,10,.35);
+      white-space:nowrap;
+    }
     .ord-meta { font-size:12px; color:var(--text-sec); margin-top:2px; }
 
     .particle {
@@ -183,15 +196,21 @@
 
     .screen {
       display: none;
-      opacity: 0;
-      transform: translateY(12px) scale(0.985);
-      pointer-events: none;
+      background: var(--bg);
     }
-
     .screen.active {
       display: block;
       pointer-events: auto;
-      animation: screenEnter 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .screen.enter-fwd { animation: iosEnterFwd .34s cubic-bezier(.22,.9,.26,1) both; }
+    .screen.enter-back { animation: iosEnterBack .34s cubic-bezier(.22,.9,.26,1) both; }
+    @keyframes iosEnterFwd {
+      from { opacity: 0; transform: translate3d(28px,0,0); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes iosEnterBack {
+      from { opacity: 0; transform: translate3d(-28px,0,0); }
+      to { opacity: 1; transform: none; }
     }
     #screenGate.screen.active {
       min-height: 100vh;
@@ -1809,6 +1828,9 @@
       animation: bootSpin 0.8s linear infinite;
     }
     @keyframes bootSpin { to { transform: rotate(360deg); } }
+    .tiktok-flame { display:block; width:18px; height:22px; flex-shrink:0; transform: rotate(-16deg); transform-origin: 50% 80%; }
+    #streakBtn { display:inline-flex; align-items:center; gap:5px; line-height:1; }
+    #streakBadge { font-size:17px; font-weight:800; line-height:22px; }
     .boot-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
     .boot-sub { font-size: 13px; color: var(--text-sec); }
 
@@ -2062,6 +2084,18 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="changelogModal" onclick="if(event.target===this) closeChangelog()">
+    <div class="modal-card" style="max-width:400px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div>
+          <div style="font-size:20px;font-weight:800;">Что нового</div>
+          <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">Сейчас v<span id="appVerLabel2">2.5.0</span></div>
+        </div>
+        <div class="icon-btn" onclick="closeChangelog()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>
+      </div>
+      <div id="changelogList"></div>
+    </div>
+  </div>
   <div class="modal-overlay" id="appPrefsModal" onclick="if(event.target===this) closeAppPrefs()">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-title">Настройки</div>
@@ -2157,9 +2191,8 @@
       <div class="header-title">
         <h1 id="brandTitle">Мультитул</h1>
         <p id="brandSub">Рабочий набор</p>
-        <div id="streakBtn" onclick="showStreakToast()" style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;background:rgba(255,122,24,.15);border:1px solid rgba(255,122,24,.45);border-radius:999px;padding:3px 10px 3px 8px;color:#ff7a18;font-weight:800;font-size:13px;cursor:pointer;width:fit-content;">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 23c-4.2 0-7-2.8-7-6.6C5 12.2 8.4 9 12 4c3.6 5 7 8.2 7 12.4 0 3.8-2.8 6.6-7 6.6z"/></svg>
-          Огонёк <span id="streakBadge">0</span>
+        <div id="appVerBtn" onclick="openChangelog()" style="margin-top:8px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-sec);background:var(--card-inner);border-radius:999px;padding:4px 9px;cursor:pointer;width:fit-content;">
+          v<span id="appVerLabel">2.5.0</span>
         </div>
       </div>
       <div class="header-actions">
@@ -2445,7 +2478,7 @@
       </div>
       <div style="display:inline-block;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--accent-orange);background:rgba(255,159,10,.12);border-radius:999px;padding:5px 10px;margin-bottom:12px;">В разработке</div>
       <div style="font-size:20px;font-weight:800;margin-bottom:6px;">Скоро</div>
-      <div style="font-size:14px;color:var(--text-sec);line-height:1.45;">QR на перевод пока выключен. Соберу нормально, без этой кривой формы.</div>
+      <div style="font-size:14px;color:var(--text-sec);line-height:1.45;">QR на перевод пока выключен.</div>
     </div>
   </div>
 
@@ -2527,7 +2560,7 @@
     <div class="card">
       <div class="ord-cats" id="ordCats"></div>
       <div class="input-group"><label>Точка</label>
-        <select id="ordPoint" style="width:100%;background:var(--card-inner);color:var(--text);border:none;border-radius:12px;padding:12px;font-size:16px;"></select>
+        <select id="ordPoint" onchange="localStorage.setItem('ios_order_point',this.value);renderOrderList();" style="width:100%;background:var(--card-inner);color:var(--text);border:none;border-radius:12px;padding:12px;font-size:16px;"></select>
       </div>
       <div class="input-group"><label>Что нужно</label><input type="text" id="ordInput" placeholder="Parliament Aqua Blue 2бл"></div>
       <button class="btn btn-orange" onclick="addOrderItem()">Добавить</button>
@@ -2886,6 +2919,16 @@
           <div class="card-title">Статус базы</div>
           <div id="sbStatus" style="font-size:14px;line-height:1.45;color:var(--text-sec);">Проверка…</div>
           <button class="btn btn-blue" onclick="testSupabaseConnection(true)" style="margin-top:12px;">Проверить подключение</button>
+        </div>
+        <div class="card">
+          <div class="card-title">VK-бот открытий</div>
+          <p style="font-size:13px;color:var(--text-sec);line-height:1.45;">
+            Бот в чате ловит «гороховая открыта» и пишет в контроль точек.
+            1) Сообщество VK → управление → работа с API → ключ сообщества и Callback API.<br>
+            2) Cloudflare Worker (файл vk-bot-worker.js рядом с сайтом) — вставить URL в Callback.<br>
+            3) Confirmation string и секрет из VK прописать в воркере.<br>
+            Пока бота нет — в контроле тап по карточке отмечает точку открытой вручную.
+          </p>
         </div>
         <div class="card">
           <div class="card-title">Режим входа</div>
@@ -3521,13 +3564,20 @@
     }
 
     let screenTransitionLock = false;
+    let screenStack = [];
+    function clearScreenAnim(el) {
+      if (!el) return;
+      el.classList.remove('trans','leaving','enter-fwd','leave-fwd','enter-back','leave-back');
+    }
     function setOnlyScreen(screenId) {
       document.querySelectorAll('.screen').forEach(function(s) {
-        s.classList.remove('active', 'leaving');
+        s.classList.remove('active');
+        clearScreenAnim(s);
       });
       const target = document.getElementById(screenId);
       if (target) target.classList.add('active');
       document.body.classList.toggle('on-gate', screenId === 'screenGate');
+      screenStack = [screenId];
     }
     function openScreen(screenId) {
       try { devLog('screen ' + screenId); } catch (e) {}
@@ -3542,31 +3592,31 @@
         document.body.classList.toggle('on-gate', screenId === 'screenGate');
         return;
       }
+      const inStack = screenStack.lastIndexOf(screenId);
+      const goingBack = inStack !== -1 && inStack < screenStack.length - 1;
+      if (goingBack) screenStack = screenStack.slice(0, inStack + 1);
+      else screenStack.push(screenId);
+
+      if (!current || screenId === 'screenGate' || (current && current.id === 'screenGate')) {
+        setOnlyScreen(screenId);
+        afterScreenOpen(screenId);
+        try { if (screenId !== 'screenCreator') logAction('открыл «' + screenLabel(screenId) + '»'); } catch (e) {}
+        return;
+      }
 
       screenTransitionLock = true;
       document.querySelectorAll('.screen').forEach(function(s) {
-        if (s !== current && s !== target) s.classList.remove('active', 'leaving');
+        if (s !== current && s !== target) { s.classList.remove('active'); clearScreenAnim(s); }
       });
-
-      if (current) {
-        current.classList.add('leaving');
-        current.classList.remove('active');
-        setTimeout(() => {
-          current.classList.remove('leaving');
-          document.querySelectorAll('.screen').forEach(function(s) {
-            if (s !== target) s.classList.remove('active', 'leaving');
-          });
-          target.classList.add('active');
-          document.body.classList.toggle('on-gate', screenId === 'screenGate');
-          afterScreenOpen(screenId);
-          screenTransitionLock = false;
-        }, 200);
-      } else {
-        setOnlyScreen(screenId);
-        afterScreenOpen(screenId);
+      current.classList.remove('active');
+      clearScreenAnim(current);
+      target.classList.add('active', goingBack ? 'enter-back' : 'enter-fwd');
+      document.body.classList.toggle('on-gate', screenId === 'screenGate');
+      afterScreenOpen(screenId);
+      setTimeout(function() {
+        clearScreenAnim(target);
         screenTransitionLock = false;
-        try { if (screenId !== 'screenCreator') logAction('открыл «' + screenLabel(screenId) + '»'); } catch (e) {}
-      }
+      }, 340);
     }
 
     function afterScreenOpen(screenId) {
@@ -3579,19 +3629,19 @@
       if (screenId === 'screenPointDetail') renderPointDetail();
       if (screenId === 'screenEmployees') renderEmployees();
       if (screenId === 'screenSalary') renderSalary();
-      if (screenId === 'screenControl') renderControlPoints();
+      if (screenId === 'screenControl') { renderControlPoints(); pullPointOpens(); }
       if (screenId === 'screenCreator') { renderCreatorScreen(); refreshPeekAccounts(); }
       if (screenId === 'screenAdminKeys') renderAdminKeysScreen();
       if (screenId === 'screenAI') initAiScreen();
       if (screenId === 'screenMenu') { renderSupplyCard(); pullSupplyDates(); renderStreak(); }
       if (screenId === 'screenPayQr') fillPayQrForm();
-      if (screenId === 'screenOrder') { selectedOrderPoint = null; fillOrderPoints(); renderOrderCats(); pullOrderList(); }
+      if (screenId === 'screenOrder') { fillOrderPoints(); renderOrderCats(); pullOrderList(); pullOrderArchive(); }
       if (screenId === 'screenAdminOrders') { selectedAdminOrderPoint = null; pullOrderList(); }
       if (screenId === 'screenSupply') { fillSupplyForm(); pullSupplyDates().then(fillSupplyForm); }
       if (screenId === 'screenAdmin' || screenId === 'screenControl' || screenId === 'screenLocations' || screenId === 'screenEmployees' || screenId === 'screenPointDetail' || screenId === 'screenCreator') {
         pullAdminSharedData().then(function(changed) {
           if (!changed) return;
-          if (screenId === 'screenControl') renderControlPoints();
+          if (screenId === 'screenControl') { renderControlPoints(); pullPointOpens(); }
           if (screenId === 'screenLocations') renderLocationsList();
           if (screenId === 'screenEmployees') renderEmployees();
           if (screenId === 'screenPointDetail') renderPointDetail();
@@ -3920,6 +3970,72 @@
       const m = String(now.getMonth() + 1).padStart(2, '0');
       return d + '.' + m + '.' + now.getFullYear();
     }
+    function getPointOpens() {
+      try { return JSON.parse(localStorage.getItem('ios_point_opens') || '{}'); }
+      catch (e) { return {}; }
+    }
+    function setPointOpens(d) {
+      localStorage.setItem('ios_point_opens', JSON.stringify(d || {}));
+    }
+    function getPointOpenToday(key) {
+      const all = getPointOpens();
+      const day = all[getTodayDateKey()] || {};
+      return day[key] || null;
+    }
+    function markPointOpen(key, rec) {
+      const all = getPointOpens();
+      const day = getTodayDateKey();
+      if (!all[day]) all[day] = {};
+      all[day][key] = rec || {
+        at: new Date().toTimeString().slice(0,5),
+        who: (getSession() && (getSession().name || getSession().code)) || 'админ',
+        src: 'manual'
+      };
+      setPointOpens(all);
+      pushPointOpens();
+      renderControlPoints();
+    }
+    function markPointClosed(key) {
+      const all = getPointOpens();
+      const day = getTodayDateKey();
+      if (all[day]) delete all[day][key];
+      setPointOpens(all);
+      pushPointOpens();
+      renderControlPoints();
+    }
+    function togglePointOpen(key) {
+      if (getPointOpenToday(key)) markPointClosed(key);
+      else markPointOpen(key);
+    }
+    async function pullPointOpens() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.point_opens&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return;
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return; } }
+        if (v && typeof v === 'object') setPointOpens(v);
+        renderControlPoints();
+      } catch (e) {}
+    }
+    async function pushPointOpens() {
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'point_opens', value: getPointOpens(), updated_at: new Date().toISOString() })
+        });
+      } catch (e) {}
+    }
+    function matchPointFromText(text) {
+      const t = String(text || '').toLowerCase();
+      if (!/открыт/.test(t)) return null;
+      if (/ефимов/.test(t)) return 'efimova';
+      if (/горохов/.test(t)) return 'gorohovaya';
+      if (/новгород|подвал/.test(t)) return 'novgorod';
+      if (/первомай/.test(t)) return 'pervomay';
+      if (/красноармей/.test(t)) return 'krasnoarm';
+      return null;
+    }
 
     function renderControlPoints() {
       const list = document.getElementById('controlPointsList');
@@ -3973,13 +4089,17 @@
           ? 'openEmployeeVk(\'' + empId + '\')'
           : 'showToast(\'На точке никого нет\')';
 
+        const openRec = getPointOpenToday(key);
         html +=
-          '<div class="' + cardClass + '">' +
+          '<div class="' + cardClass + (openRec ? ' is-open' : '') + '" onclick="togglePointOpen(\'' + key + '\')">' +
             '<div class="control-status-dot ' + dotClass + '"></div>' +
             '<div class="control-info">' +
               '<h4>' + p.name + '</h4>' +
               '<div class="control-person ' + personClass + '">' + person + '</div>' +
               '<div class="control-time">' + p.time + '</div>' +
+              '<div style="font-size:12px;margin-top:4px;font-weight:700;color:' + (getPointOpenToday(key) ? 'var(--accent-green)' : 'var(--text-sec)') + ';">' +
+              (getPointOpenToday(key) ? ('Открыта ' + getPointOpenToday(key).at + (getPointOpenToday(key).who ? ' · ' + getPointOpenToday(key).who : '')) : 'Ещё не открыли') +
+              '</div>' +
             '</div>' +
             '<div class="' + linkClass + '" onclick="event.stopPropagation(); ' + linkClick + '" title="VK сотрудника">' +
               '<svg viewBox="0 0 24 24"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.02-1.304.587-1.496c.597-.19 1.365 1.26 2.178 1.818.615.422 1.082.33 1.082.33l2.172-.03s1.136-.07.597-.964c-.044-.073-.312-.658-1.606-1.86-1.355-1.258-1.173-1.054.458-3.23.993-1.325 1.39-2.134 1.266-2.48-.119-.33-.85-.242-.85-.242l-2.242.014s-.166-.023-.289.052c-.12.072-.198.24-.198.24s-.354.94-.825 1.74c-.993 1.69-1.39 1.78-1.553 1.675-.38-.244-.285-.98-.285-1.503 0-1.633.248-2.313-.483-2.49-.243-.058-.421-.097-1.042-.103-.796-.008-1.47.003-1.85.19-.254.124-.45.4-.33.416.148.02.482.09.66.332.228.312.22 1.012.22 1.012s.13 1.928-.305 2.166c-.3.164-.71-.17-1.593-1.7-.45-.78-.79-1.642-.79-1.642s-.065-.16-.182-.246c-.142-.103-.34-.136-.34-.136l-2.13.014s-.32.01-.437.148c-.104.122-.008.374-.008.374s1.66 3.886 3.54 5.844c1.723 1.796 3.68 1.68 3.68 1.68h.886z"/></svg>' +
@@ -4741,14 +4861,52 @@
       const yy = p[2].length === 2 ? ('20' + p[2]) : p[2];
       return yy + '-' + mm + '-' + dd;
     }
-    function countWeekStreak() {
-      let n = 0;
-      try { n += (getData().shifts || []).length; } catch (e) {}
+    function allShiftIsoDays() {
+      const set = {};
+      function add(raw) {
+        const iso = shiftDateToIso(raw);
+        if (iso) set[iso] = true;
+      }
+      try { (getData().shifts || []).forEach(function(s){ add(s.date); }); } catch (e) {}
       try {
         (getArchive() || []).forEach(function(w) {
-          n += (w.shifts && w.shifts.length) || w.shiftsCount || 0;
+          (w.shifts || []).forEach(function(s){ add(s && s.date); });
         });
       } catch (e) {}
+      return Object.keys(set).sort();
+    }
+    function todayIsoLocal() {
+      const n = new Date();
+      const y = n.getFullYear();
+      const m = String(n.getMonth()+1).padStart(2,'0');
+      const d = String(n.getDate()).padStart(2,'0');
+      return y + '-' + m + '-' + d;
+    }
+    function addDaysIso(iso, delta) {
+      const p = iso.split('-').map(Number);
+      const dt = new Date(p[0], p[1]-1, p[2]);
+      dt.setDate(dt.getDate() + delta);
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth()+1).padStart(2,'0');
+      const d = String(dt.getDate()).padStart(2,'0');
+      return y + '-' + m + '-' + d;
+    }
+    function countWeekStreak() {
+      const days = allShiftIsoDays();
+      if (!days.length) return 0;
+      const have = {};
+      days.forEach(function(d){ have[d] = true; });
+      const today = todayIsoLocal();
+      const yest = addDaysIso(today, -1);
+      let cursor = null;
+      if (have[today]) cursor = today;
+      else if (have[yest]) cursor = yest;
+      else return 0;
+      let n = 0;
+      while (have[cursor]) {
+        n++;
+        cursor = addDaysIso(cursor, -1);
+      }
       return n;
     }
     function getStreak() { return { count: countWeekStreak() }; }
@@ -4769,16 +4927,19 @@
     }
     function bumpShiftStreak() { return rebuildStreakFromShifts(); }
     function renderStreak() {
+      return;
       const n = countWeekStreak();
       const btn = document.getElementById('streakBtn');
       if (!btn) return;
       btn.style.display = 'inline-flex';
-      btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 23c-4.2 0-7-2.8-7-6.6C5 12.2 8.4 9 12 4c3.6 5 7 8.2 7 12.4 0 3.8-2.8 6.6-7 6.6z"/></svg> Огонёк <span id="streakBadge">' + n + '</span>';
-      btn.style.color = n >= 2 ? '#ff7a18' : '#ff9f0a';
+      btn.innerHTML = '<svg class="tiktok-flame" viewBox="25 0 290 533.333" width="18" height="22"><path fill="currentColor" d="M165.494,533.333c-35.545-73.962-16.616-116.343,10.703-156.272c29.917-43.728,37.627-87.013,37.627-87.013s23.518,30.573,14.11,78.39c41.548-46.25,49.389-119.938,43.115-148.159c93.914,65.63,134.051,207.737,79.96,313.054c287.695-162.776,71.562-406.339,33.934-433.775c12.543,27.435,14.922,73.88-10.416,96.42C331.635,33.333,225.583,0,225.583,0c12.543,83.877-45.466,175.596-101.404,244.13c-1.965-33.446-4.053-56.525-21.641-88.531C98.59,216.357,52.157,265.884,39.583,326.76C22.551,409.2,52.341,469.562,165.494,533.333z"/></svg><span id="streakBadge">' + n + '</span>';
+      btn.style.color = n ? '#ff7a18' : '#8e8e93';
+      btn.classList.toggle('streak-on', n > 0);
     }
     function showStreakToast() {
       const n = countWeekStreak();
-      showToast(n ? ('Огонёк: ' + n + ' дн. подряд по сменам') : 'Нет подряд идущих смен', !!n);
+      if (!n) return showToast('Поставь смену сегодня — огонёк зажжётся');
+      showToast(n + ' дней подряд', true);
     }
 
     function addShift() {
@@ -4803,7 +4964,7 @@
       triggerSuccessFlash();
       showToast('Смена добавлена', true);
       const n = rebuildStreakFromShifts();
-      if (n) showToast('Огонёк ' + n + ' дн.', true);
+      if (n) showToast(n + ' дней подряд', true);
       const btn = document.querySelector('#screenShifts .btn-blue');
       if (btn) { btn.classList.remove('success-pulse'); void btn.offsetWidth; btn.classList.add('success-pulse'); }
     }
@@ -5526,36 +5687,61 @@
       }
 
       return (
-        'Ты помощник приложения «Мультитул» (Groq, модель ' + GROQ_MODEL + '). Отвечай по-русски живым текстом.\n' +
-        'ГЛАВНОЕ ПРАВИЛО:\n' +
-        '1) Вопрос что это за сайт / какие разделы / как пользоваться / где кнопка — отвечай по инструкции ниже. Запрещено писать одно слово «Пусто». Расскажи разделы своими словами.\n' +
-        '2) Вопрос сколько заработал / сколько смен / остаток / зарплата в рублях — смотри только блок ДАННЫЕ. Если там пусто, тогда скажи что в учёте пока нет смен.\n' +
-        '3) Приветствие и «але» — ответь нормально и предложи помочь по учёту, кассе или зарплате.\n' +
-        'Формат: **жирный**, списки через дефис. Без таблиц и без |.\n\n' +
-        'ГДЕ ЧТО ЛЕЖИТ В ПРИЛОЖЕНИИ\n' +
-        'Главный экран. Заголовок «Мультитул», подпись «Рабочий набор». Справа иконки: рулетка (монеты), магазин, шестерёнка. Шестерёнка открывает меню: «Мои смены», «Эффекты», «Аккаунт», «Настройки». Ниже список разделов. Внизу счётчик «в сети» и при необходимости кнопка «на экран Домой».\n\n' +
-        'Вход. Если включён вход по ключу — экран с полем ключа вида MT-XXXX-XXXX. Ключ хранится на устройстве, заново вводить не нужно, пока не выйдут или ключ не отзовут. Выйти из ключа можно в Аккаунте.\n\n' +
-        'Учёт недельной. Сюда заносят смены текущей недели: дата и выручка. Сумма «выплачено за смену» (по умолчанию 1300 ₽) меняется шестерёнкой в этом же разделе «Учёт недельной» — не путать с шестерёнкой на главном экране. Там варианты 1300, 1000 или своя сумма. Это то, что человеку уже выдают наличными за одну смену. Формула одной смены: к выплате = 2300 + 3% от выручки этой смены. Выплачено за смену = ставка × количество смен (ставка из настроек). Остаток = к выплате − выплачено. Можно добавить удержания (минус к остатку). Кнопка выгрузки делает красивую картинку-отчёт недели. «Завершить неделю и в архив» закрывает неделю и кладёт итог в архив, текущий список смен очищается.\n\n' +
-        'Мои смены. Из шестерёнки. Календарь/список своих смен по месяцу, не путать с учётом текущей недели.\n\n' +
-        'Заметки смены. Список напоминаний и дел на смену: добавить текст, сохранить, открыть позже. Это не учёт денег.\n\n' +
-        'Расчёт сдачи. Калькулятор кассы: внести сумму и получить сдачу, без связи со сменами.\n\n' +
-        'Статистика и архив. Итоги прошлых закрытых недель: период, число смен, выручка. Берётся из архива после «завершить неделю».\n\n' +
-        'Зарплата. Итоги по месяцам из архива. К выплате за месяц считается по закрытым неделям того месяца: на каждую смену 2300 + 3% от средней выручки недели. Можно отметить фактические выплаты за месяц и видеть остаток.\n\n' +
-        'Помощь AI. Ты здесь. Ключ Groq (gsk_…) хранится на устройстве: в этом разделе есть туториал как его взять, либо поле в Аккаунте. Без ключа ответы не уходят.\n\n' +
-        'Аккаунт (шестерёнка). Сохранить ключ Groq, сделать резервную копию всех данных в файл, выйти из ключа доступа.\n\n' +
-        'Эффекты (шестерёнка). Три режима фона: выкл, снег, листья. Только визуал.\n\n' +
-        'Настройки (шестерёнка) → Режим разработчика. Служебные тумблеры: границы элементов, координаты касания, подсветка нажатий, консоль, FPS, HUD экрана, сетка, без анимаций. Это отладка, на зарплату не влияет. Эффекты видно на главном экране после «Назад».\n\n' +
-        'Рулетка. Иконка с монетами на главной. Каждый день можно забрать монеты по серии: день 1 = 5, 2 = 10, 3 = 15, 4 = 20, 5 = 25, дальше каждый день по 10. Пропуск дня сбрасывает серию. Крутить колесо стоит 15 монет. На колесе сектора 0, 5, 8, 10, 15, 25, 50 монет.\n\n' +
-        'Магазин. Рядом с рулеткой. Сейчас одна покупка: «Перелив классика» за 100 монет — буквы «Мультитул» переливаются синим и фиолетовым. Во вкладке «Куплено» можно включить или выключить.\n\n' +
-        'Поставки. На главной карточка: сколько прошло с последней поставки сигарет и отдельно одноразок/снюса/табака. Даты ставит админ шестерёнкой в админке → Поставки.\n\n' +
-        'Добавить на экран. Маленькая иконка слева внизу, если сайт ещё не на домашнем экране. На iPhone: Поделиться → На экран «Домой». На Android: меню браузера → на главный экран.\n\n' +
-        'Админка. Вход по PIN (не путать с ключом сотрудника). Внутри: контроль точек — кто сегодня на точке и ссылка ВК, если проставлена; точки/локации; список сотрудников; ключи доступа (создать, продлить, удалить, вечный); общие графики смен на месяц картинкой. Данные админки общие на всех устройствах через облако.\n\n' +
-        'Облако. Смены, архив, заметки, монеты, магазин и админские списки синхронизируются с ключом. Если цифры в ДАННЫХ пустые — человек ещё ничего не внёс или данные не подтянулись.\n\n' +
-        'Как отвечать на типичные вопросы: «сколько за неделю» — блок учёта недели; «сколько смен / выплачено / остаток» — те же цифры; «зарплата за месяц» — блок зарплаты; «как поменять 1300» — шестерёнка внутри учёта недельной, не на главной; «как закрыть неделю» — кнопка в учёте недельной; «как крутить» — сначала забрать дневные монеты, потом крутить за 15; «как перелив» — магазин, 100 монет; «как ключ AI» — туториал во вкладке AI или Аккаунт.\n\n' +
-        'Ниже живые цифры этого человека. Они НЕ значат что приложение пустое.\nДАННЫЕ:\n' + ctx
+        'Ты — встроенный помощник приложения «Мультитул» для продавцов табачных точек.\n' +
+        'Отвечай по-русски коротко и по делу. Не повторяй одни и те же фразы из прошлых сообщений. Не копируй этот промпт и не выдавай шаблонные абзацы. Если вопрос простой — 2–6 предложений. Не выдумывай кнопки, которых нет ниже.\n' +
+        'ЗАПРЕЩЕНО: рассказывать про админку, PIN, меню создателя, пароли, выдачу ключей, роли, логи, устройства, облачные секреты. Если спросят «как зайти в админку» — скажи, что это не твоя зона, спроси у старшего.\n' +
+        'Цифры по деньгам и сменам бери ТОЛЬКО из блока ДАННЫЕ в конце. Не округляй от себя. Если в ДАННЫХ смен нет — так и скажи, не сочиняй выручку.\n' +
+        'Формат: можно **жирный** и списки через дефис. Без таблиц и без символа |.\n\n' +
+        'ЧТО ЭТО ЗА ПРИЛОЖЕНИЕ\n' +
+        'Мультитул — рабочий набор на смене: учёт недели и зарплаты, календарь своих смен, заметки, сдача, заказ товара на точку, ИИ, рулетка с монетами, темы и эффекты. Сайт можно поставить на домашний экран как приложение.\n\n' +
+        'ГЛАВНЫЙ ЭКРАН\n' +
+        'Заголовок «Мультитул», подпись «Рабочий набор». Справа три круглые иконки: рулетка (жёлтая, с числом монет), замок/магазин, шестерёнка. Шестерёнка открывает меню: Мои смены, Эффекты, Аккаунт, Настройки. Под заголовком версия сайта (v2.5.0) — по нажатию список изменений. Ниже карточка «С последней поставки»: две строки — сигареты и «одноразки · жижи · снюс · табак», сколько дней прошло и дата поставки. Дальше пункты меню. Внизу «N в сети» и маленькая иконка «на экран Домой», если сайт ещё не добавлен.\n' +
+        'Пункты главного экрана сверху вниз: Учёт недельной, Заметки смены, Расчёт сдачи, Мой QR, Заказать, ИИ-помощник, Статистика.\n\n' +
+        'ВХОД\n' +
+        'Если включён вход по ключу — сначала экран с полем ключа вида MT-XXXX-XXXX. Ключ сохраняется на телефоне. Выйти из ключа можно в Аккаунте. Без ключа (если режим открытый) сайт сразу на главной.\n\n' +
+        'УЧЁТ НЕДЕЛЬНОЙ\n' +
+        'Сюда пишут смены текущей недели: дата и выручка за день. Формула одной смены: к выплате = 2300 + 3% от выручки. «Выплачено за смену» — ставка наличными за день (часто 1300, бывает 1000 или своя). Ставка меняется шестерёнкой ВНУТРИ учёта недельной, не той что на главной. Выплачено всего = ставка × число смен. Остаток = сумма «к выплате» по сменам − выплачено − удержания. Можно добавить удержание с причиной. Кнопка выгрузки делает картинку-отчёт недели. «Завершить неделю и в архив» закрывает неделю: итог в архив, текущий список смен очищается.\n\n' +
+        'МОИ СМЕНЫ\n' +
+        'Из меню шестерёнки на главной. Календарь своих смен по месяцу. Это не то же самое, что учёт текущей недели.\n\n' +
+        'ЗАМЕТКИ СМЕНЫ\n' +
+        'Короткие напоминания и дела. Добавил текст — сохранилось. К деньгам не относится.\n\n' +
+        'РАСЧЁТ СДАЧИ\n' +
+        'Калькулятор кассы: сколько дали и какую сдачу отдать. Со сменами не связан.\n\n' +
+        'МОЙ QR\n' +
+        'Раздел пока в разработке. Генерации QR нет. Не обещай, что он заработает по кнопке.\n\n' +
+        'ЗАКАЗАТЬ\n' +
+        'Сотрудник выбирает категорию (сигареты, одноразки, жижи, поды, снюсы, табаки, картриджи, табак для кальяна, газ, бензин, напитки, другое), выбирает СВОЮ точку и пишет что нужно. Кнопка «Добавить» кидает позицию в список точки. В списке можно копировать весь заказ. Галочка отмечает позицию, крестик удаляет. Кнопки «Собран» у сотрудника нет — заказ собирает старший.\n\n' +
+        'ИИ-ПОМОЩНИК\n' +
+        'Этот чат. Нужен ключ Groq (gsk_…) — поле и туториал на этой же вкладке или в Аккаунте. Ключ хранится на устройстве.\n\n' +
+        'СТАТИСТИКА И АРХИВ\n' +
+        'Итоги закрытых недель после «завершить неделю»: период, число смен, выручка.\n\n' +
+        'ЭФФЕКТЫ\n' +
+        'Из шестерёнки. Сезонные частицы на экране (в том числе сердечки). Включается и выключается там же.\n\n' +
+        'НАСТРОЙКИ\n' +
+        'Темы оформления — много готовых видов, переключаются сразу. В настройках аккаунта также Режим разработчика: служебные тумблеры для отладки (границы, координаты, консоль). На зарплату не влияет.\n\n' +
+        'АККАУНТ\n' +
+        'Имя/ключ с которым вошёл, выход из ключа, поле ключа Groq.\n\n' +
+        'РУЛЕТКА\n' +
+        'Иконка с монетами на главной. Каждый день можно забрать монеты по серии: 5, 10, 15, 20, 25, дальше по 10. Пропуск дня сбрасывает серию на начало. Крутить колесо стоит 15 монет. На колесе сектора 0, 5, 8, 10, 15, 25, 50.\n\n' +
+        'МАГАЗИН\n' +
+        'Иконка рядом с рулеткой. Покупка: «Перелив классика» за 100 монет — буквы «Мультитул» переливаются сине-фиолетовым. Во вкладке «Куплено» эффект включается и выключается.\n\n' +
+        'ПОСТАВКИ\n' +
+        'Карточка на главной. Показывает, сколько дней прошло с поставки сигарет и с поставки одноразок/жиж/снюса/табака. Даты на карточке уже стоят, сотрудник их отсюда не меняет.\n\n' +
+        'НА ЭКРАН ДОМОЙ\n' +
+        'Иконка слева внизу, если сайт ещё не на домашнем экране. iPhone: Поделиться → На экран «Домой». Android: меню браузера → на главный экран.\n\n' +
+        'ОБЛАКО\n' +
+        'Смены, архив, заметки, монеты и заказы привязаны к ключу и подтягиваются на телефон. Если в ДАННЫХ пусто — человек ещё ничего не внёс или сеть не подтянула.\n\n' +
+        'ТИПОВЫЕ ВОПРОСЫ\n' +
+        'сколько за неделю / остаток / сколько смен — только цифры из ДАННЫХ.\n' +
+        'как поменять 1300 — шестерёнка внутри учёта недельной.\n' +
+        'как закрыть неделю — кнопка в учёте недельной.\n' +
+        'как крутить — забрать дневные монеты, потом крутить за 15.\n' +
+        'как перелив — магазин, 100 монет.\n' +
+        'куда писать заказ — раздел Заказать, точка + категория + текст.\n' +
+        'что с QR — пока выключен.\n\n' +
+        'Ниже живые цифры ЭТОГО человека. Пустой блок ≠ пустое приложение.\nДАННЫЕ:\n' + ctx
       );
     }
-
     async function sendAiMessage() {
       if (aiBusy) return;
       const input = document.getElementById('aiInput');
@@ -5583,10 +5769,8 @@
         { role: 'system', content: systemPrompt }
       ];
       // не тащим в API старые error-сообщения
-      aiMessages.forEach(m => {
-        if (m.role === 'user' || m.role === 'assistant') {
-          apiMessages.push({ role: m.role, content: m.content });
-        }
+      aiMessages.filter(function(m){ return m.role === 'user' || m.role === 'assistant'; }).slice(-8).forEach(function(m) {
+        apiMessages.push({ role: m.role, content: m.content });
       });
 
       try {
@@ -5602,8 +5786,8 @@
             body: JSON.stringify({
               model: model,
               messages: apiMessages,
-              temperature: 0.75,
-              max_tokens: 1600
+              temperature: 0.35,
+              max_tokens: 900
             })
           });
           const data = await res.json().catch(() => ({}));
@@ -6164,29 +6348,138 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     function renderPointCards(groups, admin) {
       if (!groups.length) return '<div style="color:var(--text-sec);font-size:13px;">Заказов нет</div>';
       return groups.map(function(g) {
-        const open = g.items.filter(function(it){ return !it.done; }).length;
         const fn = admin ? 'openAdminPointOrder' : 'openPointOrder';
+        const when = formatOrderWhen(pointLastEditIso(g));
+        const sub = when ? ('Последний раз изменён ' + when) : 'Ещё не менялся';
         return '<div class="menu-item" onclick="' + fn + '(\'' + g.key + '\')" style="margin:0 0 10px;">' +
           '<div class="menu-item-left"><div class="menu-text"><h3>' + escapeHtml(g.name) + '</h3>' +
-          '<p>' + open + ' открыто · ' + g.items.length + ' позиций</p></div></div>' +
+          '<p>' + sub + '</p></div></div>' +
           '<div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div></div>';
       }).join('');
     }
+    function ordIconBtn(kind, fn) {
+      const ok = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l5 5L19 7"/></svg>';
+      const no = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+      const bg = kind === 'ok' ? 'rgba(48,209,88,.16)' : 'rgba(255,69,58,.14)';
+      const col = kind === 'ok' ? 'var(--accent-green)' : 'var(--accent-red)';
+      return '<button type="button" onclick="' + fn + '" style="width:36px;height:36px;border:none;border-radius:11px;background:' + bg + ';color:' + col + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;">' + (kind==='ok'?ok:no) + '</button>';
+    }
+    function formatOrderWhen(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const yy = d.getFullYear();
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mi = String(d.getMinutes()).padStart(2,'0');
+      return dd + '.' + mm + '.' + yy + ' ' + hh + ':' + mi;
+    }
+    function pointLastEditIso(g) {
+      let max = '';
+      (g && g.items || []).forEach(function(it) {
+        const t = it.edited || it.t || '';
+        if (t > max) max = t;
+      });
+      if (!max && g && g.key) {
+        const last = (getOrderArchive() || []).filter(function(a){ return a.point === g.key; })[0];
+        if (last && last.at) max = last.at;
+      }
+      return max;
+    }
     function renderOnePointOrder(g, admin) {
       if (!g) return '<div style="color:var(--text-sec);font-size:13px;">Пусто</div>';
-      const open = g.items.filter(function(it){ return !it.done; }).length;
-      const lines = g.items.map(function(it) {
+      const lines = (g.items || []).map(function(it) {
         return '<div class="ord-item' + (it.done ? ' done' : '') + '">' +
-          '<div style="flex:1;min-width:0;"><div class="ord-name">' + escapeHtml(it.text) +
-          ' <span style="font-size:11px;font-weight:700;color:var(--accent-orange);">' + escapeHtml(catName(it.cat)) + '</span></div>' +
-          (it.who ? '<div class="ord-meta">' + escapeHtml(it.who) + '</div>' : '') + '</div>' +
-          '<button class="btn btn-green" style="width:auto;padding:7px 10px;margin:0;" onclick="toggleOrderItem(\'' + it.id + '\')">' + (it.done ? 'Вернуть' : 'Ок') + '</button>' +
-          (admin ? '' : '<button class="btn btn-red-soft" style="width:auto;padding:7px 10px;margin:0;" onclick="removeOrderItem(\'' + it.id + '\')">×</button>') +
+          '<div style="flex:1;min-width:0;">' +
+            '<div class="ord-name">' + escapeHtml(it.text) + ' <span class="ord-cat-badge">' + escapeHtml(catName(it.cat)) + '</span></div>' +
+            (it.who ? '<div class="ord-meta">' + escapeHtml(it.who) + '</div>' : '') +
+          '</div>' +
+          '<div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">' +
+            ordIconBtn('ok', 'toggleOrderItem(\'' + it.id + '\')') +
+            ordIconBtn('no', 'removeOrderItem(\'' + it.id + '\')') +
+          '</div>' +
           '</div>';
       }).join('');
-      return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
-        '<div style="font-size:13px;color:var(--text-sec);">' + open + ' из ' + g.items.length + '</div>' +
-        '<button class="btn btn-green" style="width:auto;padding:8px 12px;margin:0;" onclick="togglePointOrders(\'' + g.key + '\')">Всё ок</button></div>' + lines;
+      let bar = '<button class="btn btn-blue" style="margin:0 0 8px;" onclick="copyPointOrder(\'' + g.key + '\')">Копировать</button>';
+      if (admin) {
+        bar = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">' +
+          '<button class="btn btn-blue" style="margin:0;" onclick="copyPointOrder(\'' + g.key + '\')">Копировать</button>' +
+          '<button class="btn btn-green" style="margin:0;" onclick="archivePointOrder(\'' + g.key + '\')">Собран</button></div>';
+      }
+      return bar + (lines || '<div style="color:var(--text-sec);font-size:13px;">Список пуст</div>');
+    }
+    function getOrderArchive() {
+      try { return JSON.parse(localStorage.getItem('ios_order_archive') || '[]'); }
+      catch (e) { return []; }
+    }
+    function setOrderArchive(arr) {
+      localStorage.setItem('ios_order_archive', JSON.stringify(arr || []));
+    }
+    function archivePointOrder(pointKey) {
+      const list = getOrderList();
+      const take = list.filter(function(it){ return (it.point || it.pointName || 'none') === pointKey; });
+      if (!take.length) return showToast('Пусто');
+      const rest = list.filter(function(it){ return (it.point || it.pointName || 'none') !== pointKey; });
+      const arc = getOrderArchive();
+      arc.unshift({
+        id: 'oa' + Date.now(),
+        point: pointKey,
+        name: pointName(pointKey),
+        at: new Date().toISOString(),
+        items: take
+      });
+      setOrderArchive(arc.slice(0, 80));
+      setOrderList(rest);
+      pushOrderList();
+      pushOrderArchive();
+      showToast('Заказ собран', true);
+    }
+    async function pushOrderArchive() {
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'order_archive', value: getOrderArchive(), updated_at: new Date().toISOString() })
+        });
+      } catch (e) {}
+    }
+    async function pullOrderArchive() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.order_archive&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return;
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return; } }
+        if (Array.isArray(v)) setOrderArchive(v);
+      } catch (e) {}
+    }
+    function copyPointOrder(pointKey) {
+      const g = findPointGroup(pointKey);
+      if (!g || !g.items.length) return showToast('Пусто');
+      const byCat = {};
+      g.items.forEach(function(it) {
+        const c = catName(it.cat);
+        if (!byCat[c]) byCat[c] = [];
+        byCat[c].push((it.done ? '✓ ' : '') + it.text);
+      });
+      let text = g.name + '\n';
+      Object.keys(byCat).forEach(function(c) {
+        text += '\n' + c + ':\n' + byCat[c].map(function(l){ return '• ' + l; }).join('\n');
+      });
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ showToast('Заказ скопирован', true); }).catch(function(){ fallbackCopy(text); });
+      } else fallbackCopy(text);
+    }
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('Заказ скопирован', true); }
+      catch (e) { showToast('Не скопировалось'); }
+      ta.remove();
     }
     function findPointGroup(key) {
       return groupOrdersByPoint(getOrderList()).filter(function(g){ return g.key === key; })[0] || null;
@@ -6240,16 +6533,16 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       const title = document.getElementById('ordTitle');
       const sub = document.getElementById('ordSub');
       if (!box) return;
-      if (!selectedOrderPoint) {
-        if (title) title.textContent = 'Заказать';
-        if (sub) sub.textContent = 'Выбери точку';
-        box.innerHTML = renderPointCards(groupOrdersByPoint(getOrderList()), false);
+      const sel = document.getElementById('ordPoint');
+      const key = (sel && sel.value) || localStorage.getItem('ios_order_point') || '';
+      if (title) title.textContent = 'Заказать';
+      if (sub) sub.textContent = key ? pointName(key) : 'Выбери точку';
+      if (!key) {
+        box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Выбери точку сверху</div>';
         return;
       }
-      const g = findPointGroup(selectedOrderPoint);
-      if (title) title.textContent = g ? g.name : 'Заказ';
-      if (sub) sub.textContent = 'Заказ точки';
-      box.innerHTML = '<button class="btn btn-red-soft" onclick="selectedOrderPoint=null;renderOrderList();">К точкам</button>' + renderOnePointOrder(g, false);
+      const g = findPointGroup(key) || { key: key, name: pointName(key), items: [] };
+      box.innerHTML = renderOnePointOrder(g, false);
     }
 
     function addOrderItem() {
@@ -6263,7 +6556,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       const point = (pointEl && pointEl.value) || '';
       if (point) localStorage.setItem('ios_order_point', point);
       if (!point) return showToast('Выбери точку');
-      list.unshift({ id: 'o' + Date.now(), cat: orderCat, text: text, who: who, point: point, pointName: pointName(point), t: new Date().toISOString(), done: false });
+      const nowIso = new Date().toISOString();
+      list.unshift({ id: 'o' + Date.now(), cat: orderCat, text: text, who: who, point: point, pointName: pointName(point), t: nowIso, edited: nowIso, done: false });
       setOrderList(list);
       if (inp) inp.value = '';
       pushOrderList();
@@ -6271,7 +6565,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       showToast('Добавлено', true);
     }
     function toggleOrderItem(id) {
-      const list = getOrderList().map(function(it){ if (it.id === id) it.done = !it.done; return it; });
+      const nowIso = new Date().toISOString();
+      const list = getOrderList().map(function(it){ if (it.id === id) { it.done = !it.done; it.edited = nowIso; } return it; });
       setOrderList(list); pushOrderList();
     }
     function removeOrderItem(id) {
@@ -7226,6 +7521,32 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-grid', !!d.grid);
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
+    }
+    const APP_VERSION = '2.5.0';
+    const CHANGELOG = [
+      { v: '2.5.0', d: '27.09.2026', t: 'Заказы: бейдж категории, галочки/крестики, «Собран» только у админа, дата изменения на карточке точки. Переходы экранов, умнее ИИ, огонёк убран.' },
+      { v: '2.4.0', d: '27.09.2026', t: 'Версия на главной и список изменений.' },
+      { v: '2.3.4', d: '27.09.2026', t: 'Заказы: копировать весь список, у сотрудника сразу его точка.' },
+      { v: '2.3.3', d: '27.09.2026', t: 'Личные смены, заметки и монеты сидят на ключе в облаке.' },
+      { v: '2.3.2', d: '27.09.2026', t: 'QR временно «в разработке».' }
+    ];
+    function openChangelog() {
+      const box = document.getElementById('changelogList');
+      if (box) {
+        box.innerHTML = CHANGELOG.map(function(c, i) {
+          return '<div style="padding:12px 0;border-top:1px solid rgba(255,255,255,.08);' + (i===0?'border-top:none;padding-top:0;':'') + '">' +
+            '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">' +
+            '<div style="font-weight:800;font-size:15px;">v' + c.v + '</div>' +
+            '<div style="font-size:11px;color:var(--text-sec);">' + c.d + '</div></div>' +
+            '<div style="font-size:13px;color:var(--text-sec);margin-top:4px;line-height:1.4;">' + c.t + '</div></div>';
+        }).join('');
+      }
+      const m = document.getElementById('changelogModal');
+      if (m) m.classList.add('active');
+    }
+    function closeChangelog() {
+      const m = document.getElementById('changelogModal');
+      if (m) m.classList.remove('active');
     }
     function openAppPrefs() {
       const m = document.getElementById('appPrefsModal');
