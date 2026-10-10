@@ -119,6 +119,7 @@
       --accent-blue:#86b6ff; --accent-green:#8fe0b4; --accent-red:#ff5d8f;
       --accent-orange:#ff9e6b; --accent-purple:#ff8cc8; --text:#ffecf3; --text-sec:#b08a9a;
     }
+
     .theme-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0 14px; max-height:46vh; overflow:auto; }
     .theme-chip {
       border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px 10px 8px;
@@ -2089,7 +2090,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
         <div>
           <div style="font-size:20px;font-weight:800;">Что нового</div>
-          <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">Сейчас v<span id="appVerLabel2">2.5.0</span></div>
+          <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">Сейчас v<span id="appVerLabel2">2.5.3</span></div>
         </div>
         <div class="icon-btn" onclick="closeChangelog()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>
       </div>
@@ -2192,7 +2193,7 @@
         <h1 id="brandTitle">Мультитул</h1>
         <p id="brandSub">Рабочий набор</p>
         <div id="appVerBtn" onclick="openChangelog()" style="margin-top:8px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-sec);background:var(--card-inner);border-radius:999px;padding:4px 9px;cursor:pointer;width:fit-content;">
-          v<span id="appVerLabel">2.5.0</span>
+          v<span id="appVerLabel">2.5.3</span>
         </div>
       </div>
       <div class="header-actions">
@@ -2914,6 +2915,7 @@
             <div id="creatorPinDisplay" style="font-size:36px; font-weight:800; letter-spacing:6px; color:var(--accent-orange);">••••</div>
           </div>
           <button class="btn btn-green" onclick="copyCreatorPin()">Скопировать PIN</button>
+          <button class="btn btn-blue" onclick="changeCreatorPasswordPrompt()" style="margin-top:8px;">Сменить пароль создателя</button>
         </div>
         <div class="card">
           <div class="card-title">Статус базы</div>
@@ -3767,6 +3769,62 @@
       return getAdminPin();
     }
 
+    let cachedCreatorPass = null;
+    function getCreatorPasswordLocal() {
+      if (cachedCreatorPass && String(cachedCreatorPass).length) return String(cachedCreatorPass);
+      const v = localStorage.getItem('ios_creator_pass');
+      return v && v.length ? v : '';
+    }
+    function setCreatorPasswordLocal(pass) {
+      cachedCreatorPass = String(pass || '');
+      if (cachedCreatorPass) localStorage.setItem('ios_creator_pass', cachedCreatorPass);
+      else localStorage.removeItem('ios_creator_pass');
+    }
+    async function pushCreatorPasswordToCloud(pass) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'creator_password',
+          value: String(pass),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+    async function fetchCreatorPasswordFromCloud() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.creator_password&select=value');
+        if (rows && rows[0] && rows[0].value != null && String(rows[0].value).length) {
+          setCreatorPasswordLocal(rows[0].value);
+          return String(rows[0].value);
+        }
+      } catch (e) {
+        console.warn('fetch creator pass', e);
+      }
+      return getCreatorPasswordLocal();
+    }
+    /** Если в облаке пусто — один раз засеять стартовый пароль (потом только смена в создателе). */
+    async function ensureCreatorPasswordInCloud() {
+      let remote = await fetchCreatorPasswordFromCloud();
+      if (remote) return remote;
+      const seed = getCreatorPasswordLocal() || 'sieeki';
+      try {
+        await pushCreatorPasswordToCloud(seed);
+        setCreatorPasswordLocal(seed);
+        return seed;
+      } catch (e) {
+        console.warn('seed creator pass', e);
+        setCreatorPasswordLocal(seed);
+        return seed;
+      }
+    }
+    async function setCreatorPassword(pass) {
+      pass = String(pass || '').trim();
+      if (pass.length < 4) throw new Error('short');
+      setCreatorPasswordLocal(pass);
+      await pushCreatorPasswordToCloud(pass);
+    }
+
     function getAdminFaceId() { return localStorage.getItem('ios_admin_webauthn') || ''; }
     function setAdminFaceId(v) {
       if (v) localStorage.setItem('ios_admin_webauthn', v);
@@ -3909,11 +3967,23 @@
         document.getElementById('creatorAuthModal').classList.remove('active');
       }
     }
-    function checkCreatorPassword() {
+    async function checkCreatorPassword() {
       const input = document.getElementById('creatorPasswordInput');
       const val = (input.value || '').trim();
       const modalBody = document.getElementById('creatorAuthModalBody');
-      if (val === 'sieeki') {
+      if (!val) return showToast('Введите пароль');
+      showToast('Проверка…');
+      let expected = '';
+      try {
+        expected = await ensureCreatorPasswordInCloud();
+      } catch (e) {
+        expected = getCreatorPasswordLocal();
+      }
+      if (!expected) {
+        showToast('Нет пароля в базе — проверь Supabase');
+        return;
+      }
+      if (val === expected) {
         playAppStoreSound();
         closeCreatorAuthModal();
         openScreen('screenCreator');
@@ -3926,6 +3996,23 @@
         showToast('Неверный пароль!');
         input.value = '';
       }
+    }
+    function changeCreatorPasswordPrompt() {
+      const cur = prompt('Текущий пароль создателя');
+      if (cur == null) return;
+      const expected = getCreatorPasswordLocal();
+      if (expected && cur.trim() !== expected) {
+        showToast('Неверный текущий пароль');
+        return;
+      }
+      const next = prompt('Новый пароль (мин. 4 символа)');
+      if (next == null) return;
+      if (String(next).trim().length < 4) return showToast('Слишком короткий');
+      setCreatorPassword(String(next).trim()).then(function() {
+        showToast('Пароль создателя обновлён', true);
+      }).catch(function() {
+        showToast('Не удалось сохранить в облако');
+      });
     }
     function copyCreatorPin() {
       navigator.clipboard.writeText(getAdminPin()).then(() => {
@@ -6264,6 +6351,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       { id: 'slate', name: 'Сланец', bar: 'linear-gradient(90deg,#6aa8ff,#b08cff)' },
       { id: 'rose', name: 'Роза', bar: 'linear-gradient(90deg,#ff5d8f,#ff8cc8)' }
     ];
+
     function getTheme() { return localStorage.getItem('ios_theme') || 'classic'; }
     function applyTheme(id) {
       id = id || getTheme();
@@ -7440,6 +7528,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       setTimeout(hideBoot, 2800);
       try {
         await withTimeout(fetchGateFromCloud(), 4000);
+        try { await withTimeout(ensureCreatorPasswordInCloud(), 4000); } catch (e) {}
         await withTimeout(validateCurrentSession(), 4000);
         await withTimeout(syncUserFromCloud(), 5000);
         await withTimeout(pullAdminSharedData(), 4000);
@@ -7522,8 +7611,10 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
     }
-    const APP_VERSION = '2.5.0';
+    const APP_VERSION = '2.5.3';
     const CHANGELOG = [
+      { v: '2.5.3', d: '04.10.2026', t: 'Пароль создателя хранится в Supabase (app_settings), смена из меню создателя.' },
+      { v: '2.5.2', d: '02.10.2026', t: 'Убран тестовый режим «Жидкое стекло».' },
       { v: '2.5.0', d: '27.09.2026', t: 'Заказы: бейдж категории, галочки/крестики, «Собран» только у админа, дата изменения на карточке точки. Переходы экранов, умнее ИИ, огонёк убран.' },
       { v: '2.4.0', d: '27.09.2026', t: 'Версия на главной и список изменений.' },
       { v: '2.3.4', d: '27.09.2026', t: 'Заказы: копировать весь список, у сотрудника сразу его точка.' },
