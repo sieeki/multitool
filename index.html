@@ -1410,136 +1410,152 @@
     .notice-overlay {
       position: fixed; inset: 0; z-index: 9999;
       display: none; justify-content: center;
-      padding: 16px;
+      padding: 16px 14px;
       background: rgba(0,0,0,0);
       pointer-events: none;
     }
     .notice-overlay.on {
       display: flex !important;
       pointer-events: auto;
-      background: rgba(0,0,0,0.48);
-      animation: noticeBgIn .35s ease forwards;
+      background: rgba(0,0,0,0.35);
+      animation: noticeBgIn .28s ease forwards;
     }
-    .notice-overlay.pos-bottom { align-items: flex-end; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
-    .notice-overlay.pos-top { align-items: flex-start; padding-top: calc(16px + env(safe-area-inset-top)); }
+    .notice-overlay.leaving {
+      display: flex !important;
+      pointer-events: none;
+      animation: noticeBgOut .28s ease forwards;
+    }
+    .notice-overlay.pos-bottom { align-items: flex-end; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+    .notice-overlay.pos-top { align-items: flex-start; padding-top: calc(14px + env(safe-area-inset-top)); }
     .notice-overlay.pos-center { align-items: center; }
     @keyframes noticeBgIn {
       from { background: rgba(0,0,0,0); }
-      to { background: rgba(0,0,0,0.48); }
+      to { background: rgba(0,0,0,0.35); }
+    }
+    @keyframes noticeBgOut {
+      from { background: rgba(0,0,0,0.35); }
+      to { background: rgba(0,0,0,0); }
     }
     .notice-sheet {
-      width: 100%; max-width: 380px;
+      width: 100%; max-width: 340px;
       position: relative;
-      background:
-        radial-gradient(ellipse 120% 80% at 0% 0%, rgba(10,132,255,0.22), transparent 55%),
-        radial-gradient(ellipse 90% 70% at 100% 100%, rgba(191,90,242,0.12), transparent 50%),
-        linear-gradient(165deg, #2a2a2e 0%, #161618 100%);
-      border: 1px solid rgba(255,255,255,0.16);
-      border-radius: 26px;
-      padding: 22px 20px 18px;
-      box-shadow:
-        0 24px 64px rgba(0,0,0,0.55),
-        0 0 0 1px rgba(255,255,255,0.06) inset,
-        0 1px 0 rgba(255,255,255,0.08) inset;
+      background: rgba(36, 36, 40, 0.94);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 14px 12px 14px 14px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.45);
       opacity: 0;
       overflow: hidden;
       will-change: transform, opacity;
     }
-    .notice-sheet::before {
-      content: '';
-      position: absolute; left: 20px; right: 20px; top: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-    }
-    .notice-handle {
-      width: 36px; height: 4px; border-radius: 99px;
-      background: rgba(255,255,255,0.2);
-      margin: 0 auto 16px;
-    }
+    .notice-handle { display: none; }
     .notice-overlay.pos-bottom.on .notice-sheet {
-      animation: noticeInBottom .62s cubic-bezier(.16,1.1,.3,1) forwards;
+      animation: noticeInBottom .52s cubic-bezier(.16,1.1,.3,1) forwards;
     }
     .notice-overlay.pos-top.on .notice-sheet {
-      animation: noticeInTop .62s cubic-bezier(.16,1.1,.3,1) forwards;
+      animation: noticeInTop .52s cubic-bezier(.16,1.1,.3,1) forwards;
     }
     .notice-overlay.pos-center.on .notice-sheet {
-      animation: noticeInCenter .58s cubic-bezier(.16,1.15,.3,1) forwards;
+      animation: noticeInCenter .5s cubic-bezier(.16,1.15,.3,1) forwards;
+    }
+    .notice-overlay.pos-bottom.leaving .notice-sheet {
+      animation: noticeOutBottom .28s cubic-bezier(.4,0,1,1) forwards;
+    }
+    .notice-overlay.pos-top.leaving .notice-sheet {
+      animation: noticeOutTop .28s cubic-bezier(.4,0,1,1) forwards;
+    }
+    .notice-overlay.pos-center.leaving .notice-sheet {
+      animation: noticeOutCenter .26s cubic-bezier(.4,0,1,1) forwards;
     }
     @keyframes noticeInBottom {
-      0% { transform: translateY(120%) scale(0.94); opacity: 0; }
-      60% { transform: translateY(-6px) scale(1.01); opacity: 1; }
+      0% { transform: translateY(110%) scale(0.96); opacity: 0; }
+      70% { transform: translateY(-3px) scale(1.01); opacity: 1; }
       100% { transform: translateY(0) scale(1); opacity: 1; }
     }
     @keyframes noticeInTop {
-      0% { transform: translateY(-120%) scale(0.94); opacity: 0; }
-      60% { transform: translateY(6px) scale(1.01); opacity: 1; }
+      0% { transform: translateY(-110%) scale(0.96); opacity: 0; }
+      70% { transform: translateY(3px) scale(1.01); opacity: 1; }
       100% { transform: translateY(0) scale(1); opacity: 1; }
     }
     @keyframes noticeInCenter {
-      0% { transform: translateY(40px) scale(0.88); opacity: 0; }
-      55% { transform: translateY(-8px) scale(1.03); opacity: 1; }
-      75% { transform: translateY(3px) scale(0.995); opacity: 1; }
+      0% { transform: translateY(18px) scale(0.94); opacity: 0; }
+      65% { transform: translateY(-3px) scale(1.015); opacity: 1; }
       100% { transform: translateY(0) scale(1); opacity: 1; }
     }
+    @keyframes noticeOutBottom {
+      from { transform: translateY(0) scale(1); opacity: 1; }
+      to { transform: translateY(24px) scale(0.96); opacity: 0; }
+    }
+    @keyframes noticeOutTop {
+      from { transform: translateY(0) scale(1); opacity: 1; }
+      to { transform: translateY(-24px) scale(0.96); opacity: 0; }
+    }
+    @keyframes noticeOutCenter {
+      from { transform: translateY(0) scale(1); opacity: 1; }
+      to { transform: translateY(10px) scale(0.94); opacity: 0; }
+    }
     .notice-top {
-      display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+      display: flex; align-items: flex-start; gap: 12px;
+      margin-bottom: 0;
     }
     .notice-icon {
-      width: 52px; height: 52px; border-radius: 16px; flex-shrink: 0;
-      background: linear-gradient(145deg, #3a9eff, #0a84ff 55%, #0060df);
+      width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+      background: #0a84ff;
       border: none;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 22px rgba(10,132,255,0.45);
+      box-shadow: 0 4px 12px rgba(10,132,255,0.35);
+      margin-top: 0;
     }
-    .notice-icon svg { width: 24px; height: 24px; fill: #fff; }
+    .notice-icon svg { width: 20px; height: 20px; fill: #fff; }
+    .notice-content { flex: 1; min-width: 0; padding-right: 4px; }
     .notice-kicker {
-      font-size: 11px; font-weight: 800; letter-spacing: 1px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.6px;
       text-transform: uppercase;
-      background: linear-gradient(90deg, #7ab8ff, #c4a0ff);
-      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-      margin-bottom: 4px;
+      color: #9b7dff;
+      margin-bottom: 2px;
+      background: none;
+      -webkit-text-fill-color: #9b7dff;
     }
     .notice-title {
-      font-size: 21px; font-weight: 800; letter-spacing: -0.45px; line-height: 1.2;
+      font-size: 17px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.2;
       color: #fff;
+      margin-bottom: 4px;
     }
     .notice-body {
-      margin: 0 0 14px;
+      margin: 0;
       padding: 0;
       background: none;
       border: none;
     }
     .notice-fmt {
-      font-size: 15px; line-height: 1.55; color: rgba(255,255,255,0.78);
+      font-size: 13px; line-height: 1.4; color: rgba(255,255,255,0.62);
       white-space: pre-wrap; word-break: break-word;
-      padding: 14px 14px;
-      background: rgba(0,0,0,0.28);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 16px;
+      padding: 0; background: none; border: none;
     }
-    .notice-fmt b { color: #fff; font-weight: 800; }
-    .notice-sheet .btn {
-      margin-top: 0;
-      height: 48px;
-      border-radius: 14px;
-      font-size: 16px;
-      font-weight: 700;
-      background: linear-gradient(180deg, #2b95ff, #0a84ff);
-      box-shadow: 0 8px 20px rgba(10,132,255,0.35);
-      border: none;
+    .notice-fmt b { color: #fff; font-weight: 700; }
+    .notice-close {
+      flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      border: none; background: transparent;
+      color: rgba(255,255,255,0.45);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; padding: 0; margin: -2px -2px 0 0;
     }
+    .notice-close svg { width: 14px; height: 14px; fill: currentColor; }
+    .notice-close:active { color: #fff; background: rgba(255,255,255,0.08); }
+    .notice-sheet .btn { display: none; }
     .notice-media {
-      width: 100%; max-height: 180px; object-fit: cover;
-      border-radius: 16px; margin: 0 0 14px;
-      border: 1px solid rgba(255,255,255,0.1);
-      display: none;
+      width: 100%; max-height: 140px; object-fit: cover;
+      border-radius: 12px; margin: 10px 0 0;
+      border: none; display: none;
     }
     .notice-media.on { display: block; }
     .notice-link {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      width: 100%; height: 44px; margin: 0 0 10px;
-      border-radius: 14px; border: 1px solid rgba(122,184,255,0.35);
-      background: rgba(10,132,255,0.12); color: #9ccfff;
-      font-size: 14px; font-weight: 700; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; height: 36px; margin: 10px 0 0;
+      border-radius: 10px; border: 1px solid rgba(10,132,255,0.28);
+      background: rgba(10,132,255,0.1); color: #64b5ff;
+      font-size: 13px; font-weight: 600; text-decoration: none;
     }
     .notice-link:active { opacity: 0.85; }
     textarea#noticeBody {
@@ -2764,7 +2780,46 @@
 
     <div class="card">
       <div class="card-title">Архив закрытых недель</div>
+      <p style="font-size:12px;color:var(--text-sec);margin:-4px 0 10px;line-height:1.4;">Нажми на неделю, чтобы открыть</p>
       <div id="archiveContainer"></div>
+    </div>
+  </div>
+
+  <div id="screenArchiveWeek" class="screen">
+    <div class="back-btn" onclick="openScreen('screenStats')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Архив
+    </div>
+    <div class="header">
+      <div class="header-title">
+        <h1 id="arcWeekTitle">Неделя</h1>
+        <p id="arcWeekSub">из архива</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="card-title" style="margin:0;">Смен</div>
+          <div class="stat-num" id="arcWeekShifts">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="card-title" style="margin:0;">Выручка</div>
+          <div class="stat-num" id="arcWeekRev" style="font-size:22px;">0 ₽</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Смены</div>
+      <div id="arcWeekShiftsList"></div>
+    </div>
+    <div class="card" id="arcWeekDedCard" style="display:none;">
+      <div class="card-title">Удержания</div>
+      <div id="arcWeekDedList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Текст для копирования</div>
+      <div class="report-box" id="arcWeekReport"></div>
+      <button class="btn btn-green" onclick="copyArchiveWeekReport()">Скопировать</button>
+      <button class="btn btn-red-soft" id="arcWeekDeleteBtn" onclick="deleteOpenedArchiveWeek()" style="margin-top:8px;">Удалить из архива</button>
     </div>
   </div>
 
@@ -3261,6 +3316,14 @@
             <button class="btn btn-orange" onclick="sendKeyNoticeToAll()">Всем ключам</button>
           </div>
         </div>
+        <div class="card">
+          <div class="card-title">Очередь уведомлений</div>
+          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
+            Ждёт / просмотрено / отменено. Отмена снимает увед у всех, кто ещё не открыл.
+          </p>
+          <button class="btn btn-blue" onclick="void refreshNoticeOutbox()">Обновить очередь</button>
+          <div id="noticeOutboxList" style="margin-top:12px;"><div style="color:var(--text-sec);font-size:13px;">—</div></div>
+        </div>
       </div>
 
       <div class="cr-panel" id="crPanelPlay">
@@ -3547,22 +3610,23 @@
   </div>
 
   <!-- СООБЩЕНИЕ ОТ РУКОВОДСТВА -->
-  <div class="notice-overlay pos-center" id="keyNoticeModal">
+  <div class="notice-overlay pos-center" id="keyNoticeModal" onclick="dismissKeyNotice()">
     <div class="notice-sheet" onclick="event.stopPropagation()">
-      <div class="notice-handle"></div>
       <div class="notice-top">
         <div class="notice-icon">
           <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
         </div>
-        <div>
+        <div class="notice-content">
           <div class="notice-kicker">Сообщение</div>
           <div class="notice-title" id="keyNoticeTitle">Заголовок</div>
+          <div class="notice-body" id="keyNoticeBody"></div>
         </div>
+        <button type="button" class="notice-close" onclick="dismissKeyNotice()" aria-label="Закрыть">
+          <svg viewBox="0 0 24 24"><path d="M18.3 5.71a1 1 0 00-1.41 0L12 10.59 7.11 5.7A1 1 0 105.7 7.11L10.59 12 5.7 16.89a1 1 0 101.41 1.41L12 13.41l4.89 4.89a1 1 0 001.41-1.41L13.41 12l4.89-4.89a1 1 0 000-1.4z"/></svg>
+        </button>
       </div>
       <img class="notice-media" id="keyNoticeImage" alt="">
-      <div class="notice-body" id="keyNoticeBody"></div>
       <a class="notice-link" id="keyNoticeLink" href="#" target="_blank" rel="noopener" style="display:none;"></a>
-      <button class="btn btn-blue" onclick="dismissKeyNotice()">Понятно</button>
     </div>
   </div>
 
@@ -3834,24 +3898,7 @@
     else updateSeasonMenuUI();
 
     function playAppStoreSound() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const playPulse = (freq, startTime, duration, gainVal) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime);
-          gain.gain.setValueAtTime(0.001, ctx.currentTime + startTime);
-          gain.gain.linearRampToValueAtTime(gainVal, ctx.currentTime + startTime + 0.015);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + startTime + duration);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(ctx.currentTime + startTime);
-          osc.stop(ctx.currentTime + startTime + duration);
-        };
-        playPulse(1318.51, 0.00, 0.18, 0.35);
-        playPulse(1661.22, 0.08, 0.45, 0.40);
-      } catch (e) {}
+      /* muted */
     }
 
     function triggerSuccessFlash() {
@@ -5618,13 +5665,18 @@
       try { logAction('закрыл неделю в архив'); } catch (e) {}
       const store = getData();
       if (store.shifts.length === 0) return showToast('Нечего сохранять');
+      const reportEl = document.getElementById('reportText');
       const arc = getArchive();
       arc.unshift({
         id: Date.now(),
         dateRange: store.shifts[0].date + ' — ' + store.shifts[store.shifts.length - 1].date,
         shiftsCount: store.shifts.length,
-        totalRevenue: store.shifts.reduce((acc, s) => acc + s.total, 0),
-        reportText: document.getElementById('reportText').innerText
+        totalRevenue: store.shifts.reduce(function(acc, s) { return acc + (Number(s.total) || 0); }, 0),
+        reportText: reportEl ? reportEl.innerText : '',
+        shifts: store.shifts.slice(),
+        deductions: (store.deductions || []).slice(),
+        paidAmount: getPaidAmount(),
+        closedAt: new Date().toISOString()
       });
       saveArchive(arc);
       localStorage.removeItem('ios_multitool_data');
@@ -5635,10 +5687,91 @@
       showToast('Неделя сохранена в архив', true);
     }
 
+    let _openedArchiveId = null;
+
+    function openArchiveWeek(id) {
+      const arc = getArchive();
+      const item = arc.find(function(x) { return String(x.id) === String(id); });
+      if (!item) return showToast('Неделя не найдена');
+      _openedArchiveId = item.id;
+      const title = document.getElementById('arcWeekTitle');
+      const sub = document.getElementById('arcWeekSub');
+      const shiftsN = document.getElementById('arcWeekShifts');
+      const rev = document.getElementById('arcWeekRev');
+      const list = document.getElementById('arcWeekShiftsList');
+      const dedCard = document.getElementById('arcWeekDedCard');
+      const dedList = document.getElementById('arcWeekDedList');
+      const report = document.getElementById('arcWeekReport');
+      if (title) title.textContent = item.dateRange || 'Неделя';
+      if (sub) {
+        let s = 'из архива';
+        if (item.closedAt) {
+          try {
+            const d = new Date(item.closedAt);
+            if (!isNaN(d.getTime())) s = 'закрыта ' + d.toLocaleString('ru-RU');
+          } catch (e) {}
+        }
+        sub.textContent = s;
+      }
+      if (shiftsN) shiftsN.textContent = String(item.shiftsCount || (item.shifts && item.shifts.length) || 0);
+      if (rev) rev.textContent = (Number(item.totalRevenue) || 0).toLocaleString('ru-RU') + ' ₽';
+      if (list) {
+        const shifts = item.shifts || [];
+        if (!shifts.length) {
+          list.innerHTML = '<div style="color:var(--text-sec);font-size:13px;line-height:1.4;">Старый архив без детализации смен — ниже полный текст отчёта.</div>';
+        } else {
+          const paid = item.paidAmount != null ? item.paidAmount : getPaidAmount();
+          list.innerHTML = shifts.map(function(s) {
+            const total = Number(s.total) || 0;
+            const percent = Math.round(total * 0.03);
+            const toPay = 2300 + percent;
+            const remain = toPay - paid;
+            return '<div class="shift-item"><div><div class="shift-date">' + escapeHtml(s.date || '') +
+              '</div><div class="shift-val">Итог: ' + total.toLocaleString('ru-RU') + ' ₽ · к выплате ' +
+              toPay.toLocaleString('ru-RU') + ' · ост. ' + remain.toLocaleString('ru-RU') +
+              '</div></div></div>';
+          }).join('');
+        }
+      }
+      const deds = item.deductions || [];
+      if (dedCard && dedList) {
+        if (!deds.length) {
+          dedCard.style.display = 'none';
+          dedList.innerHTML = '';
+        } else {
+          dedCard.style.display = 'block';
+          dedList.innerHTML = deds.map(function(d) {
+            return '<div class="shift-item"><div><div class="shift-date" style="color:var(--accent-red);">− ' +
+              (Number(d.amount) || 0).toLocaleString('ru-RU') + ' ₽</div><div class="shift-val">' +
+              escapeHtml(d.reason || '') + '</div></div></div>';
+          }).join('');
+        }
+      }
+      if (report) report.textContent = item.reportText || 'Нет текста отчёта';
+      openScreen('screenArchiveWeek');
+    }
+
+    function copyArchiveWeekReport() {
+      const el = document.getElementById('arcWeekReport');
+      const t = el ? el.innerText : '';
+      if (!t) return showToast('Пусто');
+      navigator.clipboard.writeText(t).then(function() {
+        playAppStoreSound();
+        showToast('Скопировано', true);
+      }).catch(function() { showToast('Не удалось скопировать'); });
+    }
+
+    function deleteOpenedArchiveWeek() {
+      if (_openedArchiveId == null) return;
+      deleteArchiveItem(_openedArchiveId);
+      _openedArchiveId = null;
+      openScreen('screenStats');
+    }
+
     function deleteArchiveItem(id) {
       if (!confirm('Удалить эту неделю из архива?')) return;
       let arc = getArchive();
-      arc = arc.filter(item => item.id !== id);
+      arc = arc.filter(function(item) { return String(item.id) !== String(id); });
       saveArchive(arc);
       renderStats();
       showToast('Удалено из архива');
@@ -5793,16 +5926,18 @@
         return;
       }
       container.innerHTML = '';
-      arc.forEach((item) => {
-        container.innerHTML += 
-          '<div class="archive-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.08);">' +
-            '<div>' +
-              '<div style="font-weight:600; font-size:15px; color:#fff;">' + item.dateRange + '</div>' +
+      arc.forEach(function(item) {
+        const id = item.id;
+        const rev = (Number(item.totalRevenue) || 0).toLocaleString('ru-RU');
+        container.innerHTML +=
+          '<div class="archive-item" onclick="openArchiveWeek(' + id + ')" style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;">' +
+            '<div style="min-width:0;flex:1;padding-right:10px;">' +
+              '<div style="font-weight:700; font-size:15px; color:#fff;">' + escapeHtml(item.dateRange || '') + '</div>' +
               '<div style="font-size:13px; color:var(--text-sec); margin-top:3px;">' +
-                'Смен: ' + item.shiftsCount + ' | Выручка: ' + item.totalRevenue.toLocaleString('ru-RU') + ' ₽' +
+                'Смен: ' + (item.shiftsCount || 0) + ' · Выручка: ' + rev + ' ₽ · открыть' +
               '</div>' +
             '</div>' +
-            '<div class="del-btn" onclick="deleteArchiveItem(' + item.id + ')">✕</div>' +
+            '<div style="color:var(--text-sec);font-size:18px;flex-shrink:0;">›</div>' +
           '</div>';
       });
     }
@@ -6543,8 +6678,10 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
     let actPushTimer = null;
     let actCache = null;
+    let actClearLockUntil = 0;
     function logAction(what, extra) {
       if (!what) return;
+      if (Date.now() < actClearLockUntil) return;
       const ev = {
         t: new Date().toISOString(),
         who: actorLabel(),
@@ -6564,19 +6701,39 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       clearTimeout(actPushTimer);
       actPushTimer = setTimeout(flushActivityLog, 700);
     }
+    function parseActivityLogValue(raw) {
+      if (raw == null) return [];
+      let v = raw;
+      if (typeof v === 'string') {
+        try { v = JSON.parse(v); } catch (e) { return []; }
+      }
+      if (Array.isArray(v)) return v;
+      if (v && Array.isArray(v.items)) return v.items;
+      return [];
+    }
+    async function writeActivityLogCloud(list) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'activity_log',
+          value: JSON.stringify(list || []),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
     async function flushActivityLog() {
+      if (Date.now() < actClearLockUntil) {
+        localStorage.setItem('ios_act_queue', '[]');
+        return;
+      }
       let local = [];
       try { local = JSON.parse(localStorage.getItem('ios_act_queue') || '[]'); } catch (e) { local = []; }
       if (!local.length) return;
       try {
         const rows = await sbFetch('app_settings?key=eq.activity_log&select=value');
         let list = [];
-        if (rows && rows[0] && rows[0].value != null) {
-          let v = rows[0].value;
-          if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = []; } }
-          if (Array.isArray(v)) list = v;
-          else if (v && Array.isArray(v.items)) list = v.items;
-        }
+        if (rows && rows[0]) list = parseActivityLogValue(rows[0].value);
         const seen = {};
         const merged = local.concat(list).filter(function(e) {
           const k = (e && e.t || '') + '|' + (e && e.what || '') + '|' + (e && e.who || '');
@@ -6586,30 +6743,20 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         });
         merged.sort(function(a,b){ return String(b.t).localeCompare(String(a.t)); });
         actCache = merged.slice(0, 300);
-        await sbFetch('app_settings?on_conflict=key', {
-          method: 'POST',
-          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-          body: JSON.stringify({
-            key: 'activity_log',
-            value: JSON.stringify(actCache),
-            updated_at: new Date().toISOString()
-          })
-        });
+        await writeActivityLogCloud(actCache);
         localStorage.setItem('ios_act_queue', '[]');
       } catch (e) {}
     }
     async function refreshActivityLog() {
       const box = document.getElementById('activityLogList');
       if (box) box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Гружу…</div>';
-      try { await flushActivityLog(); } catch (e) {}
+      if (Date.now() >= actClearLockUntil) {
+        try { await flushActivityLog(); } catch (e) {}
+      }
       try {
         const rows = await sbFetch('app_settings?key=eq.activity_log&select=value');
-        let list = actCache || [];
-        if (rows && rows[0] && rows[0].value != null) {
-          let v = rows[0].value;
-          if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = list; } }
-          if (Array.isArray(v)) list = v;
-        }
+        let list = [];
+        if (rows && rows[0]) list = parseActivityLogValue(rows[0].value);
         actCache = list;
         if (!box) return;
         if (!list.length) {
@@ -6632,26 +6779,25 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (!confirm('Стереть весь лог?')) return;
       try { clearTimeout(actPushTimer); } catch (e) {}
       actPushTimer = null;
+      actClearLockUntil = Date.now() + 10000;
       actCache = [];
       localStorage.setItem('ios_act_queue', '[]');
       const box = document.getElementById('activityLogList');
       if (box) box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Очищаю…</div>';
       try {
-        await sbFetch('app_settings?on_conflict=key', {
-          method: 'POST',
-          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-          body: JSON.stringify({
-            key: 'activity_log',
-            value: JSON.stringify([]),
-            updated_at: new Date().toISOString()
-          })
-        });
+        try {
+          await sbFetch('app_settings?key=eq.activity_log', {
+            method: 'DELETE',
+            headers: { 'Prefer': 'return=minimal' }
+          });
+        } catch (e) {}
+        await writeActivityLogCloud([]);
         actCache = [];
+        localStorage.setItem('ios_act_queue', '[]');
         if (box) box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Лог пуст</div>';
         showToast('Лог очищен', true);
       } catch (e) {
         showToast(e.message || 'Не удалось очистить в облаке');
-        try { await refreshActivityLog(); } catch (e2) {}
       }
     }
 
@@ -7814,6 +7960,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (id === 'people') { refreshDeviceSessions(); refreshPeekAccounts(); }
       if (id === 'keys') refreshAccessKeysList();
       if (id === 'log') refreshActivityLog();
+      if (id === 'alerts') refreshNoticeOutbox();
     }
 
     function creatorGoBack() {
@@ -8980,6 +9127,140 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       return 'notice_' + String(code || '').trim().toUpperCase();
     }
 
+    async function loadNoticeOutbox() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.notice_outbox&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return [];
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return []; } }
+        return Array.isArray(v) ? v : [];
+      } catch (e) { return []; }
+    }
+    async function saveNoticeOutbox(list) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'notice_outbox',
+          value: JSON.stringify((list || []).slice(0, 80)),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+    async function pushNoticeToOutbox(entry) {
+      const list = await loadNoticeOutbox();
+      list.unshift(entry);
+      await saveNoticeOutbox(list);
+    }
+    async function patchNoticeOutboxItem(id, mutator) {
+      const list = await loadNoticeOutbox();
+      let changed = false;
+      list.forEach(function(it) {
+        if (String(it.id) === String(id)) { mutator(it); changed = true; }
+      });
+      if (changed) await saveNoticeOutbox(list);
+      return changed;
+    }
+    async function deliverNoticeToCode(code, notice) {
+      code = String(code || '').trim().toUpperCase();
+      await patchKeyPayload(code, function(payload) { payload.ios_notice = notice; });
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({
+            key: noticeStorageKey(code),
+            value: JSON.stringify(notice),
+            updated_at: new Date().toISOString()
+          })
+        });
+      } catch (e) {}
+    }
+    async function removeNoticeFromCode(code, noticeId) {
+      code = String(code || '').trim().toUpperCase();
+      try {
+        await patchKeyPayload(code, function(payload) {
+          if (payload.ios_notice && String(payload.ios_notice.id) === String(noticeId)) delete payload.ios_notice;
+        });
+      } catch (e) {}
+      try {
+        await sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)), {
+          method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
+        });
+      } catch (e) {
+        try {
+          await sbFetch('app_settings?on_conflict=key', {
+            method: 'POST',
+            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+            body: JSON.stringify({ key: noticeStorageKey(code), value: '', updated_at: new Date().toISOString() })
+          });
+        } catch (e2) {}
+      }
+    }
+    function noticeStatusLabel(it) {
+      if (!it) return '';
+      if (it.status === 'cancelled') return 'отменено';
+      const targets = it.targetCodes || [];
+      const seen = it.seen || {};
+      const seenN = targets.filter(function(c) { return !!seen[c]; }).length;
+      if (!targets.length) return seenN ? 'просмотрено' : 'ждёт';
+      if (seenN >= targets.length) return 'просмотрено';
+      if (seenN > 0) return 'просмотрено ' + seenN + '/' + targets.length;
+      return 'ждёт';
+    }
+    async function refreshNoticeOutbox() {
+      const box = document.getElementById('noticeOutboxList');
+      if (!box) return;
+      box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Гружу…</div>';
+      try {
+        const list = await loadNoticeOutbox();
+        if (!list.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Очередь пуста</div>';
+          return;
+        }
+        box.innerHTML = list.slice(0, 40).map(function(it) {
+          const st = noticeStatusLabel(it);
+          const stColor = it.status === 'cancelled' ? 'var(--accent-red)'
+            : (st.indexOf('просмотрено') === 0 && st.indexOf('/') < 0 ? 'var(--accent-green)' : 'var(--accent-orange)');
+          const who = it.all ? 'всем' : ((it.targetCodes || []).join(', ') || '—');
+          const fullySeen = st === 'просмотрено';
+          const canCancel = it.status !== 'cancelled' && !fullySeen;
+          return '<div class="key-item" style="margin-bottom:8px;">' +
+            '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(it.title || 'Сообщение') +
+            '</div><span class="key-badge" style="background:rgba(255,255,255,.06);color:' + stColor + ';">' + escapeHtml(st) + '</span></div>' +
+            '<div class="key-item-meta" style="margin-top:6px;">' + escapeHtml((it.body || '').slice(0, 90)) + '</div>' +
+            '<div class="key-item-meta">→ ' + escapeHtml(who) +
+            (it.at ? ' · ' + escapeHtml(formatActTime(it.at)) : '') + '</div>' +
+            (canCancel
+              ? '<button type="button" class="key-act danger" style="margin-top:10px;width:100%;" onclick="cancelNoticeOutbox(\'' + String(it.id).replace(/'/g,'') + '\')">Отменить</button>'
+              : '') +
+            '</div>';
+        }).join('');
+      } catch (e) {
+        box.innerHTML = '<div style="color:#ff453a;font-size:13px;">' + escapeHtml(e.message || 'ошибка') + '</div>';
+      }
+    }
+    async function cancelNoticeOutbox(id) {
+      if (!confirm('Отменить это уведомление?')) return;
+      try {
+        const list = await loadNoticeOutbox();
+        const it = list.find(function(x) { return String(x.id) === String(id); });
+        if (!it) return showToast('Уже нет');
+        if (it.status === 'cancelled') return showToast('Уже отменено');
+        const codes = it.targetCodes || [];
+        for (let i = 0; i < codes.length; i++) {
+          try { await removeNoticeFromCode(codes[i], id); } catch (e) {}
+        }
+        it.status = 'cancelled';
+        it.cancelledAt = new Date().toISOString();
+        await saveNoticeOutbox(list);
+        showToast('Отменено', true);
+        refreshNoticeOutbox();
+      } catch (e) {
+        showToast(e.message || 'не вышло');
+      }
+    }
+
     function normalizeNotice(raw) {
       if (!raw) return null;
       let n = raw;
@@ -9042,39 +9323,17 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       try {
         const rec = await findKeyRecord(code);
         if (!rec) return showToast('Ключ не найден');
-        // как монеты — в key_data
-        await patchKeyPayload(code, function(payload) {
-          payload.ios_notice = notice;
+        await deliverNoticeToCode(code, notice);
+        await pushNoticeToOutbox({
+          id: notice.id, title: notice.title, body: notice.body,
+          link: notice.link || '', image: notice.image || '', pos: notice.pos || 'center',
+          all: false, targetCodes: [code], seen: {}, status: 'pending', at: notice.at
         });
-        // дубль в app_settings на случай гонки
-        try {
-          await sbFetch('app_settings?on_conflict=key', {
-            method: 'POST',
-            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-            body: JSON.stringify({
-              key: noticeStorageKey(code),
-              value: JSON.stringify(notice),
-              updated_at: new Date().toISOString()
-            })
-          });
-        } catch (e) {}
-        // проверка что записалось
-        let ok = false;
-        try {
-          const back = await pullKeyDataFromCloud(code);
-          if (back && back.ios_notice && back.ios_notice.id === notice.id) ok = true;
-        } catch (e) {}
-        if (!ok) {
-          try {
-            const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)) + '&select=value');
-            if (rows && rows[0] && rows[0].value) ok = true;
-          } catch (e) {}
-        }
-        if (ok) showToast('Отправлено на ' + code, true);
-        else showToast('Запись сомнительная — проверь базу');
+        showToast('Отправлено на ' + code, true);
         try { logAction('отправил сообщение', code); } catch (e) {}
         const bodyEl = document.getElementById('noticeBody');
         if (bodyEl) bodyEl.value = '';
+        try { refreshNoticeOutbox(); } catch (e) {}
       } catch (e) {
         showToast(e.message || 'не отправилось');
       }
@@ -9088,40 +9347,25 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       showToast('Рассылка…');
       try {
         let keys = [];
-        try {
-          keys = await sbFetch('access_keys?select=code,active&order=created_at.desc') || [];
-        } catch (e) {
-          keys = getLocalKeys() || [];
-        }
-        keys = (keys || []).filter(function(k) {
-          return k && k.code && k.active !== false;
-        });
+        try { keys = await sbFetch('access_keys?select=code,active&order=created_at.desc') || []; }
+        catch (e) { keys = getLocalKeys() || []; }
+        keys = (keys || []).filter(function(k) { return k && k.code && k.active !== false; });
         if (!keys.length) return showToast('Нет ключей');
         let ok = 0, fail = 0;
+        const codes = [];
         for (let i = 0; i < keys.length; i++) {
           const code = String(keys[i].code).trim().toUpperCase();
-          try {
-            await patchKeyPayload(code, function(payload) {
-              payload.ios_notice = notice;
-            });
-            try {
-              await sbFetch('app_settings?on_conflict=key', {
-                method: 'POST',
-                headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-                body: JSON.stringify({
-                  key: noticeStorageKey(code),
-                  value: JSON.stringify(notice),
-                  updated_at: new Date().toISOString()
-                })
-              });
-            } catch (e) {}
-            ok++;
-          } catch (e) {
-            fail++;
-          }
+          try { await deliverNoticeToCode(code, notice); codes.push(code); ok++; }
+          catch (e) { fail++; }
         }
+        await pushNoticeToOutbox({
+          id: notice.id, title: notice.title, body: notice.body,
+          link: notice.link || '', image: notice.image || '', pos: notice.pos || 'center',
+          all: true, targetCodes: codes, seen: {}, status: 'pending', at: notice.at
+        });
         showToast('Всем: ' + ok + (fail ? (', ошибок ' + fail) : ''), true);
         try { logAction('рассылка сообщения', 'ключей ' + ok); } catch (e) {}
+        try { refreshNoticeOutbox(); } catch (e) {}
       } catch (e) {
         showToast(e.message || 'рассылка не вышла');
       }
@@ -9164,7 +9408,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       }
       const m = document.getElementById('keyNoticeModal');
       if (m) {
-        m.classList.remove('on', 'pos-top', 'pos-center', 'pos-bottom');
+        _noticeClosing = false;
+        m.classList.remove('on', 'leaving', 'pos-top', 'pos-center', 'pos-bottom');
         m.style.display = 'none';
         void m.offsetWidth;
         const pos = (notice.pos === 'top' || notice.pos === 'bottom') ? notice.pos : 'center';
@@ -9182,67 +9427,65 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       try { playAppStoreSound(); } catch (e) {}
     }
 
+    let _noticeClosing = false;
     async function dismissKeyNotice() {
+      if (_noticeClosing) return;
       const notice = _noticeShowing;
       const m = document.getElementById('keyNoticeModal');
-      if (m) {
-        m.classList.remove('on', 'pos-top', 'pos-center', 'pos-bottom');
+      if (m && m.classList.contains('on')) {
+        _noticeClosing = true;
+        m.classList.remove('on');
+        m.classList.add('leaving');
+        await new Promise(function(r) { setTimeout(r, 280); });
+        m.classList.remove('leaving', 'pos-top', 'pos-center', 'pos-bottom');
+        m.style.display = 'none';
+        _noticeClosing = false;
+      } else if (m) {
+        m.classList.remove('on', 'leaving', 'pos-top', 'pos-center', 'pos-bottom');
         m.style.display = 'none';
       }
-      if (!notice || !notice.id) {
-        _noticeShowing = null;
-        return;
-      }
+      if (!notice || !notice.id) { _noticeShowing = null; return; }
       localStorage.setItem('ios_notice_seen_id', String(notice.id));
       _noticeShowing = null;
       const sess = getSession();
       if (!sess || !sess.code || !getSbConfig()) return;
+      try { await removeNoticeFromCode(sess.code, notice.id); } catch (e) {}
       try {
-        await patchKeyPayload(sess.code, function(payload) {
-          if (payload.ios_notice && String(payload.ios_notice.id) === String(notice.id)) {
-            delete payload.ios_notice;
-          }
+        await patchNoticeOutboxItem(notice.id, function(it) {
+          if (!it.seen) it.seen = {};
+          it.seen[sess.code] = new Date().toISOString();
         });
       } catch (e) {}
-      try {
-        await sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(sess.code)), {
-          method: 'DELETE',
-          headers: { 'Prefer': 'return=minimal' }
-        });
-      } catch (e) {
-        try {
-          await sbFetch('app_settings?on_conflict=key', {
-            method: 'POST',
-            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-            body: JSON.stringify({
-              key: noticeStorageKey(sess.code),
-              value: '',
-              updated_at: new Date().toISOString()
-            })
-          });
-        } catch (e2) {}
-      }
     }
 
+    async function isNoticeCancelled(id) {
+      if (!id) return false;
+      try {
+        const list = await loadNoticeOutbox();
+        const it = list.find(function(x) { return String(x.id) === String(id); });
+        return !!(it && it.status === 'cancelled');
+      } catch (e) { return false; }
+    }
     async function fetchNoticeForCode(code) {
       code = String(code || '').trim().toUpperCase();
       if (!code || !getSbConfig()) return null;
-      // 1) key_data — как монеты
+      let n = null;
       try {
         const remote = await pullKeyDataFromCloud(code);
-        const n = normalizeNotice(remote && remote.ios_notice);
-        if (n) return n;
+        n = normalizeNotice(remote && remote.ios_notice);
       } catch (e) {}
-      // 2) app_settings дубль
-      try {
-        const rows = await sbFetch(
-          'app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)) + '&select=value'
-        );
-        if (rows && rows[0] && rows[0].value) {
-          return normalizeNotice(rows[0].value);
-        }
-      } catch (e) {}
-      return null;
+      if (!n) {
+        try {
+          const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)) + '&select=value');
+          if (rows && rows[0] && rows[0].value) n = normalizeNotice(rows[0].value);
+        } catch (e) {}
+      }
+      if (!n) return null;
+      if (await isNoticeCancelled(n.id)) {
+        try { await removeNoticeFromCode(code, n.id); } catch (e) {}
+        return null;
+      }
+      return n;
     }
 
     async function checkKeyNotice() {
