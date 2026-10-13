@@ -7381,6 +7381,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
             }
           }
         } catch (e) {}
+        // ios_notice не из localStorage — только из remote merge выше
         await sbFetch('key_data?on_conflict=code', {
           method: 'POST',
           headers: {
@@ -9163,17 +9164,19 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
     async function deliverNoticeToCode(code, notice) {
       code = String(code || '').trim().toUpperCase();
-      await patchKeyPayload(code, function(payload) { payload.ios_notice = notice; });
+      // главный канал — app_settings (не затирается синком смен)
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: noticeStorageKey(code),
+          value: notice,
+          updated_at: new Date().toISOString()
+        })
+      });
+      // дубль в key_data (best effort)
       try {
-        await sbFetch('app_settings?on_conflict=key', {
-          method: 'POST',
-          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-          body: JSON.stringify({
-            key: noticeStorageKey(code),
-            value: JSON.stringify(notice),
-            updated_at: new Date().toISOString()
-          })
-        });
+        await patchKeyPayload(code, function(payload) { payload.ios_notice = notice; });
       } catch (e) {}
     }
     async function removeNoticeFromCode(code, noticeId) {
@@ -9466,18 +9469,52 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         return !!(it && it.status === 'cancelled');
       } catch (e) { return false; }
     }
+    async function fetchNoticeFromOutbox(code) {
+      try {
+        const list = await loadNoticeOutbox();
+        const pending = list.filter(function(it) {
+          if (!it || it.status === 'cancelled') return false;
+          if (localStorage.getItem('ios_notice_seen_id') === String(it.id)) return false;
+          const targets = it.targetCodes || [];
+          if (it.all && (!targets.length || targets.indexOf(code) >= 0)) return true;
+          return targets.indexOf(code) >= 0;
+        });
+        if (!pending.length) return null;
+        // newest first already
+        const it = pending[0];
+        if (it.seen && it.seen[code]) return null;
+        return normalizeNotice({
+          id: it.id,
+          title: it.title,
+          body: it.body,
+          link: it.link || '',
+          linkText: it.linkText || 'Открыть',
+          image: it.image || '',
+          pos: it.pos || 'center',
+          at: it.at
+        });
+      } catch (e) { return null; }
+    }
     async function fetchNoticeForCode(code) {
       code = String(code || '').trim().toUpperCase();
       if (!code || !getSbConfig()) return null;
       let n = null;
+      // 1) app_settings — основной канал
       try {
-        const remote = await pullKeyDataFromCloud(code);
-        n = normalizeNotice(remote && remote.ios_notice);
+        const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)) + '&select=value');
+        if (rows && rows[0] && rows[0].value != null && rows[0].value !== '') {
+          n = normalizeNotice(rows[0].value);
+        }
       } catch (e) {}
+      // 2) очередь (если settings пустые)
+      if (!n) {
+        try { n = await fetchNoticeFromOutbox(code); } catch (e) {}
+      }
+      // 3) key_data
       if (!n) {
         try {
-          const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)) + '&select=value');
-          if (rows && rows[0] && rows[0].value) n = normalizeNotice(rows[0].value);
+          const remote = await pullKeyDataFromCloud(code);
+          n = normalizeNotice(remote && remote.ios_notice);
         } catch (e) {}
       }
       if (!n) return null;
@@ -9489,7 +9526,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     async function checkKeyNotice() {
-      if (_noticeShowing) return;
+      if (_noticeShowing || _noticeClosing) return;
       const sess = getSession();
       if (!sess || !sess.code) return;
       try {
@@ -9497,17 +9534,28 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         if (!notice) return;
         if (localStorage.getItem('ios_notice_seen_id') === String(notice.id)) return;
         showKeyNoticeUI(notice);
-      } catch (e) {}
+      } catch (e) {
+        console.warn('checkKeyNotice', e);
+      }
     }
 
     function startNoticePolling() {
       if (_noticePollTimer) clearInterval(_noticePollTimer);
       _noticePollTimer = setInterval(function() {
         try { checkKeyNotice(); } catch (e) {}
-      }, 2000);
+      }, 1500);
       try { checkKeyNotice(); } catch (e) {}
-      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 600);
-      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1500);
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 400);
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1000);
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 2500);
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+          try { checkKeyNotice(); } catch (e) {}
+        }
+      });
+      window.addEventListener('focus', function() {
+        try { checkKeyNotice(); } catch (e) {}
+      });
     }
 
     async function patchKeyPayload(code, mutator) {
