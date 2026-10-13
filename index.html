@@ -950,9 +950,38 @@
     }
 
 
-    .add-home-fab {
+    .reload-fab {
       position: fixed;
       bottom: 14px;
+      left: 14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(28, 28, 30, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      cursor: pointer;
+      padding: 0;
+      color: var(--text-sec);
+      transition: transform 0.15s ease, opacity 0.2s ease;
+    }
+    .reload-fab:active { transform: scale(0.92); }
+    .reload-fab svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+    body.on-gate .reload-fab { display: none !important; }
+
+    .add-home-fab {
+      position: fixed;
+      bottom: 62px;
       left: 14px;
       width: 40px;
       height: 40px;
@@ -2421,6 +2450,9 @@
     <span id="onlineCount">1 в сети</span>
   </div>
 
+  <button type="button" class="reload-fab" id="reloadFab" onclick="hardReloadApp()" title="Обновить" aria-label="Обновить страницу">
+    <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0012 4V1L7 6l5 5V7c2.76 0 5 2.24 5 5a5 5 0 01-7.9 4.03l-1.43 1.46A6.98 6.98 0 0019 12c0-1.87-.74-3.6-1.35-5.65zM6 12c0-1.61.61-3.09 1.61-4.22L6.18 6.35A6.98 6.98 0 005 12c0 3.31 2.27 6.09 5.34 6.82l.66-1.94C8.28 16.4 6 14.42 6 12z"/></svg>
+  </button>
   <button type="button" class="add-home-fab" id="addHomeFab" onclick="promptAddToHome()" title="На экран Домой" aria-label="На экран Домой">
     <svg viewBox="0 0 24 24"><path d="M18 1.01L8 1c-1.1 0-2 .9-2 2v3h2V5h10v14H8v-1H6v3c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM10 15h2V8H5v2h3.59L3 15.59 4.41 17 10 11.41V15z"/></svg>
   </button>
@@ -3899,6 +3931,15 @@
 
     function playAppStoreSound() {
       /* muted */
+    }
+    function hardReloadApp() {
+      try {
+        const u = new URL(location.href);
+        u.searchParams.set('_r', String(Date.now()));
+        location.replace(u.toString());
+      } catch (e) {
+        location.reload();
+      }
     }
 
     function triggerSuccessFlash() {
@@ -8016,6 +8057,10 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           setOnlyScreen('screenMenu');
           renderSupplyCard();
           pullSupplyDates();
+          if (getSession()) {
+            try { startNoticePolling(); } catch (e) {}
+            setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 500);
+          }
           return;
         }
         const session = getSession();
@@ -8029,12 +8074,17 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           setOnlyScreen('screenMenu');
           renderSupplyCard();
           pullSupplyDates();
+          try { startNoticePolling(); } catch (e) {}
+          setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 500);
+          setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1500);
           return;
         }
         setOnlyScreen('screenGate');
       } catch (e) {
-        if (getSession()) setOnlyScreen('screenMenu');
-        else setOnlyScreen('screenGate');
+        if (getSession()) {
+          setOnlyScreen('screenMenu');
+          try { startNoticePolling(); } catch (e2) {}
+        } else setOnlyScreen('screenGate');
       } finally {
         hideBoot();
         setTimeout(hideBoot, 50);
@@ -8089,7 +8139,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
     }
-    const APP_VERSION = '2.5.6';
+    const APP_VERSION = '2.5.7';
     const CHANGELOG = [
       { v: '2.5.6', d: '13.10.2026', t: 'Сообщения от руководства работают стабильно и быстро.' },
       { v: '2.5.0', d: '27.09.2026', t: 'Заказы: категории, галочки, дата изменения. Плавные переходы экранов, умнее ИИ.' },
@@ -9245,18 +9295,38 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
     async function cancelNoticeOutbox(id) {
       if (!confirm('Отменить это уведомление?')) return;
+      showToast('Отменяю…');
       try {
         const list = await loadNoticeOutbox();
         const it = list.find(function(x) { return String(x.id) === String(id); });
         if (!it) return showToast('Уже нет');
         if (it.status === 'cancelled') return showToast('Уже отменено');
-        const codes = it.targetCodes || [];
-        for (let i = 0; i < codes.length; i++) {
-          try { await removeNoticeFromCode(codes[i], id); } catch (e) {}
-        }
+        // сначала статус — чтобы клиенты не показывали
         it.status = 'cancelled';
         it.cancelledAt = new Date().toISOString();
         await saveNoticeOutbox(list);
+        const codes = it.targetCodes || [];
+        // чистим app_settings быстро (главный канал)
+        await Promise.all(codes.map(function(code) {
+          return sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)), {
+            method: 'DELETE',
+            headers: { 'Prefer': 'return=minimal' }
+          }).catch(function() {
+            return sbFetch('app_settings?on_conflict=key', {
+              method: 'POST',
+              headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+              body: JSON.stringify({
+                key: noticeStorageKey(code),
+                value: null,
+                updated_at: new Date().toISOString()
+              })
+            }).catch(function() {});
+          });
+        }));
+        // key_data — фоном, не блокируем UI
+        codes.forEach(function(code) {
+          removeNoticeFromCode(code, id).catch(function() {});
+        });
         showToast('Отменено', true);
         refreshNoticeOutbox();
       } catch (e) {
@@ -9548,14 +9618,17 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 400);
       setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1000);
       setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 2500);
-      document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible') {
+      if (!window._noticeVisBound) {
+        window._noticeVisBound = true;
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible') {
+            try { checkKeyNotice(); } catch (e) {}
+          }
+        });
+        window.addEventListener('focus', function() {
           try { checkKeyNotice(); } catch (e) {}
-        }
-      });
-      window.addEventListener('focus', function() {
-        try { checkKeyNotice(); } catch (e) {}
-      });
+        });
+      }
     }
 
     async function patchKeyPayload(code, mutator) {
