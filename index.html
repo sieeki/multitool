@@ -292,12 +292,63 @@
 
     #screenCreator {
       padding-top: 0 !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      max-width: 440px;
+      margin: 0 auto;
+      background:
+        radial-gradient(ellipse 90% 50% at 50% -10%, rgba(255,159,10,0.18), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 30%, rgba(255,100,40,0.08), transparent 50%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    #screenCreator .cr-body .card {
+      background: linear-gradient(165deg, rgba(40,36,30,0.95) 0%, rgba(22,22,24,0.98) 100%);
+      border: 1px solid rgba(255,159,10,0.14);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+      border-radius: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    #screenCreator .cr-body .card::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: linear-gradient(180deg, #ffb340, rgba(255,159,10,0.2));
+      border-radius: 3px 0 0 3px;
+    }
+    #screenCreator .card-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--accent-orange);
+      margin-bottom: 12px;
+    }
+    #screenCreator .input-group {
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    #screenCreator .btn {
+      border-radius: 12px;
+      font-weight: 700;
+    }
+    #screenCreator .option-btn {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+    }
+    #screenCreator .option-btn.selected {
+      border-color: rgba(255,159,10,0.5);
+      background: rgba(255,159,10,0.12);
     }
     .cr-top {
       position: sticky; top: 0; z-index: 20;
-      padding: calc(10px + env(safe-area-inset-top)) 16px 12px;
-      background: linear-gradient(180deg, #1a140c 0%, #0d0d0f 100%);
-      border-bottom: 1px solid rgba(255,159,10,0.22);
+      padding: calc(12px + env(safe-area-inset-top)) 16px 14px;
+      background: linear-gradient(180deg, rgba(28,20,10,0.96) 0%, rgba(14,12,10,0.92) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,159,10,0.2);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
     }
     .cr-top-row {
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -305,40 +356,65 @@
     .cr-back {
       display: flex; align-items: center; gap: 4px;
       color: var(--accent-orange); font-weight: 700; font-size: 15px;
-      background: none; border: none; padding: 6px 0; cursor: pointer;
+      background: rgba(255,159,10,0.1);
+      border: 1px solid rgba(255,159,10,0.22);
+      border-radius: 999px;
+      padding: 6px 12px 6px 8px; cursor: pointer;
     }
-    .cr-back svg { width: 22px; height: 22px; fill: currentColor; }
+    .cr-back:active { transform: scale(0.96); background: rgba(255,159,10,0.18); }
+    .cr-back svg { width: 20px; height: 20px; fill: currentColor; }
     .cr-mark {
-      font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
-      color: #111; background: var(--accent-orange); padding: 4px 8px; border-radius: 7px;
+      font-size: 10px; font-weight: 900; letter-spacing: 1.4px; text-transform: uppercase;
+      color: #120c04;
+      background: linear-gradient(135deg, #ffd280, #ff9f0a 55%, #ff7a00);
+      padding: 5px 10px; border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(255,159,10,0.35);
     }
-    .cr-title { margin-top: 10px; }
+    .cr-title { margin-top: 14px; }
     .cr-title h1 {
-      font-size: 26px; font-weight: 800; letter-spacing: -0.4px;
-      background: linear-gradient(90deg, #fff 0%, #ff9f0a 70%);
+      font-size: 28px; font-weight: 850; letter-spacing: -0.5px;
+      background: linear-gradient(105deg, #fff 10%, #ffd080 45%, #ff9f0a 90%);
       -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .cr-title p { color: var(--text-sec); font-size: 13px; margin-top: 2px; }
+    .cr-title p {
+      color: rgba(255,200,120,0.65); font-size: 13px; margin-top: 4px; font-weight: 500;
+    }
     .cr-nav {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-      margin-top: 14px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+      margin-top: 16px;
     }
     .cr-nav-item {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 14px; padding: 10px 6px 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 10px 4px 8px;
       text-align: center; cursor: pointer; color: var(--text-sec);
-      font-size: 11px; font-weight: 700;
+      font-size: 10px; font-weight: 750;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease, color .15s ease;
     }
-    .cr-nav-item svg { width: 18px; height: 18px; fill: currentColor; display: block; margin: 0 auto 5px; }
+    .cr-nav-item:active { transform: scale(0.95); }
+    .cr-nav-item svg { width: 18px; height: 18px; fill: currentColor; display: block; margin: 0 auto 5px; opacity: 0.85; }
     .cr-nav-item.on {
-      background: rgba(255,159,10,0.16);
-      border-color: rgba(255,159,10,0.45);
-      color: var(--accent-orange);
+      background: linear-gradient(160deg, rgba(255,179,64,0.28), rgba(255,159,10,0.12));
+      border-color: rgba(255,159,10,0.55);
+      color: #ffc857;
+      box-shadow: 0 4px 16px rgba(255,159,10,0.18), inset 0 1px 0 rgba(255,255,255,0.08);
     }
-    .cr-body { padding: 14px 16px 90px; }
+    .cr-nav-item.on svg { opacity: 1; }
+    .cr-body { padding: 16px 16px 100px; }
     .cr-panel { display: none; }
-    .cr-panel.on { display: block; animation: shopItemIn 0.28s ease; }
+    .cr-panel.on { display: block; animation: crPanelIn 0.32s cubic-bezier(.22,.9,.26,1); }
+    @keyframes crPanelIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: none; }
+    }
+    #creatorPinDisplay {
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 24px rgba(255,159,10,0.35);
+    }
+    .cr-notice-actions {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;
+    }
+    .cr-notice-actions .btn { width: 100%; margin: 0; height: 46px; font-size: 14px; }
 
     .role-badge {
       display: none;
@@ -1329,6 +1405,163 @@
       font-weight: 600;
     }
 
+
+    /* In-app notice sheet */
+    .notice-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      display: none; justify-content: center;
+      padding: 16px;
+      background: rgba(0,0,0,0);
+      pointer-events: none;
+    }
+    .notice-overlay.on {
+      display: flex !important;
+      pointer-events: auto;
+      background: rgba(0,0,0,0.48);
+      animation: noticeBgIn .35s ease forwards;
+    }
+    .notice-overlay.pos-bottom { align-items: flex-end; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+    .notice-overlay.pos-top { align-items: flex-start; padding-top: calc(16px + env(safe-area-inset-top)); }
+    .notice-overlay.pos-center { align-items: center; }
+    @keyframes noticeBgIn {
+      from { background: rgba(0,0,0,0); }
+      to { background: rgba(0,0,0,0.48); }
+    }
+    .notice-sheet {
+      width: 100%; max-width: 380px;
+      position: relative;
+      background:
+        radial-gradient(ellipse 120% 80% at 0% 0%, rgba(10,132,255,0.22), transparent 55%),
+        radial-gradient(ellipse 90% 70% at 100% 100%, rgba(191,90,242,0.12), transparent 50%),
+        linear-gradient(165deg, #2a2a2e 0%, #161618 100%);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 26px;
+      padding: 22px 20px 18px;
+      box-shadow:
+        0 24px 64px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(255,255,255,0.06) inset,
+        0 1px 0 rgba(255,255,255,0.08) inset;
+      opacity: 0;
+      overflow: hidden;
+      will-change: transform, opacity;
+    }
+    .notice-sheet::before {
+      content: '';
+      position: absolute; left: 20px; right: 20px; top: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    }
+    .notice-handle {
+      width: 36px; height: 4px; border-radius: 99px;
+      background: rgba(255,255,255,0.2);
+      margin: 0 auto 16px;
+    }
+    .notice-overlay.pos-bottom.on .notice-sheet {
+      animation: noticeInBottom .62s cubic-bezier(.16,1.1,.3,1) forwards;
+    }
+    .notice-overlay.pos-top.on .notice-sheet {
+      animation: noticeInTop .62s cubic-bezier(.16,1.1,.3,1) forwards;
+    }
+    .notice-overlay.pos-center.on .notice-sheet {
+      animation: noticeInCenter .58s cubic-bezier(.16,1.15,.3,1) forwards;
+    }
+    @keyframes noticeInBottom {
+      0% { transform: translateY(120%) scale(0.94); opacity: 0; }
+      60% { transform: translateY(-6px) scale(1.01); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    @keyframes noticeInTop {
+      0% { transform: translateY(-120%) scale(0.94); opacity: 0; }
+      60% { transform: translateY(6px) scale(1.01); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    @keyframes noticeInCenter {
+      0% { transform: translateY(40px) scale(0.88); opacity: 0; }
+      55% { transform: translateY(-8px) scale(1.03); opacity: 1; }
+      75% { transform: translateY(3px) scale(0.995); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .notice-top {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+    }
+    .notice-icon {
+      width: 52px; height: 52px; border-radius: 16px; flex-shrink: 0;
+      background: linear-gradient(145deg, #3a9eff, #0a84ff 55%, #0060df);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 22px rgba(10,132,255,0.45);
+    }
+    .notice-icon svg { width: 24px; height: 24px; fill: #fff; }
+    .notice-kicker {
+      font-size: 11px; font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #7ab8ff, #c4a0ff);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    .notice-title {
+      font-size: 21px; font-weight: 800; letter-spacing: -0.45px; line-height: 1.2;
+      color: #fff;
+    }
+    .notice-body {
+      margin: 0 0 14px;
+      padding: 0;
+      background: none;
+      border: none;
+    }
+    .notice-fmt {
+      font-size: 15px; line-height: 1.55; color: rgba(255,255,255,0.78);
+      white-space: pre-wrap; word-break: break-word;
+      padding: 14px 14px;
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+    }
+    .notice-fmt b { color: #fff; font-weight: 800; }
+    .notice-sheet .btn {
+      margin-top: 0;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(180deg, #2b95ff, #0a84ff);
+      box-shadow: 0 8px 20px rgba(10,132,255,0.35);
+      border: none;
+    }
+    .notice-media {
+      width: 100%; max-height: 180px; object-fit: cover;
+      border-radius: 16px; margin: 0 0 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      display: none;
+    }
+    .notice-media.on { display: block; }
+    .notice-link {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; height: 44px; margin: 0 0 10px;
+      border-radius: 14px; border: 1px solid rgba(122,184,255,0.35);
+      background: rgba(10,132,255,0.12); color: #9ccfff;
+      font-size: 14px; font-weight: 700; text-decoration: none;
+    }
+    .notice-link:active { opacity: 0.85; }
+    textarea#noticeBody {
+      min-height: 88px; resize: vertical; font-family: inherit;
+      width: 100%; border: none; background: transparent; color: var(--text);
+      font-size: 15px; outline: none;
+    }
+    .notice-pos-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      margin: 4px 0 14px;
+    }
+    .notice-pos-chip {
+      height: 40px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04); color: var(--text-sec);
+      font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .notice-pos-chip.on {
+      background: rgba(10,132,255,0.18);
+      border-color: rgba(10,132,255,0.45);
+      color: #7ab8ff;
+    }
+
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -1853,11 +2086,11 @@
     }
     .gate-logo p { color: var(--text-sec); font-size: 14px; margin-top: 6px; }
     .key-item {
-      background: var(--card-inner);
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.04);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255,255,255,0.07);
     }
     .key-item-top {
       display: flex;
@@ -1865,24 +2098,52 @@
       align-items: center;
       gap: 8px;
     }
-    .key-item-name { font-weight: 600; font-size: 15px; }
+    .key-item-name { font-weight: 700; font-size: 16px; letter-spacing: -0.2px; }
     .key-item-code {
       font-family: "SF Mono", Menlo, monospace;
       font-size: 13px;
       color: var(--accent-blue);
-      margin-top: 4px;
-      letter-spacing: 0.5px;
+      margin-top: 5px;
+      letter-spacing: 0.6px;
     }
     .key-item-meta { font-size: 12px; color: var(--text-sec); margin-top: 4px; }
     .key-badge {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 8px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      flex-shrink: 0;
     }
     .key-badge.ok { background: rgba(48,209,88,0.15); color: var(--accent-green); }
     .key-badge.off { background: rgba(255,69,58,0.15); color: var(--accent-red); }
     .key-badge.exp { background: rgba(255,159,10,0.15); color: var(--accent-orange); }
+    .key-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .key-act {
+      height: 34px;
+      border: none;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 650;
+      cursor: pointer;
+      color: #fff;
+      padding: 0 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .key-act:active { opacity: 0.85; transform: scale(0.97); }
+    .key-act.copy { background: rgba(48,209,88,0.18); color: #30d158; }
+    .key-act.toggle-on { background: rgba(10,132,255,0.2); color: #64b5ff; }
+    .key-act.toggle-off { background: rgba(255,159,10,0.16); color: #ffb340; }
+    .key-act.extend { background: rgba(10,132,255,0.16); color: #7ab8ff; }
+    .key-act.eternal { background: rgba(191,90,242,0.16); color: #d4a0ff; }
+    .key-act.danger { background: rgba(255,69,58,0.14); color: #ff6b63; grid-column: 1 / -1; }
     .session-chip {
       display: inline-flex;
       align-items: center;
@@ -2090,7 +2351,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
         <div>
           <div style="font-size:20px;font-weight:800;">Что нового</div>
-          <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">Сейчас v<span id="appVerLabel2">2.5.3</span></div>
+          <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">Сейчас v<span id="appVerLabel2">2.5.6</span></div>
         </div>
         <div class="icon-btn" onclick="closeChangelog()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>
       </div>
@@ -2193,7 +2454,7 @@
         <h1 id="brandTitle">Мультитул</h1>
         <p id="brandSub">Рабочий набор</p>
         <div id="appVerBtn" onclick="openChangelog()" style="margin-top:8px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-sec);background:var(--card-inner);border-radius:999px;padding:4px 9px;cursor:pointer;width:fit-content;">
-          v<span id="appVerLabel">2.5.3</span>
+          v<span id="appVerLabel">2.5.6</span>
         </div>
       </div>
       <div class="header-actions">
@@ -2392,7 +2653,7 @@
     </div>
 
     <div class="card" id="reportCard" style="display:none;">
-      <div class="card-title">Текст для Telegram</div>
+      <div class="card-title">Текст для копирования</div>
       <div class="report-box" id="reportText"></div>
       <button class="btn btn-green" onclick="copyReport()">Скопировать отчет</button>
       <button class="btn btn-purple" onclick="exportReportImage()">
@@ -2900,6 +3161,10 @@
           <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1L12 16.9 5.7 20.7 8 13.6 2 9.2h7.6z"/></svg>
           Игра
         </div>
+        <div class="cr-nav-item" id="crNavAlerts" onclick="showCreatorTab('alerts')">
+          <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+          Уведы
+        </div>
         <div class="cr-nav-item" id="crNavLog" onclick="showCreatorTab('log')">
           <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
           Лог
@@ -2970,6 +3235,31 @@
           <div class="card-title">Все ключи</div>
           <div id="accessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
           <button class="btn btn-blue" onclick="void refreshAccessKeysList()" style="margin-top:10px;">Обновить список</button>
+        </div>
+      </div>
+
+      <div class="cr-panel" id="crPanelAlerts">
+        <div class="card">
+          <div class="card-title">Уведомление</div>
+          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
+            Один раз на экране. Можно ссылку, картинку и **жирный** в тексте.
+          </p>
+          <div class="input-group"><label>Ключ (для «одному»)</label><input type="text" id="noticeKey" placeholder="MT-XXXX-XXXX" autocapitalize="characters"></div>
+          <label style="font-size:12px;color:var(--text-sec);font-weight:600;margin:4px 0 6px;display:block;">Где показать</label>
+          <div class="notice-pos-row">
+            <button type="button" class="notice-pos-chip" id="noticePosTop" onclick="setNoticePos('top')">Сверху</button>
+            <button type="button" class="notice-pos-chip on" id="noticePosCenter" onclick="setNoticePos('center')">Центр</button>
+            <button type="button" class="notice-pos-chip" id="noticePosBottom" onclick="setNoticePos('bottom')">Снизу</button>
+          </div>
+          <div class="input-group"><label>Заголовок</label><input type="text" id="noticeTitle" placeholder="Важно" maxlength="40"></div>
+          <div class="input-group"><label>Текст</label><textarea id="noticeBody" placeholder="Текст…&#10;Можно **жирным**" maxlength="500"></textarea></div>
+          <div class="input-group"><label>Ссылка (необязательно)</label><input type="url" id="noticeLink" placeholder="https://…"></div>
+          <div class="input-group"><label>Текст кнопки ссылки</label><input type="text" id="noticeLinkText" placeholder="Открыть" maxlength="40"></div>
+          <div class="input-group"><label>Картинка URL (необязательно)</label><input type="url" id="noticeImage" placeholder="https://…/photo.jpg"></div>
+          <div class="cr-notice-actions">
+            <button class="btn btn-blue" onclick="sendKeyNotice()">Одному</button>
+            <button class="btn btn-orange" onclick="sendKeyNoticeToAll()">Всем ключам</button>
+          </div>
         </div>
       </div>
 
@@ -3253,6 +3543,26 @@
         <input type="password" id="creatorPasswordInput" placeholder="••••••••" maxlength="24" onkeydown="if(event.key==='Enter') checkCreatorPassword()">
       </div>
       <button class="btn btn-blue" onclick="checkCreatorPassword()" style="margin-top: 8px;">Войти</button>
+    </div>
+  </div>
+
+  <!-- СООБЩЕНИЕ ОТ РУКОВОДСТВА -->
+  <div class="notice-overlay pos-center" id="keyNoticeModal">
+    <div class="notice-sheet" onclick="event.stopPropagation()">
+      <div class="notice-handle"></div>
+      <div class="notice-top">
+        <div class="notice-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+        </div>
+        <div>
+          <div class="notice-kicker">Сообщение</div>
+          <div class="notice-title" id="keyNoticeTitle">Заголовок</div>
+        </div>
+      </div>
+      <img class="notice-media" id="keyNoticeImage" alt="">
+      <div class="notice-body" id="keyNoticeBody"></div>
+      <a class="notice-link" id="keyNoticeLink" href="#" target="_blank" rel="noopener" style="display:none;"></a>
+      <button class="btn btn-blue" onclick="dismissKeyNotice()">Понятно</button>
     </div>
   </div>
 
@@ -6257,7 +6567,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     async function flushActivityLog() {
       let local = [];
       try { local = JSON.parse(localStorage.getItem('ios_act_queue') || '[]'); } catch (e) { local = []; }
-      if (!local.length && actCache) return;
+      if (!local.length) return;
       try {
         const rows = await sbFetch('app_settings?key=eq.activity_log&select=value');
         let list = [];
@@ -6320,16 +6630,29 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
     async function clearActivityLog() {
       if (!confirm('Стереть весь лог?')) return;
+      try { clearTimeout(actPushTimer); } catch (e) {}
+      actPushTimer = null;
       actCache = [];
       localStorage.setItem('ios_act_queue', '[]');
+      const box = document.getElementById('activityLogList');
+      if (box) box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Очищаю…</div>';
       try {
         await sbFetch('app_settings?on_conflict=key', {
           method: 'POST',
           headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-          body: JSON.stringify({ key: 'activity_log', value: '[]', updated_at: new Date().toISOString() })
+          body: JSON.stringify({
+            key: 'activity_log',
+            value: JSON.stringify([]),
+            updated_at: new Date().toISOString()
+          })
         });
-      } catch (e) {}
-      refreshActivityLog();
+        actCache = [];
+        if (box) box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Лог пуст</div>';
+        showToast('Лог очищен', true);
+      } catch (e) {
+        showToast(e.message || 'Не удалось очистить в облаке');
+        try { await refreshActivityLog(); } catch (e2) {}
+      }
     }
 
 
@@ -6902,6 +7225,16 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (!session || !cfg) return;
       try {
         const payload = collectUserPayload();
+        // не затирать входящее сообщение от создателя
+        try {
+          const remote = await pullKeyDataFromCloud(session.code);
+          if (remote && remote.ios_notice && remote.ios_notice.id) {
+            const seen = localStorage.getItem('ios_notice_seen_id');
+            if (seen !== String(remote.ios_notice.id)) {
+              payload.ios_notice = remote.ios_notice;
+            }
+          }
+        } catch (e) {}
         await sbFetch('key_data?on_conflict=code', {
           method: 'POST',
           headers: {
@@ -7077,6 +7410,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       hideBoot();
       showToast('Вход выполнен', true);
       registerDeviceSession();
+      try { startNoticePolling(); } catch (e) {}
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 400);
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1200);
     }
 
     function logoutAccessKey() {
@@ -7191,15 +7527,14 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
             '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(k.name || '') + '</div>' + badge + '</div>' +
             '<div class="key-item-code">' + escapeHtml(k.code || '') + '</div>' +
             '<div class="key-item-meta">' + (k.expires_at ? ('до ' + exp) : 'вечный') + '</div>' +
-            '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">' +
-              '<button type="button" class="btn btn-green" style="height:36px;font-size:13px;margin:0;flex:1;" data-code="' +
-                escapeHtml(codeSafe) + '" onclick="copyAccessKeyCode(this)">Копировать</button>' +
+            '<div class="key-actions">' +
+              '<button type="button" class="key-act copy" data-code="' + escapeHtml(codeSafe) + '" onclick="copyAccessKeyCode(this)">Копировать</button>' +
               (k.active === false
-                ? '<button type="button" class="btn btn-blue" style="height:36px;font-size:13px;margin:0;flex:1;" onclick="setKeyActive(\'' + codeSafe + '\',true)">Включить</button>'
-                : '<button type="button" class="btn btn-red-soft" style="height:36px;font-size:13px;margin:0;flex:1;" onclick="setKeyActive(\'' + codeSafe + '\',false)">Отключить</button>') +
-              '<button type="button" class="btn btn-blue" style="height:36px;font-size:13px;margin:0;flex:1;" onclick="extendAccessKey(\'' + codeSafe + '\',30)">+30 дней</button>' +
-              '<button type="button" class="btn btn-purple" style="height:36px;font-size:13px;margin:0;flex:1;" onclick="makeKeyEternal(\'' + codeSafe + '\')">Вечный</button>' +
-              '<button type="button" class="btn btn-red" style="height:36px;font-size:13px;margin:0;flex:1;" onclick="deleteAccessKey(\'' + codeSafe + '\')">Удалить</button>' +
+                ? '<button type="button" class="key-act toggle-on" onclick="setKeyActive(\'' + codeSafe + '\',true)">Включить</button>'
+                : '<button type="button" class="key-act toggle-off" onclick="setKeyActive(\'' + codeSafe + '\',false)">Выключить</button>') +
+              '<button type="button" class="key-act extend" onclick="extendAccessKey(\'' + codeSafe + '\',30)">+30 дней</button>' +
+              '<button type="button" class="key-act eternal" onclick="makeKeyEternal(\'' + codeSafe + '\')">Вечный</button>' +
+              '<button type="button" class="key-act danger" onclick="deleteAccessKey(\'' + codeSafe + '\')">Удалить</button>' +
             '</div></div>';
         });
         box.innerHTML = h;
@@ -7466,16 +7801,11 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
 
     function showCreatorTab(id) {
-      const map = { overview: 'Overview', people: 'People', keys: 'Keys', play: 'Play', log: 'Log' };
-      ['overview','people','keys','play','log'].forEach(function(k) {
+      const map = { overview: 'Overview', people: 'People', keys: 'Keys', play: 'Play', log: 'Log', alerts: 'Alerts' };
+      ['overview','people','keys','play','log','alerts'].forEach(function(k) {
         const panel = document.getElementById('crPanel' + map[k]);
-        const nav = document.getElementById('crNav' + map[k].charAt(0).toUpperCase() + map[k].slice(1));
+        const nav = document.getElementById('crNav' + map[k]);
         if (panel) panel.classList.toggle('on', k === id);
-        if (nav) nav.classList.toggle('on', k === id);
-      });
-      const ids = { overview: 'crNavOverview', people: 'crNavPeople', keys: 'crNavKeys', play: 'crNavPlay', log: 'crNavLog' };
-      Object.keys(ids).forEach(function(k) {
-        const nav = document.getElementById(ids[k]);
         if (nav) nav.classList.toggle('on', k === id);
       });
       const screen = document.getElementById('screenCreator');
@@ -7611,14 +7941,13 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
     }
-    const APP_VERSION = '2.5.3';
+    const APP_VERSION = '2.5.6';
     const CHANGELOG = [
-      { v: '2.5.3', d: '04.10.2026', t: 'Пароль создателя хранится в Supabase (app_settings), смена из меню создателя.' },
-      { v: '2.5.2', d: '02.10.2026', t: 'Убран тестовый режим «Жидкое стекло».' },
-      { v: '2.5.0', d: '27.09.2026', t: 'Заказы: бейдж категории, галочки/крестики, «Собран» только у админа, дата изменения на карточке точки. Переходы экранов, умнее ИИ, огонёк убран.' },
+      { v: '2.5.6', d: '13.10.2026', t: 'Сообщения от руководства работают стабильно и быстро.' },
+      { v: '2.5.0', d: '27.09.2026', t: 'Заказы: категории, галочки, дата изменения. Плавные переходы экранов, умнее ИИ.' },
       { v: '2.4.0', d: '27.09.2026', t: 'Версия на главной и список изменений.' },
-      { v: '2.3.4', d: '27.09.2026', t: 'Заказы: копировать весь список, у сотрудника сразу его точка.' },
-      { v: '2.3.3', d: '27.09.2026', t: 'Личные смены, заметки и монеты сидят на ключе в облаке.' },
+      { v: '2.3.4', d: '27.09.2026', t: 'Заказы: копировать весь список.' },
+      { v: '2.3.3', d: '27.09.2026', t: 'Смены, заметки и монеты синхронизируются с аккаунтом.' },
       { v: '2.3.2', d: '27.09.2026', t: 'QR временно «в разработке».' }
     ];
     function openChangelog() {
@@ -8643,6 +8972,301 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
 
+
+    let _noticeShowing = null;
+    let _noticePollTimer = null;
+
+    function noticeStorageKey(code) {
+      return 'notice_' + String(code || '').trim().toUpperCase();
+    }
+
+    function normalizeNotice(raw) {
+      if (!raw) return null;
+      let n = raw;
+      if (typeof n === 'string') {
+        try { n = JSON.parse(n); } catch (e) { return null; }
+      }
+      if (!n || typeof n !== 'object' || !n.id || !n.body) return null;
+      return n;
+    }
+
+    function formatNoticeHtml(text) {
+      var s = String(text || '');
+      s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      s = s.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+      s = s.replace(/\n/g, '<br>');
+      return s;
+    }
+
+    function safeNoticeUrl(u) {
+      u = String(u || '').trim();
+      if (!u) return '';
+      if (!/^https?:\/\//i.test(u)) return '';
+      return u.slice(0, 500);
+    }
+
+    window._noticePos = 'center';
+    function setNoticePos(pos) {
+      window._noticePos = (pos === 'top' || pos === 'bottom' || pos === 'center') ? pos : 'center';
+      ['top','center','bottom'].forEach(function(p) {
+        const el = document.getElementById('noticePos' + p.charAt(0).toUpperCase() + p.slice(1));
+        if (el) el.classList.toggle('on', p === window._noticePos);
+      });
+    }
+
+    function buildNoticeFromForm() {
+      const title = (document.getElementById('noticeTitle').value || '').trim() || 'Сообщение';
+      const body = (document.getElementById('noticeBody').value || '').trim();
+      const link = safeNoticeUrl(document.getElementById('noticeLink') && document.getElementById('noticeLink').value);
+      const linkText = ((document.getElementById('noticeLinkText') && document.getElementById('noticeLinkText').value) || '').trim() || 'Открыть';
+      const image = safeNoticeUrl(document.getElementById('noticeImage') && document.getElementById('noticeImage').value);
+      if (!body) return null;
+      return {
+        id: 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+        title: title.slice(0, 40),
+        body: body.slice(0, 500),
+        link: link || '',
+        linkText: linkText.slice(0, 40),
+        image: image || '',
+        pos: window._noticePos || 'center',
+        at: new Date().toISOString()
+      };
+    }
+
+    async function sendKeyNotice() {
+      const code = (document.getElementById('noticeKey').value || '').trim().toUpperCase();
+      if (!code) return showToast('Введи ключ');
+      if (!getSbConfig()) return showToast('Нет подключения к базе');
+      const notice = buildNoticeFromForm();
+      if (!notice) return showToast('Напиши текст');
+      try {
+        const rec = await findKeyRecord(code);
+        if (!rec) return showToast('Ключ не найден');
+        // как монеты — в key_data
+        await patchKeyPayload(code, function(payload) {
+          payload.ios_notice = notice;
+        });
+        // дубль в app_settings на случай гонки
+        try {
+          await sbFetch('app_settings?on_conflict=key', {
+            method: 'POST',
+            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+            body: JSON.stringify({
+              key: noticeStorageKey(code),
+              value: JSON.stringify(notice),
+              updated_at: new Date().toISOString()
+            })
+          });
+        } catch (e) {}
+        // проверка что записалось
+        let ok = false;
+        try {
+          const back = await pullKeyDataFromCloud(code);
+          if (back && back.ios_notice && back.ios_notice.id === notice.id) ok = true;
+        } catch (e) {}
+        if (!ok) {
+          try {
+            const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)) + '&select=value');
+            if (rows && rows[0] && rows[0].value) ok = true;
+          } catch (e) {}
+        }
+        if (ok) showToast('Отправлено на ' + code, true);
+        else showToast('Запись сомнительная — проверь базу');
+        try { logAction('отправил сообщение', code); } catch (e) {}
+        const bodyEl = document.getElementById('noticeBody');
+        if (bodyEl) bodyEl.value = '';
+      } catch (e) {
+        showToast(e.message || 'не отправилось');
+      }
+    }
+
+
+    async function sendKeyNoticeToAll() {
+      if (!getSbConfig()) return showToast('Нет подключения к базе');
+      const notice = buildNoticeFromForm();
+      if (!notice) return showToast('Напиши текст');
+      showToast('Рассылка…');
+      try {
+        let keys = [];
+        try {
+          keys = await sbFetch('access_keys?select=code,active&order=created_at.desc') || [];
+        } catch (e) {
+          keys = getLocalKeys() || [];
+        }
+        keys = (keys || []).filter(function(k) {
+          return k && k.code && k.active !== false;
+        });
+        if (!keys.length) return showToast('Нет ключей');
+        let ok = 0, fail = 0;
+        for (let i = 0; i < keys.length; i++) {
+          const code = String(keys[i].code).trim().toUpperCase();
+          try {
+            await patchKeyPayload(code, function(payload) {
+              payload.ios_notice = notice;
+            });
+            try {
+              await sbFetch('app_settings?on_conflict=key', {
+                method: 'POST',
+                headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+                body: JSON.stringify({
+                  key: noticeStorageKey(code),
+                  value: JSON.stringify(notice),
+                  updated_at: new Date().toISOString()
+                })
+              });
+            } catch (e) {}
+            ok++;
+          } catch (e) {
+            fail++;
+          }
+        }
+        showToast('Всем: ' + ok + (fail ? (', ошибок ' + fail) : ''), true);
+        try { logAction('рассылка сообщения', 'ключей ' + ok); } catch (e) {}
+      } catch (e) {
+        showToast(e.message || 'рассылка не вышла');
+      }
+    }
+
+    function showKeyNoticeUI(notice) {
+      notice = normalizeNotice(notice);
+      if (!notice) return;
+      if (_noticeShowing && _noticeShowing.id === notice.id) return;
+      if (localStorage.getItem('ios_notice_seen_id') === String(notice.id)) return;
+      _noticeShowing = notice;
+      const t = document.getElementById('keyNoticeTitle');
+      const b = document.getElementById('keyNoticeBody');
+      const img = document.getElementById('keyNoticeImage');
+      const link = document.getElementById('keyNoticeLink');
+      if (t) t.textContent = notice.title || 'Сообщение';
+      if (b) b.innerHTML = '<div class="notice-fmt">' + formatNoticeHtml(notice.body || '') + '</div>';
+      if (img) {
+        const src = safeNoticeUrl(notice.image);
+        if (src) {
+          img.src = src;
+          img.classList.add('on');
+          img.style.display = 'block';
+        } else {
+          img.removeAttribute('src');
+          img.classList.remove('on');
+          img.style.display = 'none';
+        }
+      }
+      if (link) {
+        const href = safeNoticeUrl(notice.link);
+        if (href) {
+          link.href = href;
+          link.textContent = notice.linkText || 'Открыть';
+          link.style.display = 'flex';
+        } else {
+          link.removeAttribute('href');
+          link.style.display = 'none';
+        }
+      }
+      const m = document.getElementById('keyNoticeModal');
+      if (m) {
+        m.classList.remove('on', 'pos-top', 'pos-center', 'pos-bottom');
+        m.style.display = 'none';
+        void m.offsetWidth;
+        const pos = (notice.pos === 'top' || notice.pos === 'bottom') ? notice.pos : 'center';
+        m.classList.add('pos-' + pos);
+        m.style.display = 'flex';
+        void m.offsetWidth;
+        m.classList.add('on');
+        const sheet = m.querySelector('.notice-sheet');
+        if (sheet) {
+          sheet.style.animation = 'none';
+          void sheet.offsetWidth;
+          sheet.style.animation = '';
+        }
+      }
+      try { playAppStoreSound(); } catch (e) {}
+    }
+
+    async function dismissKeyNotice() {
+      const notice = _noticeShowing;
+      const m = document.getElementById('keyNoticeModal');
+      if (m) {
+        m.classList.remove('on', 'pos-top', 'pos-center', 'pos-bottom');
+        m.style.display = 'none';
+      }
+      if (!notice || !notice.id) {
+        _noticeShowing = null;
+        return;
+      }
+      localStorage.setItem('ios_notice_seen_id', String(notice.id));
+      _noticeShowing = null;
+      const sess = getSession();
+      if (!sess || !sess.code || !getSbConfig()) return;
+      try {
+        await patchKeyPayload(sess.code, function(payload) {
+          if (payload.ios_notice && String(payload.ios_notice.id) === String(notice.id)) {
+            delete payload.ios_notice;
+          }
+        });
+      } catch (e) {}
+      try {
+        await sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(sess.code)), {
+          method: 'DELETE',
+          headers: { 'Prefer': 'return=minimal' }
+        });
+      } catch (e) {
+        try {
+          await sbFetch('app_settings?on_conflict=key', {
+            method: 'POST',
+            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+            body: JSON.stringify({
+              key: noticeStorageKey(sess.code),
+              value: '',
+              updated_at: new Date().toISOString()
+            })
+          });
+        } catch (e2) {}
+      }
+    }
+
+    async function fetchNoticeForCode(code) {
+      code = String(code || '').trim().toUpperCase();
+      if (!code || !getSbConfig()) return null;
+      // 1) key_data — как монеты
+      try {
+        const remote = await pullKeyDataFromCloud(code);
+        const n = normalizeNotice(remote && remote.ios_notice);
+        if (n) return n;
+      } catch (e) {}
+      // 2) app_settings дубль
+      try {
+        const rows = await sbFetch(
+          'app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)) + '&select=value'
+        );
+        if (rows && rows[0] && rows[0].value) {
+          return normalizeNotice(rows[0].value);
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    async function checkKeyNotice() {
+      if (_noticeShowing) return;
+      const sess = getSession();
+      if (!sess || !sess.code) return;
+      try {
+        const notice = await fetchNoticeForCode(sess.code);
+        if (!notice) return;
+        if (localStorage.getItem('ios_notice_seen_id') === String(notice.id)) return;
+        showKeyNoticeUI(notice);
+      } catch (e) {}
+    }
+
+    function startNoticePolling() {
+      if (_noticePollTimer) clearInterval(_noticePollTimer);
+      _noticePollTimer = setInterval(function() {
+        try { checkKeyNotice(); } catch (e) {}
+      }, 2000);
+      try { checkKeyNotice(); } catch (e) {}
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 600);
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1500);
+    }
+
     async function patchKeyPayload(code, mutator) {
       let payload = {};
       try { payload = await pullKeyDataFromCloud(code) || {}; } catch (e) {}
@@ -8778,6 +9402,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       syncUserFromCloud();
       pullAdminSharedData();
       pullOrderList();
+      try { checkKeyNotice(); } catch (e) {}
     });
 
     document.addEventListener('click', function(e) {
