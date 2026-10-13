@@ -1477,6 +1477,51 @@
       overflow: hidden;
       will-change: transform, opacity;
     }
+    .notice-sheet.important {
+      background: linear-gradient(165deg, rgba(72, 18, 22, 0.98) 0%, rgba(40, 10, 12, 0.98) 100%);
+      border-color: rgba(255, 69, 58, 0.45);
+      box-shadow: 0 12px 40px rgba(255, 59, 48, 0.28), 0 0 0 1px rgba(255, 69, 58, 0.15) inset;
+      animation: noticeInCenter .5s cubic-bezier(.16,1.15,.3,1) forwards, noticePulseRed 1.4s ease-in-out infinite 0.5s;
+    }
+    .notice-overlay.pos-bottom.on .notice-sheet.important {
+      animation: noticeInBottom .52s cubic-bezier(.16,1.1,.3,1) forwards, noticePulseRed 1.4s ease-in-out infinite 0.55s;
+    }
+    .notice-overlay.pos-top.on .notice-sheet.important {
+      animation: noticeInTop .52s cubic-bezier(.16,1.1,.3,1) forwards, noticePulseRed 1.4s ease-in-out infinite 0.55s;
+    }
+    .notice-overlay.pos-center.on .notice-sheet.important {
+      animation: noticeInCenter .5s cubic-bezier(.16,1.15,.3,1) forwards, noticePulseRed 1.4s ease-in-out infinite 0.5s;
+    }
+    .notice-overlay.leaving .notice-sheet.important {
+      animation: noticeOutCenter .26s cubic-bezier(.4,0,1,1) forwards !important;
+    }
+    .notice-overlay.pos-bottom.leaving .notice-sheet.important {
+      animation: noticeOutBottom .28s cubic-bezier(.4,0,1,1) forwards !important;
+    }
+    .notice-overlay.pos-top.leaving .notice-sheet.important {
+      animation: noticeOutTop .28s cubic-bezier(.4,0,1,1) forwards !important;
+    }
+    @keyframes noticePulseRed {
+      0%, 100% {
+        box-shadow: 0 12px 40px rgba(255, 59, 48, 0.22), 0 0 0 1px rgba(255, 69, 58, 0.2) inset;
+        border-color: rgba(255, 69, 58, 0.4);
+      }
+      50% {
+        box-shadow: 0 14px 48px rgba(255, 59, 48, 0.5), 0 0 0 1px rgba(255, 100, 90, 0.35) inset;
+        border-color: rgba(255, 100, 90, 0.7);
+      }
+    }
+    .notice-sheet.important .notice-icon {
+      background: #ff453a;
+      box-shadow: 0 4px 14px rgba(255, 69, 58, 0.45);
+    }
+    .notice-sheet.important .notice-kicker {
+      color: #ff6961;
+      -webkit-text-fill-color: #ff6961;
+    }
+    .notice-sheet.important .notice-fmt {
+      color: rgba(255, 220, 218, 0.88);
+    }
     .notice-handle { display: none; }
     .notice-overlay.pos-bottom.on .notice-sheet {
       animation: noticeInBottom .52s cubic-bezier(.16,1.1,.3,1) forwards;
@@ -1605,6 +1650,36 @@
       background: rgba(10,132,255,0.18);
       border-color: rgba(10,132,255,0.45);
       color: #7ab8ff;
+    }
+    .notice-important-toggle {
+      display: flex; align-items: center; gap: 12px;
+      margin: 4px 0 14px; padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,69,58,0.25);
+      background: rgba(255,69,58,0.08);
+      cursor: pointer; user-select: none;
+    }
+    .notice-important-toggle.on {
+      border-color: rgba(255,69,58,0.55);
+      background: rgba(255,69,58,0.16);
+    }
+    .notice-important-check {
+      width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0;
+      border: 1.5px solid rgba(255,69,58,0.45);
+      background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, border-color .15s;
+    }
+    .notice-important-toggle.on .notice-important-check {
+      background: #ff453a;
+      border-color: #ff453a;
+    }
+    .notice-important-toggle.on .notice-important-check::after {
+      content: '';
+      width: 5px; height: 9px;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg) translate(-1px, -1px);
     }
 
     .modal-overlay {
@@ -3338,6 +3413,13 @@
             <button type="button" class="notice-pos-chip on" id="noticePosCenter" onclick="setNoticePos('center')">Центр</button>
             <button type="button" class="notice-pos-chip" id="noticePosBottom" onclick="setNoticePos('bottom')">Снизу</button>
           </div>
+          <label class="notice-important-toggle" onclick="toggleNoticeImportant(event)">
+            <span class="notice-important-check" id="noticeImportantCheck"></span>
+            <span>
+              <strong style="color:#ff6961;">Важно</strong>
+              <span style="display:block;font-size:11px;color:var(--text-sec);font-weight:500;margin-top:2px;">Красный мигающий увед · danger</span>
+            </span>
+          </label>
           <div class="input-group"><label>Заголовок</label><input type="text" id="noticeTitle" placeholder="Важно" maxlength="40"></div>
           <div class="input-group"><label>Текст</label><textarea id="noticeBody" placeholder="Текст…&#10;Можно **жирным**" maxlength="500"></textarea></div>
           <div class="input-group"><label>Ссылка (необязательно)</label><input type="url" id="noticeLink" placeholder="https://…"></div>
@@ -3643,13 +3725,13 @@
 
   <!-- СООБЩЕНИЕ ОТ РУКОВОДСТВА -->
   <div class="notice-overlay pos-center" id="keyNoticeModal" onclick="dismissKeyNotice()">
-    <div class="notice-sheet" onclick="event.stopPropagation()">
+    <div class="notice-sheet" id="keyNoticeSheet" onclick="event.stopPropagation()">
       <div class="notice-top">
-        <div class="notice-icon">
+        <div class="notice-icon" id="keyNoticeIcon">
           <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
         </div>
         <div class="notice-content">
-          <div class="notice-kicker">Сообщение</div>
+          <div class="notice-kicker" id="keyNoticeKicker">Сообщение</div>
           <div class="notice-title" id="keyNoticeTitle">Заголовок</div>
           <div class="notice-body" id="keyNoticeBody"></div>
         </div>
@@ -9278,8 +9360,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           const who = it.all ? 'всем' : ((it.targetCodes || []).join(', ') || '—');
           const fullySeen = st === 'просмотрено';
           const canCancel = it.status !== 'cancelled' && !fullySeen;
+          const imp = it.important ? ' <span style="color:#ff6961;font-size:11px;font-weight:700;">· важно</span>' : '';
           return '<div class="key-item" style="margin-bottom:8px;">' +
-            '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(it.title || 'Сообщение') +
+            '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(it.title || 'Сообщение') + imp +
             '</div><span class="key-badge" style="background:rgba(255,255,255,.06);color:' + stColor + ';">' + escapeHtml(st) + '</span></div>' +
             '<div class="key-item-meta" style="margin-top:6px;">' + escapeHtml((it.body || '').slice(0, 90)) + '</div>' +
             '<div class="key-item-meta">→ ' + escapeHtml(who) +
@@ -9341,6 +9424,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         try { n = JSON.parse(n); } catch (e) { return null; }
       }
       if (!n || typeof n !== 'object' || !n.id || !n.body) return null;
+      n.important = !!n.important;
       return n;
     }
 
@@ -9360,12 +9444,19 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     window._noticePos = 'center';
+    window._noticeImportant = false;
     function setNoticePos(pos) {
       window._noticePos = (pos === 'top' || pos === 'bottom' || pos === 'center') ? pos : 'center';
       ['top','center','bottom'].forEach(function(p) {
         const el = document.getElementById('noticePos' + p.charAt(0).toUpperCase() + p.slice(1));
         if (el) el.classList.toggle('on', p === window._noticePos);
       });
+    }
+    function toggleNoticeImportant(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      window._noticeImportant = !window._noticeImportant;
+      const row = document.querySelector('.notice-important-toggle');
+      if (row) row.classList.toggle('on', window._noticeImportant);
     }
 
     function buildNoticeFromForm() {
@@ -9383,6 +9474,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         linkText: linkText.slice(0, 40),
         image: image || '',
         pos: window._noticePos || 'center',
+        important: !!window._noticeImportant,
         at: new Date().toISOString()
       };
     }
@@ -9400,6 +9492,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         await pushNoticeToOutbox({
           id: notice.id, title: notice.title, body: notice.body,
           link: notice.link || '', image: notice.image || '', pos: notice.pos || 'center',
+          important: !!notice.important,
           all: false, targetCodes: [code], seen: {}, status: 'pending', at: notice.at
         });
         showToast('Отправлено на ' + code, true);
@@ -9434,6 +9527,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         await pushNoticeToOutbox({
           id: notice.id, title: notice.title, body: notice.body,
           link: notice.link || '', image: notice.image || '', pos: notice.pos || 'center',
+          important: !!notice.important,
           all: true, targetCodes: codes, seen: {}, status: 'pending', at: notice.at
         });
         showToast('Всем: ' + ok + (fail ? (', ошибок ' + fail) : ''), true);
@@ -9456,6 +9550,18 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       const link = document.getElementById('keyNoticeLink');
       if (t) t.textContent = notice.title || 'Сообщение';
       if (b) b.innerHTML = '<div class="notice-fmt">' + formatNoticeHtml(notice.body || '') + '</div>';
+      const kicker = document.getElementById('keyNoticeKicker');
+      const icon = document.getElementById('keyNoticeIcon');
+      const sheetEl = document.getElementById('keyNoticeSheet');
+      if (kicker) kicker.textContent = notice.important ? 'Важно' : 'Сообщение';
+      if (icon) {
+        if (notice.important) {
+          icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>';
+        } else {
+          icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>';
+        }
+      }
+      if (sheetEl) sheetEl.classList.toggle('important', !!notice.important);
       if (img) {
         const src = safeNoticeUrl(notice.image);
         if (src) {
@@ -9561,6 +9667,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           linkText: it.linkText || 'Открыть',
           image: it.image || '',
           pos: it.pos || 'center',
+          important: !!it.important,
           at: it.at
         });
       } catch (e) { return null; }
