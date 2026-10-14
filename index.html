@@ -2264,6 +2264,168 @@
     .key-act.extend { background: rgba(10,132,255,0.16); color: #7ab8ff; }
     .key-act.eternal { background: rgba(191,90,242,0.16); color: #d4a0ff; }
     .key-act.danger { background: rgba(255,69,58,0.14); color: #ff6b63; grid-column: 1 / -1; }
+    .key-act.chat { background: rgba(10,132,255,0.16); color: #7ab8ff; grid-column: 1 / -1; }
+
+    .chat-overlay {
+      position: fixed; inset: 0; z-index: 9800;
+      display: none; align-items: center; justify-content: center;
+      padding: 16px 14px;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      background: rgba(0,0,0,0);
+      pointer-events: none;
+    }
+    .chat-overlay.on {
+      display: flex;
+      pointer-events: auto;
+      background: rgba(0,0,0,0.5);
+      animation: chatBgIn .25s ease forwards;
+    }
+    @keyframes chatBgIn {
+      from { background: rgba(0,0,0,0); }
+      to { background: rgba(0,0,0,0.5); }
+    }
+    .chat-sheet {
+      width: 100%; max-width: 380px;
+      height: min(68vh, 520px);
+      display: flex; flex-direction: column;
+      background: #1c1c1e;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+      overflow: hidden;
+      transform: scale(0.94) translateY(12px); opacity: 0;
+    }
+    .chat-overlay.on .chat-sheet {
+      animation: chatSheetIn .4s cubic-bezier(.16,1.12,.3,1) forwards;
+    }
+    @keyframes chatSheetIn {
+      from { transform: scale(0.94) translateY(16px); opacity: 0; }
+      to { transform: none; opacity: 1; }
+    }
+    .chat-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 12px 12px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.03);
+    }
+    .chat-head-back {
+      width: 34px; height: 34px; border-radius: 11px; border: none;
+      background: rgba(255,255,255,0.06); color: #fff;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .chat-head-back svg { width: 18px; height: 18px; fill: currentColor; }
+    .chat-head-avatar {
+      width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0;
+      background: linear-gradient(145deg, #3a9eff, #0a84ff);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chat-head-avatar svg { width: 18px; height: 18px; fill: #fff; }
+    .chat-head-info { flex: 1; min-width: 0; }
+    .chat-head-title {
+      font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .chat-head-sub {
+      font-size: 11px; color: var(--text-sec); margin-top: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .chat-msgs {
+      flex: 1; overflow-y: auto; padding: 14px 12px 10px;
+      display: flex; flex-direction: column; gap: 2px;
+      -webkit-overflow-scrolling: touch;
+      background: #141416;
+    }
+    .chat-empty {
+      margin: auto; text-align: center; color: var(--text-sec); font-size: 13px; padding: 24px;
+      line-height: 1.45;
+    }
+    .chat-row {
+      display: flex; flex-direction: column;
+      margin-bottom: 8px;
+      animation: chatBubbleIn .32s cubic-bezier(.16,1.1,.3,1) both;
+    }
+    .chat-row.me { align-items: flex-end; }
+    .chat-row.them { align-items: flex-start; }
+    .chat-row.sending { opacity: 0.7; }
+    @keyframes chatBubbleIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.96); }
+      to { opacity: 1; transform: none; }
+    }
+    .chat-bubble {
+      max-width: 78%; padding: 9px 12px; border-radius: 18px;
+      font-size: 15px; line-height: 1.35; word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .chat-bubble.me {
+      background: #0a84ff;
+      border-bottom-right-radius: 6px;
+      color: #fff;
+    }
+    .chat-bubble.them {
+      background: #2c2c2e;
+      border-bottom-left-radius: 6px;
+      color: #fff;
+    }
+    .chat-meta {
+      font-size: 10px;
+      margin-top: 3px;
+      padding: 0 4px;
+      display: flex; align-items: center; gap: 4px;
+      color: rgba(255,255,255,0.35);
+      min-height: 14px;
+    }
+    .chat-row.me .chat-meta {
+      justify-content: flex-end;
+      color: rgba(255,255,255,0.38);
+    }
+    .chat-meta .chat-status {
+      font-size: 10px; font-weight: 500;
+      color: rgba(255,255,255,0.38);
+    }
+    .chat-meta .chat-status.read { color: #64d2ff; }
+    .chat-ticks {
+      display: inline-flex; align-items: center; line-height: 1;
+    }
+    .chat-ticks svg {
+      width: 13px; height: 13px; fill: rgba(255,255,255,0.35);
+    }
+    .chat-ticks.read svg { fill: #64d2ff; }
+    .chat-ticks .tick2 { margin-left: -6px; }
+    .chat-input-row {
+      display: flex; gap: 8px; align-items: flex-end;
+      padding: 10px 10px 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: #1c1c1e; flex-shrink: 0;
+    }
+    .chat-input-row textarea {
+      flex: 1; min-height: 38px; max-height: 100px;
+      border: none; border-radius: 14px;
+      background: #2c2c2e; color: #fff;
+      padding: 9px 12px; font-size: 15px; font-family: inherit;
+      resize: none; outline: none; line-height: 1.35;
+    }
+    .chat-send {
+      width: 38px; height: 38px; border-radius: 13px; border: none;
+      background: #0a84ff; color: #fff; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: transform .12s ease, opacity .12s;
+    }
+    .chat-send:active { transform: scale(0.92); }
+    .chat-send svg { width: 16px; height: 16px; fill: currentColor; }
+    .chat-send:disabled { opacity: 0.4; }
+    .chat-badge {
+      position: absolute; top: -2px; right: -2px;
+      min-width: 16px; height: 16px; padding: 0 4px;
+      border-radius: 8px; background: #ff453a; color: #fff;
+      font-size: 9px; font-weight: 800; display: none;
+      align-items: center; justify-content: center;
+    }
+    .chat-badge.on { display: flex; }
+
+
+
     .session-chip {
       display: inline-flex;
       align-items: center;
@@ -2581,9 +2743,9 @@
         </div>
       </div>
       <div class="header-actions">
-        <div class="icon-btn" onclick="openRoulette()" title="Рулетка" style="color:#ffd60a;position:relative;">
-          <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 2.07A8 8 0 0119.93 11H13V4.07zM11 4.07V11H4.07A8 8 0 0111 4.07zM4.07 13H11v6.93A8 8 0 014.07 13zM13 19.93V13h6.93A8 8 0 0113 19.93z"/></svg>
-          <span class="roulette-fab-badge" id="rouletteCoinBadge">0</span>
+        <div class="icon-btn" id="chatHeaderBtn" onclick="openMyChat()" title="Сообщения" style="color:#0a84ff;position:relative;">
+          <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h10v2H7V9zm0-3h10v2H7V6zm0 6h7v2H7v-2z"/></svg>
+          <span class="chat-badge" id="chatUnreadBadge">0</span>
         </div>
         <div class="icon-btn admin-btn" onclick="openAdminAuthModal()" title="Админ-панель">
           <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
@@ -3741,6 +3903,31 @@
       </div>
       <img class="notice-media" id="keyNoticeImage" alt="">
       <a class="notice-link" id="keyNoticeLink" href="#" target="_blank" rel="noopener" style="display:none;"></a>
+    </div>
+  </div>
+
+  <!-- ЧАТ ПО КЛЮЧУ -->
+  <div class="chat-overlay" id="keyChatOverlay" onclick="if(event.target===this) closeKeyChat()">
+    <div class="chat-sheet" onclick="event.stopPropagation()">
+      <div class="chat-head">
+        <button type="button" class="chat-head-back" onclick="closeKeyChat()" aria-label="Закрыть">
+          <svg viewBox="0 0 24 24"><path d="M18.3 5.71a1 1 0 00-1.41 0L12 10.59 7.11 5.7A1 1 0 105.7 7.11L10.59 12 5.7 16.89a1 1 0 101.41 1.41L12 13.41l4.89 4.89a1 1 0 001.41-1.41L13.41 12l4.89-4.89a1 1 0 000-1.4z"/></svg>
+        </button>
+        <div class="chat-head-avatar">
+          <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>
+        </div>
+        <div class="chat-head-info">
+          <div class="chat-head-title" id="keyChatTitle">Чат</div>
+          <div class="chat-head-sub" id="keyChatSub">—</div>
+        </div>
+      </div>
+      <div class="chat-msgs" id="keyChatMsgs"></div>
+      <div class="chat-input-row">
+        <textarea id="keyChatInput" placeholder="Написать…" rows="1" maxlength="1000"></textarea>
+        <button type="button" class="chat-send" id="keyChatSendBtn" onclick="sendKeyChatMessage()" aria-label="Отправить">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -7681,6 +7868,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       showToast('Вход выполнен', true);
       registerDeviceSession();
       try { startNoticePolling(); } catch (e) {}
+      try { startChatPolling(); } catch (e) {}
       setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 400);
       setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1200);
     }
@@ -7692,6 +7880,15 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       applyTheme(getTheme());
     rebuildStreakFromShifts();
     bootAccessGate();
+    (function(){
+      const ta = document.getElementById('keyChatInput');
+      if (ta) ta.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendKeyChatMessage();
+        }
+      });
+    })();
     }
 
     async function createAccessKey(source) {
@@ -7805,6 +8002,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
               '<button type="button" class="key-act extend" onclick="extendAccessKey(\'' + codeSafe + '\',30)">+30 дней</button>' +
               '<button type="button" class="key-act eternal" onclick="makeKeyEternal(\'' + codeSafe + '\')">Вечный</button>' +
               '<button type="button" class="key-act danger" onclick="deleteAccessKey(\'' + codeSafe + '\')">Удалить</button>' +
+              '<button type="button" class="key-act chat" onclick="openKeyChat(\'' + codeSafe + '\',\'' + String(k.name || '').replace(/'/g,'') + '\',true)">Чат</button>' +
             '</div></div>';
         });
         box.innerHTML = h;
@@ -8141,6 +8339,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           pullSupplyDates();
           if (getSession()) {
             try { startNoticePolling(); } catch (e) {}
+            try { startChatPolling(); } catch (e) {}
             setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 500);
           }
           return;
@@ -8157,6 +8356,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           renderSupplyCard();
           pullSupplyDates();
           try { startNoticePolling(); } catch (e) {}
+          try { startChatPolling(); } catch (e) {}
           setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 500);
           setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1500);
           return;
@@ -9738,6 +9938,220 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       }
     }
 
+
+    // ============ CHAT BY KEY ============
+    let _chatCode = null;
+    let _chatAsAdmin = false;
+    let _chatPollTimer = null;
+    let _chatLastCount = 0;
+
+    function chatStorageKey(code) {
+      return 'chat_' + String(code || '').trim().toUpperCase();
+    }
+
+    async function loadChatMessages(code) {
+      code = String(code || '').trim().toUpperCase();
+      if (!code || !getSbConfig()) return [];
+      try {
+        const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(chatStorageKey(code)) + '&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return [];
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return []; } }
+        return Array.isArray(v) ? v : [];
+      } catch (e) { return []; }
+    }
+
+    async function saveChatMessages(code, list) {
+      code = String(code || '').trim().toUpperCase();
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: chatStorageKey(code),
+          value: (list || []).slice(-200),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+
+    function formatChatTime(iso) {
+      try {
+        const d = new Date(iso);
+        const p = function(n){ return String(n).padStart(2,'0'); };
+        return p(d.getHours()) + ':' + p(d.getMinutes());
+      } catch (e) { return ''; }
+    }
+
+    function chatStatusHtml(m, mine) {
+      if (!mine) return '';
+      const isRead = !!m.read;
+      const label = isRead ? 'прочитано' : 'доставлено';
+      const tickCls = isRead ? 'chat-ticks read' : 'chat-ticks';
+      return '<span class="chat-status' + (isRead ? ' read' : '') + '">' + label + '</span>' +
+        '<span class="' + tickCls + '">' +
+        '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' +
+        (isRead
+          ? '<svg class="tick2" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>'
+          : '') +
+        '</span>';
+    }
+
+    function renderChatMessages(list, opts) {
+      opts = opts || {};
+      const box = document.getElementById('keyChatMsgs');
+      if (!box) return;
+      if (!list || !list.length) {
+        box.innerHTML = '<div class="chat-empty">Напиши сообщение</div>';
+        return;
+      }
+      const meRole = _chatAsAdmin ? 'admin' : 'user';
+      const lastId = opts.animateId || null;
+      box.innerHTML = list.map(function(m, i) {
+        const mine = m.from === meRole;
+        const rowCls = (mine ? 'me' : 'them') + (m._sending ? ' sending' : '');
+        const delay = lastId && m.id === lastId ? '0s' : (opts.stagger ? Math.min(i, 12) * 0.03 + 's' : '0s');
+        return '<div class="chat-row ' + rowCls + '" style="animation-delay:' + delay + '">' +
+          '<div class="chat-bubble ' + (mine ? 'me' : 'them') + '">' + escapeHtml(m.text || '') + '</div>' +
+          '<div class="chat-meta">' +
+            '<span>' + escapeHtml(formatChatTime(m.at)) + '</span>' +
+            chatStatusHtml(m, mine) +
+          '</div></div>';
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function openKeyChat(code, name, asAdmin) {
+      code = String(code || '').trim().toUpperCase();
+      if (!code) return;
+      if (!getSbConfig()) return showToast('Нет базы');
+      _chatCode = code;
+      _chatAsAdmin = !!asAdmin;
+      const title = document.getElementById('keyChatTitle');
+      const sub = document.getElementById('keyChatSub');
+      if (title) title.textContent = name ? String(name) : (asAdmin ? code : 'Поддержка');
+      if (sub) sub.textContent = asAdmin ? code : 'Чат с администрацией';
+      const ov = document.getElementById('keyChatOverlay');
+      if (ov) ov.classList.add('on');
+      const input = document.getElementById('keyChatInput');
+      if (input) input.value = '';
+      await refreshOpenChat();
+      // mark read for current side
+      try { await markChatRead(code, asAdmin); } catch (e) {}
+      updateChatBadge();
+      if (_chatPollTimer) clearInterval(_chatPollTimer);
+      _chatPollTimer = setInterval(function() { refreshOpenChat(); }, 2500);
+    }
+
+    function openMyChat() {
+      const sess = getSession();
+      if (!sess || !sess.code) return showToast('Сначала войди по ключу');
+      openKeyChat(sess.code, sess.name || 'Чат', false);
+    }
+
+    function closeKeyChat() {
+      const ov = document.getElementById('keyChatOverlay');
+      if (ov) ov.classList.remove('on');
+      if (_chatPollTimer) { clearInterval(_chatPollTimer); _chatPollTimer = null; }
+      _chatCode = null;
+      updateChatBadge();
+    }
+
+    async function refreshOpenChat() {
+      if (!_chatCode) return;
+      try { await markChatRead(_chatCode, _chatAsAdmin); } catch (e) {}
+      const list = await loadChatMessages(_chatCode);
+      renderChatMessages(list);
+      if (!_chatAsAdmin) updateChatBadge();
+    }
+
+    async function markChatRead(code, asAdmin) {
+      const list = await loadChatMessages(code);
+      const fromOther = asAdmin ? 'user' : 'admin';
+      let changed = false;
+      list.forEach(function(m) {
+        if (m.from === fromOther && !m.read) {
+          m.read = true;
+          changed = true;
+        }
+      });
+      if (changed) await saveChatMessages(code, list);
+    }
+
+    async function sendKeyChatMessage() {
+      if (!_chatCode) return;
+      const input = document.getElementById('keyChatInput');
+      const text = (input && input.value || '').trim();
+      if (!text) return;
+      const btn = document.getElementById('keyChatSendBtn');
+      if (btn) btn.disabled = true;
+      const msgId = 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      const msg = {
+        id: msgId,
+        from: _chatAsAdmin ? 'admin' : 'user',
+        text: text.slice(0, 1000),
+        at: new Date().toISOString(),
+        delivered: false,
+        read: false,
+        _sending: true
+      };
+      try {
+        let list = await loadChatMessages(_chatCode);
+        list.push(msg);
+        if (input) input.value = '';
+        renderChatMessages(list, { animateId: msgId });
+        // save to cloud (app_settings) — не localStorage
+        const toSave = list.map(function(m) {
+          const o = { id: m.id, from: m.from, text: m.text, at: m.at, delivered: true, read: !!m.read };
+          return o;
+        });
+        await saveChatMessages(_chatCode, toSave);
+        list = await loadChatMessages(_chatCode);
+        renderChatMessages(list, { animateId: msgId });
+        try { logAction(_chatAsAdmin ? 'написал в чат ключу' : 'написал в чат', _chatCode); } catch (e) {}
+      } catch (e) {
+        showToast(e.message || 'не отправилось');
+        try {
+          const list = await loadChatMessages(_chatCode);
+          renderChatMessages(list);
+        } catch (e2) {}
+      }
+      if (btn) btn.disabled = false;
+    }
+
+    async function countUnreadForMe() {
+      const sess = getSession();
+      if (!sess || !sess.code || !getSbConfig()) return 0;
+      try {
+        const list = await loadChatMessages(sess.code);
+        return list.filter(function(m) { return m.from === 'admin' && !m.read; }).length;
+      } catch (e) { return 0; }
+    }
+
+    async function updateChatBadge() {
+      const badge = document.getElementById('chatUnreadBadge');
+      if (!badge) return;
+      const n = await countUnreadForMe();
+      if (n > 0) {
+        badge.textContent = n > 9 ? '9+' : String(n);
+        badge.classList.add('on');
+      } else {
+        badge.classList.remove('on');
+        badge.textContent = '0';
+      }
+      // toast once when new arrives while on main
+      if (n > _chatLastCount && n > 0 && !_chatCode) {
+        showToast('Новое сообщение');
+      }
+      _chatLastCount = n;
+    }
+
+    function startChatPolling() {
+      updateChatBadge();
+      setInterval(function() {
+        if (document.visibilityState === 'visible') updateChatBadge();
+      }, 4000);
+    }
+
     async function patchKeyPayload(code, mutator) {
       let payload = {};
       try { payload = await pullKeyDataFromCloud(code) || {}; } catch (e) {}
@@ -9865,6 +10279,15 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     applyTheme(getTheme());
     rebuildStreakFromShifts();
     bootAccessGate();
+    (function(){
+      const ta = document.getElementById('keyChatInput');
+      if (ta) ta.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendKeyChatMessage();
+        }
+      });
+    })();
     fetchAdminPinFromCloud();
     pullAdminSharedData();
     registerDeviceSession();
