@@ -2810,7 +2810,7 @@
         <h1 id="brandTitle">Мультитул</h1>
         <p id="brandSub">Рабочий набор</p>
         <div id="appVerBtn" onclick="openChangelog()" style="margin-top:8px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-sec);background:var(--card-inner);border-radius:999px;padding:4px 9px;cursor:pointer;width:fit-content;">
-          v<span id="appVerLabel">2.5.8</span>
+          v<span id="appVerLabel">2.5.9</span>
         </div>
       </div>
       <div class="header-actions">
@@ -6811,6 +6811,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     // Вшито в код — одна база на всех, кто открыл этот HTML
     const DEFAULT_SB_URL = 'https://slbjwfdgoptqdchethch.supabase.co';
     const DEFAULT_SB_KEY = 'sb_publishable_12H4vxr-VXYcoUhxYsOsuQ_TVfAkWEf';
+    // Web Push (public only — private только в Edge Function secrets)
+    const VAPID_PUBLIC_KEY = 'BAyESfkraODqMBvF_TC5eKi18SwXjRvd6T9bfIHwl1YE3BgOTVhPGdffZOIi1utyE9xvy0GKiYh6gG6fhsiXIVk';
+
 
     function getSbConfig() {
       try {
@@ -8750,6 +8753,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         const res = await Notification.requestPermission();
         if (res === 'granted') {
           await registerMultitoolSW();
+          try { await subscribeWebPush(); } catch (e) {}
           showToast('Уведомления включены', true);
           try {
             showSystemNotification('Мультитул', 'Готово — уведомления работают');
@@ -8794,7 +8798,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (!notifSupported()) return;
       const p = getNotifPermission();
       if (p === 'granted') {
-        registerMultitoolSW();
+        registerMultitoolSW().then(function() { try { subscribeWebPush(); } catch (e) {} });
         return;
       }
       if (p === 'denied' || p === 'unsupported') return;
@@ -8807,6 +8811,107 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         if (sessionStorage.getItem('ios_notif_skip_session') === '1') return;
         openNotifPermModal();
       }, 1600);
+    }
+
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const raw = atob(base64);
+      const out = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+      return out;
+    }
+
+    function pushSubStorageKey(code) {
+      return 'push_subs_' + String(code || '').trim().toUpperCase();
+    }
+
+    async function loadPushSubs(code) {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(pushSubStorageKey(code)) + '&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return [];
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return []; } }
+        return Array.isArray(v) ? v : [];
+      } catch (e) { return []; }
+    }
+
+    async function savePushSubs(code, list) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: pushSubStorageKey(code),
+          value: (list || []).slice(-20),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+
+    async function subscribeWebPush() {
+      if (!notifSupported() || Notification.permission !== 'granted') return null;
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+      try {
+        const reg = _swReg || await registerMultitoolSW();
+        if (!reg) return null;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+          });
+        }
+        const sess = getSession();
+        if (sess && sess.code && sub) {
+          const json = sub.toJSON();
+          const list = await loadPushSubs(sess.code);
+          const endpoint = json.endpoint;
+          const filtered = list.filter(function(s) { return s.endpoint !== endpoint; });
+          filtered.unshift({
+            endpoint: endpoint,
+            keys: json.keys || {},
+            at: new Date().toISOString(),
+            device: (navigator.userAgent || '').slice(0, 80)
+          });
+          await savePushSubs(sess.code, filtered);
+        }
+        return sub;
+      } catch (e) {
+        console.warn('push subscribe', e);
+        return null;
+      }
+    }
+
+    async function sendPushToCodes(codes, title, body) {
+      if (!codes || !codes.length || !getSbConfig()) return;
+      const cfg = getSbConfig();
+      const allSubs = [];
+      for (let i = 0; i < codes.length; i++) {
+        try {
+          const list = await loadPushSubs(codes[i]);
+          list.forEach(function(s) { allSubs.push(s); });
+        } catch (e) {}
+      }
+      if (!allSubs.length) return;
+      try {
+        await fetch(cfg.url + '/functions/v1/send-push', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': cfg.anon,
+            'Authorization': 'Bearer ' + cfg.anon
+          },
+          body: JSON.stringify({
+            title: title || 'Мультитул',
+            body: body || '',
+            subscriptions: allSubs,
+            url: './'
+          })
+        });
+      } catch (e) {
+        console.warn('send-push', e);
+      }
     }
 
     function showSystemNotification(title, body, opts) {
@@ -8897,7 +9002,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
     }
-    const APP_VERSION = '2.5.8';
+    const APP_VERSION = '2.5.9';
     const CHANGELOG = [
       { v: '2.5.6', d: '13.10.2026', t: 'Сообщения от руководства работают стабильно и быстро.' },
       { v: '2.5.0', d: '27.09.2026', t: 'Заказы: категории, галочки, дата изменения. Плавные переходы экранов, умнее ИИ.' },
@@ -10172,6 +10277,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           important: !!notice.important,
           all: false, targetCodes: [code], seen: {}, status: 'pending', at: notice.at
         });
+        try {
+          await sendPushToCodes([code], notice.important ? ('Важно: ' + notice.title) : notice.title, notice.body);
+        } catch (e) {}
         showToast('Отправлено на ' + code, true);
         try { logAction('отправил сообщение', code); } catch (e) {}
         const bodyEl = document.getElementById('noticeBody');
@@ -10207,6 +10315,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           important: !!notice.important,
           all: true, targetCodes: codes, seen: {}, status: 'pending', at: notice.at
         });
+        try {
+          await sendPushToCodes(codes, notice.important ? ('Важно: ' + notice.title) : notice.title, notice.body);
+        } catch (e) {}
         showToast('Всем: ' + ok + (fail ? (', ошибок ' + fail) : ''), true);
         try { logAction('рассылка сообщения', 'ключей ' + ok); } catch (e) {}
         try { refreshNoticeOutbox(); } catch (e) {}
@@ -10588,6 +10699,11 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         await saveChatMessages(_chatCode, toSave);
         list = await loadChatMessages(_chatCode);
         renderChatMessages(list, { animateId: msgId });
+        if (_chatAsAdmin) {
+          try {
+            await sendPushToCodes([_chatCode], 'Сообщение', text.slice(0, 120));
+          } catch (e) {}
+        }
         try { logAction(_chatAsAdmin ? 'написал в чат ключу' : 'написал в чат', _chatCode); } catch (e) {}
       } catch (e) {
         showToast(e.message || 'не отправилось');
