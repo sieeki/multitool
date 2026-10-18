@@ -2810,7 +2810,7 @@
         <h1 id="brandTitle">Мультитул</h1>
         <p id="brandSub">Рабочий набор</p>
         <div id="appVerBtn" onclick="openChangelog()" style="margin-top:8px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-sec);background:var(--card-inner);border-radius:999px;padding:4px 9px;cursor:pointer;width:fit-content;">
-          v<span id="appVerLabel">2.6.0</span>
+          v<span id="appVerLabel">2.6.1</span>
         </div>
       </div>
       <div class="header-actions">
@@ -6812,7 +6812,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     const DEFAULT_SB_URL = 'https://slbjwfdgoptqdchethch.supabase.co';
     const DEFAULT_SB_KEY = 'sb_publishable_12H4vxr-VXYcoUhxYsOsuQ_TVfAkWEf';
     // Web Push (public only — private только в Edge Function secrets)
-    const VAPID_PUBLIC_KEY = 'BAyESfkraODqMBvF_TC5eKi18SwXjRvd6T9bfIHwl1YE3BgOTVhPGdffZOIi1utyE9xvy0GKiYh6gG6fhsiXIVk';
+    const VAPID_PUBLIC_KEY = 'BCYWTWaP_1ArHUrZqe0ShpEblcvb-GC472KcQ6BZB3RvKNXJX9WWopyd82gA8Eym5TYsNAKmE8P8RIrqRuofjBw';
 
 
     function getSbConfig() {
@@ -8877,20 +8877,15 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         if (!reg) return null;
         await navigator.serviceWorker.ready;
         let sub = await reg.pushManager.getSubscription();
-        // если подписки нет или ключи битые — новая
+        // ключ VAPID обновлён — старую подписку сбрасываем
         if (sub) {
-          const j = sub.toJSON();
-          if (!j.keys || !j.keys.p256dh || !j.keys.auth) {
-            try { await sub.unsubscribe(); } catch (e) {}
-            sub = null;
-          }
+          try { await sub.unsubscribe(); } catch (e) {}
+          sub = null;
         }
-        if (!sub) {
-          sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-          });
-        }
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
         const sess = getSession();
         if (sess && sess.code && sub) {
           const json = sub.toJSON();
@@ -9057,7 +9052,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
     }
-    const APP_VERSION = '2.6.0';
+    const APP_VERSION = '2.6.1';
     const CHANGELOG = [
       { v: '2.5.6', d: '13.10.2026', t: 'Сообщения от руководства работают стабильно и быстро.' },
       { v: '2.5.0', d: '27.09.2026', t: 'Заказы: категории, галочки, дата изменения. Плавные переходы экранов, умнее ИИ.' },
