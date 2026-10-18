@@ -610,7 +610,8 @@
     }
 
     .input-group label { font-size: 11px; color: var(--text-sec); margin-bottom: 2px; }
-    .input-group input {
+    .input-group input,
+    .input-group textarea {
       background: transparent;
       border: none;
       color: #fff;
@@ -620,6 +621,11 @@
       font-family: inherit;
       -webkit-appearance: none;
       appearance: none;
+      resize: vertical;
+    }
+    .input-group textarea::placeholder,
+    .input-group input::placeholder {
+      color: rgba(255,255,255,0.35);
     }
 
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
@@ -2264,8 +2270,53 @@
     .key-act.extend { background: rgba(10,132,255,0.16); color: #7ab8ff; }
     .key-act.eternal { background: rgba(191,90,242,0.16); color: #d4a0ff; }
     .key-act.danger { background: rgba(255,69,58,0.14); color: #ff6b63; grid-column: 1 / -1; }
-    .key-act.chat { background: rgba(10,132,255,0.16); color: #7ab8ff; grid-column: 1 / -1; }
+    .key-act.chat {
+      background: rgba(10,132,255,0.16); color: #7ab8ff; grid-column: 1 / -1;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .key-chat-badge {
+      min-width: 20px; height: 20px; padding: 0 6px;
+      border-radius: 10px;
+      background: #ff453a; color: #fff;
+      font-size: 11px; font-weight: 800;
+      display: inline-flex; align-items: center; justify-content: center;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .menu-item-badge {
+      min-width: 18px; height: 18px; padding: 0 5px;
+      border-radius: 9px; background: #ff453a; color: #fff;
+      font-size: 11px; font-weight: 800;
+      display: none; align-items: center; justify-content: center;
+      margin-left: 8px; flex-shrink: 0;
+    }
+    .menu-item-badge.on { display: flex; }
 
+    .disable-dur-row {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .disable-dur {
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-sec);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px; font-weight: 650;
+      cursor: pointer;
+    }
+    .disable-dur.on {
+      background: rgba(255,69,58,0.18);
+      border-color: rgba(255,69,58,0.45);
+      color: #ff6961;
+    }
+    .key-disabled-card { text-align: center; }
+    .key-disabled-icon {
+      width: 52px; height: 52px; border-radius: 16px;
+      background: rgba(255,69,58,0.15);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px;
+    }
+    .key-disabled-icon svg { width: 26px; height: 26px; fill: #ff453a; }
     .chat-overlay {
       position: fixed; inset: 0; z-index: 9800;
       display: none; align-items: center; justify-content: center;
@@ -2640,11 +2691,31 @@
       <div id="changelogList"></div>
     </div>
   </div>
+  <div class="modal-overlay" id="notifPermModal" onclick="if(event.target===this) dismissNotifPrompt()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:340px;text-align:center;">
+      <div style="width:52px;height:52px;border-radius:16px;background:rgba(10,132,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <svg style="width:26px;height:26px;fill:#0a84ff;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+      </div>
+      <div class="modal-title" style="margin-bottom:8px;">Уведомления</div>
+      <p style="font-size:14px;color:var(--text-sec);line-height:1.45;margin-bottom:16px;">
+        Разреши пуши — будем сообщать о сообщениях и важных уведомлениях, даже когда сайт свёрнут.
+        <span style="display:block;margin-top:8px;font-size:12px;opacity:0.85;">На iPhone сайт должен быть на главном экране.</span>
+      </p>
+      <button class="btn btn-blue" onclick="acceptNotifPrompt()">Разрешить</button>
+      <button class="btn btn-red-soft" onclick="dismissNotifPrompt()" style="margin-top:8px;">Не сейчас</button>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="appPrefsModal" onclick="if(event.target===this) closeAppPrefs()">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-title">Настройки</div>
       <div style="font-size:13px;color:var(--text-sec);margin-bottom:6px;">Тема оформления</div>
       <div class="theme-grid" id="themeGrid"></div>
+      <div id="notifSettingsRow" style="margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:var(--card-inner);">
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Уведомления</div>
+        <div id="notifSettingsStatus" style="font-size:12px;color:var(--text-sec);line-height:1.4;margin-bottom:10px;">Проверка…</div>
+        <button type="button" class="btn btn-blue" id="notifSettingsBtn" onclick="requestNotifFromSettings()" style="height:42px;font-size:14px;margin:0;">Включить</button>
+      </div>
       <button class="btn btn-dev" onclick="openDevMenu()">Режим разработчика</button>
       <button class="btn btn-red-soft" onclick="closeAppPrefs()" style="margin-top:8px;">Закрыть</button>
     </div>
@@ -2739,7 +2810,7 @@
         <h1 id="brandTitle">Мультитул</h1>
         <p id="brandSub">Рабочий набор</p>
         <div id="appVerBtn" onclick="openChangelog()" style="margin-top:8px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-sec);background:var(--card-inner);border-radius:999px;padding:4px 9px;cursor:pointer;width:fit-content;">
-          v<span id="appVerLabel">2.5.6</span>
+          v<span id="appVerLabel">2.5.8</span>
         </div>
       </div>
       <div class="header-actions">
@@ -3316,6 +3387,7 @@
           <h3>Ключи доступа</h3>
           <p>Создать ключ сотруднику</p>
         </div>
+        <span class="menu-item-badge" id="adminKeysChatBadge">0</span>
       </div>
       <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
@@ -3906,6 +3978,40 @@
     </div>
   </div>
 
+  <!-- ВЫКЛЮЧЕНИЕ КЛЮЧА -->
+  <div class="modal-overlay" id="disableKeyModal" onclick="if(event.target===this) closeDisableKeyModal()">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:360px;">
+      <div class="modal-title">Выключить ключ</div>
+      <p id="disableKeyName" style="font-size:13px;color:var(--text-sec);text-align:center;margin:-4px 0 14px;"></p>
+      <div class="input-group">
+        <label>Причина</label>
+        <textarea id="disableKeyReason" placeholder="Например: нарушение, отпуск, смена…" maxlength="200" rows="3" style="min-height:72px;background:transparent;color:#fff;"></textarea>
+      </div>
+      <label style="font-size:12px;color:var(--text-sec);font-weight:600;margin:4px 0 8px;display:block;">На какой срок</label>
+      <div class="disable-dur-row" id="disableDurRow">
+        <button type="button" class="disable-dur on" data-days="1" onclick="setDisableDur(1)">1 день</button>
+        <button type="button" class="disable-dur" data-days="3" onclick="setDisableDur(3)">3 дня</button>
+        <button type="button" class="disable-dur" data-days="7" onclick="setDisableDur(7)">7 дней</button>
+        <button type="button" class="disable-dur" data-days="30" onclick="setDisableDur(30)">30 дней</button>
+        <button type="button" class="disable-dur" data-days="0" onclick="setDisableDur(0)">Навсегда</button>
+      </div>
+      <button class="btn btn-red" onclick="confirmDisableKey()" style="margin-top:14px;">Выключить</button>
+      <button class="btn btn-blue" onclick="closeDisableKeyModal()" style="margin-top:8px;">Отмена</button>
+    </div>
+  </div>
+
+  <!-- ПЛАШКА: КЛЮЧ ВЫКЛЮЧЕН -->
+  <div class="modal-overlay" id="keyDisabledInfoModal" onclick="if(event.target===this) closeKeyDisabledInfo()">
+    <div class="modal key-disabled-card" onclick="event.stopPropagation()" style="max-width:340px;">
+      <div class="key-disabled-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      </div>
+      <div class="modal-title" style="margin-bottom:8px;">Ключ выключен</div>
+      <p id="keyDisabledInfoText" style="font-size:14px;color:var(--text-sec);text-align:center;line-height:1.5;margin-bottom:16px;"></p>
+      <button class="btn btn-blue" onclick="closeKeyDisabledInfo()">Понятно</button>
+    </div>
+  </div>
+
   <!-- ЧАТ ПО КЛЮЧУ -->
   <div class="chat-overlay" id="keyChatOverlay" onclick="if(event.target===this) closeKeyChat()">
     <div class="chat-sheet" onclick="event.stopPropagation()">
@@ -4301,6 +4407,7 @@
       if (screenId === 'screenControl') { renderControlPoints(); pullPointOpens(); }
       if (screenId === 'screenCreator') { renderCreatorScreen(); refreshPeekAccounts(); }
       if (screenId === 'screenAdminKeys') renderAdminKeysScreen();
+      if (screenId === 'screenAdmin') { try { refreshAccessKeysList(true); } catch (e) {} }
       if (screenId === 'screenAI') initAiScreen();
       if (screenId === 'screenMenu') { renderSupplyCard(); pullSupplyDates(); renderStreak(); }
       if (screenId === 'screenPayQr') fillPayQrForm();
@@ -7731,7 +7838,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
     function keyIsValid(rec) {
       if (!rec) return { ok: false, reason: 'Ключ не найден' };
-      if (rec.active === false) return { ok: false, reason: 'Ключ отключён' };
+      if (rec.active === false) return { ok: false, reason: 'Ключ отключён', disabled: true };
       if (rec.expires_at) {
         const exp = new Date(rec.expires_at).getTime();
         if (!isNaN(exp) && Date.now() > exp) return { ok: false, reason: 'Срок ключа истёк' };
@@ -7739,14 +7846,151 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       return { ok: true };
     }
 
+    function disableInfoKey(code) {
+      return 'key_disable_' + String(code || '').trim().toUpperCase();
+    }
+    async function loadKeyDisableInfo(code) {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(disableInfoKey(code)) + '&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return null;
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return null; } }
+        return v && typeof v === 'object' ? v : null;
+      } catch (e) { return null; }
+    }
+    async function saveKeyDisableInfo(code, info) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: disableInfoKey(code),
+          value: info,
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+    async function clearKeyDisableInfo(code) {
+      try {
+        await sbFetch('app_settings?key=eq.' + encodeURIComponent(disableInfoKey(code)), {
+          method: 'DELETE',
+          headers: { 'Prefer': 'return=minimal' }
+        });
+      } catch (e) {
+        try {
+          await saveKeyDisableInfo(code, null);
+        } catch (e2) {}
+      }
+    }
+    function formatDisableUntil(until) {
+      if (!until) return 'навсегда (пока не включат)';
+      try {
+        const d = new Date(until);
+        return 'до ' + d.toLocaleString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      } catch (e) { return 'до ' + String(until); }
+    }
+    function showKeyDisabledInfo(info, code) {
+      const el = document.getElementById('keyDisabledInfoText');
+      const reason = (info && info.reason) ? String(info.reason) : 'без указания причины';
+      const until = formatDisableUntil(info && info.until);
+      if (el) {
+        el.innerHTML = 'Ключ <b style="color:#fff">' + escapeHtml(code || '') + '</b> выключен.<br><br>' +
+          'Причина: <b style="color:#ff6961">' + escapeHtml(reason) + '</b><br>' +
+          'Срок: <b style="color:#fff">' + escapeHtml(until) + '</b>';
+      }
+      const m = document.getElementById('keyDisabledInfoModal');
+      if (m) m.classList.add('active');
+    }
+    function closeKeyDisabledInfo() {
+      const m = document.getElementById('keyDisabledInfoModal');
+      if (m) m.classList.remove('active');
+    }
+
+    window._disableKeyCode = null;
+    window._disableKeyDays = 1;
+    function setDisableDur(days) {
+      window._disableKeyDays = days;
+      const row = document.getElementById('disableDurRow');
+      if (!row) return;
+      row.querySelectorAll('.disable-dur').forEach(function(btn) {
+        btn.classList.toggle('on', String(btn.getAttribute('data-days')) === String(days));
+      });
+    }
+    function openDisableKeyModal(code, name) {
+      window._disableKeyCode = String(code || '').trim().toUpperCase();
+      window._disableKeyDays = 1;
+      setDisableDur(1);
+      const nameEl = document.getElementById('disableKeyName');
+      if (nameEl) nameEl.textContent = (name || code || '') + (code ? ' · ' + code : '');
+      const reason = document.getElementById('disableKeyReason');
+      if (reason) reason.value = '';
+      const m = document.getElementById('disableKeyModal');
+      if (m) m.classList.add('active');
+    }
+    function closeDisableKeyModal() {
+      const m = document.getElementById('disableKeyModal');
+      if (m) m.classList.remove('active');
+      window._disableKeyCode = null;
+    }
+    async function confirmDisableKey() {
+      const code = window._disableKeyCode;
+      if (!code) return;
+      const reason = ((document.getElementById('disableKeyReason') && document.getElementById('disableKeyReason').value) || '').trim();
+      if (!reason) return showToast('Укажи причину');
+      const days = window._disableKeyDays;
+      let until = null;
+      if (days > 0) {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        until = d.toISOString();
+      }
+      const info = {
+        reason: reason.slice(0, 200),
+        until: until,
+        disabled_at: new Date().toISOString()
+      };
+      try {
+        await saveKeyDisableInfo(code, info);
+        await setKeyActive(code, false, true);
+        closeDisableKeyModal();
+        showToast('Ключ выключен', true);
+        try { logAction('выключил ключ', code + ' · ' + reason.slice(0, 40)); } catch (e) {}
+      } catch (e) {
+        showToast(e.message || 'не вышло');
+      }
+    }
+
+    async function maybeAutoEnableKey(rec) {
+      if (!rec || rec.active !== false) return rec;
+      const info = await loadKeyDisableInfo(rec.code);
+      if (info && info.until) {
+        const t = new Date(info.until).getTime();
+        if (!isNaN(t) && Date.now() > t) {
+          try {
+            await setKeyActive(rec.code, true, true);
+            await clearKeyDisableInfo(rec.code);
+            rec.active = true;
+          } catch (e) {}
+        }
+      }
+      return rec;
+    }
+
     async function validateCurrentSession(opts) {
       opts = opts || {};
       const sess = getSession();
       if (!sess || !sess.code) return false;
       try {
-        const rec = await findKeyRecord(sess.code);
+        let rec = await findKeyRecord(sess.code);
+        rec = await maybeAutoEnableKey(rec);
         const check = keyIsValid(rec);
         if (check.ok) return true;
+        if (check.disabled || (rec && rec.active === false)) {
+          const info = await loadKeyDisableInfo(sess.code);
+          const reason = (info && info.reason) ? ('Выключен: ' + info.reason) : (check.reason || 'Ключ отключён');
+          dropDeadSession(reason);
+          if (info) setTimeout(function() { showKeyDisabledInfo(info, sess.code); }, 400);
+          return false;
+        }
         dropDeadSession(check.reason || 'Ключ больше не действует');
         return false;
       } catch (e) {
@@ -7795,9 +8039,19 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (!code) return showToast('Введи ключ');
       showBoot('Проверяю ключ…');
       try {
-        const rec = await findKeyRecord(code);
+        let rec = await findKeyRecord(code);
+        if (!rec) { hideBoot(); return showToast('Ключ не найден'); }
+        rec = await maybeAutoEnableKey(rec);
         const check = keyIsValid(rec);
-        if (!check.ok) { hideBoot(); return showToast(check.reason); }
+        if (!check.ok) {
+          hideBoot();
+          if (check.disabled || (rec && rec.active === false)) {
+            const info = await loadKeyDisableInfo(code);
+            showKeyDisabledInfo(info || { reason: 'без указания причины', until: null }, code);
+            return;
+          }
+          return showToast(check.reason);
+        }
 
         const session = {
           code: rec.code,
@@ -7871,6 +8125,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       try { startChatPolling(); } catch (e) {}
       setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 400);
       setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1200);
+      try { registerMultitoolSW(); } catch (e) {}
+      try { maybeAskNotifPermission(); } catch (e) {}
     }
 
     function logoutAccessKey() {
@@ -7879,6 +8135,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       showToast('Вы вышли');
       applyTheme(getTheme());
     rebuildStreakFromShifts();
+    try { registerMultitoolSW(); } catch (e) {}
     bootAccessGate();
     (function(){
       const ta = document.getElementById('keyChatInput');
@@ -7949,16 +8206,37 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       navigator.clipboard.writeText(c).then(() => showToast('Ключ скопирован', true));
     }
 
-    async function refreshAccessKeysList() {
+        async function countUnreadFromUser(code) {
+      try {
+        const list = await loadChatMessages(code);
+        return list.filter(function(m) { return m.from === 'user' && !m.read; }).length;
+      } catch (e) { return 0; }
+    }
+
+    async function updateAdminKeysChatBadge(total) {
+      const el = document.getElementById('adminKeysChatBadge');
+      if (!el) return;
+      if (total > 0) {
+        el.textContent = total > 99 ? '99+' : String(total);
+        el.classList.add('on');
+      } else {
+        el.textContent = '0';
+        el.classList.remove('on');
+      }
+    }
+
+    async function refreshAccessKeysList(silent) {
       const boxes = [document.getElementById('accessKeysList'), document.getElementById('adminAccessKeysList')].filter(Boolean);
       if (!boxes.length) {
-        showToast('Список не найден на экране');
+        if (!silent) showToast('Список не найден на экране');
         return;
       }
 
-      boxes.forEach(function(box) {
-        box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Обновляю…</div>';
-      });
+      if (!silent) {
+        boxes.forEach(function(box) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Обновляю…</div>';
+        });
+      }
 
       let list = [];
       let err = null;
@@ -7969,6 +8247,20 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         err = (e && e.message) ? e.message : 'ошибка';
         list = getLocalKeys();
       }
+
+      // непрочитанные от сотрудников
+      const unreadMap = {};
+      let totalUnread = 0;
+      if (list.length && getSbConfig()) {
+        await Promise.all(list.map(async function(k) {
+          const code = String(k.code || '').trim().toUpperCase();
+          if (!code) return;
+          const n = await countUnreadFromUser(code);
+          unreadMap[code] = n;
+          totalUnread += n;
+        }));
+      }
+      updateAdminKeysChatBadge(totalUnread);
 
       boxes.forEach(function(box) {
         if (!list.length) {
@@ -7990,6 +8282,11 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
               escapeHtml(check.reason || 'нет') + '</span>');
           const exp = k.expires_at ? new Date(k.expires_at).toLocaleDateString('ru-RU') : '∞';
           const codeSafe = String(k.code || '').replace(/\\/g, '').replace(/'/g, '');
+          const codeUp = codeSafe.toUpperCase();
+          const unread = unreadMap[codeUp] || 0;
+          const chatBadge = unread > 0
+            ? ('<span class="key-chat-badge">' + (unread > 9 ? '9+' : unread) + '</span>')
+            : '';
           h += '<div class="key-item">' +
             '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(k.name || '') + '</div>' + badge + '</div>' +
             '<div class="key-item-code">' + escapeHtml(k.code || '') + '</div>' +
@@ -7998,18 +8295,20 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
               '<button type="button" class="key-act copy" data-code="' + escapeHtml(codeSafe) + '" onclick="copyAccessKeyCode(this)">Копировать</button>' +
               (k.active === false
                 ? '<button type="button" class="key-act toggle-on" onclick="setKeyActive(\'' + codeSafe + '\',true)">Включить</button>'
-                : '<button type="button" class="key-act toggle-off" onclick="setKeyActive(\'' + codeSafe + '\',false)">Выключить</button>') +
+                : '<button type="button" class="key-act toggle-off" onclick="openDisableKeyModal(\'' + codeSafe + '\',\'' + String(k.name || '').replace(/'/g,'') + '\')">Выключить</button>') +
               '<button type="button" class="key-act extend" onclick="extendAccessKey(\'' + codeSafe + '\',30)">+30 дней</button>' +
               '<button type="button" class="key-act eternal" onclick="makeKeyEternal(\'' + codeSafe + '\')">Вечный</button>' +
               '<button type="button" class="key-act danger" onclick="deleteAccessKey(\'' + codeSafe + '\')">Удалить</button>' +
-              '<button type="button" class="key-act chat" onclick="openKeyChat(\'' + codeSafe + '\',\'' + String(k.name || '').replace(/'/g,'') + '\',true)">Чат</button>' +
+              '<button type="button" class="key-act chat" onclick="openKeyChat(\'' + codeSafe + '\',\'' + String(k.name || '').replace(/'/g,'') + '\',true)">Чат' + chatBadge + '</button>' +
             '</div></div>';
         });
         box.innerHTML = h;
       });
 
-      if (err) showToast('База: ' + err);
-      else showToast('Список обновлён · ' + list.length, true);
+      if (!silent) {
+        if (err) showToast('База: ' + err);
+        else showToast('Список обновлён · ' + list.length, true);
+      }
     }
 
     function copyAccessKeyCode(btn) {
@@ -8022,7 +8321,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       });
     }
 
-    async function setKeyActive(code, active) {
+    async function setKeyActive(code, active, silent) {
+      code = String(code || '').trim().toUpperCase();
       let list = getLocalKeys();
       list = list.map(function(k) {
         if (k.code === code) k.active = active;
@@ -8037,11 +8337,15 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
             body: JSON.stringify({ active: active })
           });
         } catch (e) {
-          showToast('Облако: ' + e.message);
+          if (!silent) showToast('Облако: ' + e.message);
+          throw e;
         }
       }
-      showToast(active ? 'Ключ включён' : 'Ключ отключён', true);
-      refreshAccessKeysList();
+      if (active) {
+        try { await clearKeyDisableInfo(code); } catch (e) {}
+      }
+      if (!silent) showToast(active ? 'Ключ включён' : 'Ключ отключён', true);
+      refreshAccessKeysList(true);
     }
 
     function toggleEternalKey() {
@@ -8341,6 +8645,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
             try { startNoticePolling(); } catch (e) {}
             try { startChatPolling(); } catch (e) {}
             setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 500);
+            try { registerMultitoolSW(); } catch (e) {}
+            try { maybeAskNotifPermission(); } catch (e) {}
           }
           return;
         }
@@ -8359,6 +8665,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           try { startChatPolling(); } catch (e) {}
           setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 500);
           setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1500);
+          try { registerMultitoolSW(); } catch (e) {}
+          try { maybeAskNotifPermission(); } catch (e) {}
           return;
         }
         setOnlyScreen('screenGate');
@@ -8374,6 +8682,174 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         setTimeout(renderStreak, 400);
       }
     }
+
+
+
+    // ============ SYSTEM NOTIFICATIONS (PWA) ============
+    let _swReg = null;
+    let _notifPromptShown = false;
+
+    function notifSupported() {
+      return typeof window !== 'undefined' && 'Notification' in window;
+    }
+
+    function getNotifPermission() {
+      if (!notifSupported()) return 'unsupported';
+      return Notification.permission; // granted | denied | default
+    }
+
+    async function registerMultitoolSW() {
+      if (!('serviceWorker' in navigator)) return null;
+      try {
+        const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+        _swReg = reg;
+        return reg;
+      } catch (e) {
+        console.warn('SW register', e);
+        return null;
+      }
+    }
+
+    function updateNotifSettingsUI() {
+      const st = document.getElementById('notifSettingsStatus');
+      const btn = document.getElementById('notifSettingsBtn');
+      if (!st || !btn) return;
+      const p = getNotifPermission();
+      if (p === 'unsupported') {
+        st.textContent = 'Этот браузер не поддерживает уведомления';
+        btn.style.display = 'none';
+        return;
+      }
+      btn.style.display = '';
+      if (p === 'granted') {
+        st.textContent = 'Включены. Можно свернуть сайт — пуши будут приходить (на iPhone только с главного экрана).';
+        btn.textContent = 'Проверить';
+      } else if (p === 'denied') {
+        st.textContent = 'Запрещены в системе. Разреши в настройках телефона → сайт / Safari.';
+        btn.textContent = 'Как включить';
+      } else {
+        st.textContent = 'Ещё не включены. Нажми, чтобы разрешить.';
+        btn.textContent = 'Включить';
+      }
+    }
+
+    function openNotifPermModal() {
+      const m = document.getElementById('notifPermModal');
+      if (m) m.classList.add('active');
+      _notifPromptShown = true;
+    }
+    function closeNotifPermModal() {
+      const m = document.getElementById('notifPermModal');
+      if (m) m.classList.remove('active');
+    }
+
+    async function acceptNotifPrompt() {
+      closeNotifPermModal();
+      localStorage.setItem('ios_notif_prompted', '1');
+      try {
+        const res = await Notification.requestPermission();
+        if (res === 'granted') {
+          await registerMultitoolSW();
+          showToast('Уведомления включены', true);
+          try {
+            showSystemNotification('Мультитул', 'Готово — уведомления работают');
+          } catch (e) {}
+        } else if (res === 'denied') {
+          showToast('Доступ запрещён');
+        } else {
+          showToast('Не разрешено');
+        }
+      } catch (e) {
+        showToast('Не удалось запросить доступ');
+      }
+      updateNotifSettingsUI();
+    }
+
+    function dismissNotifPrompt() {
+      closeNotifPermModal();
+      // не долбим каждый раз в этой же сессии; при следующем заходе если default — спросим снова
+      sessionStorage.setItem('ios_notif_skip_session', '1');
+    }
+
+    async function requestNotifFromSettings() {
+      const p = getNotifPermission();
+      if (p === 'granted') {
+        showSystemNotification('Мультитул', 'Проверка: уведомления работают');
+        showToast('Отправил тест', true);
+        return;
+      }
+      if (p === 'denied') {
+        showToast('Разреши уведомления в настройках телефона');
+        return;
+      }
+      if (p === 'unsupported') {
+        showToast('Не поддерживается');
+        return;
+      }
+      openNotifPermModal();
+    }
+
+    /** Спросить доступ при входе, только если ещё не granted/denied */
+    function maybeAskNotifPermission() {
+      if (!notifSupported()) return;
+      const p = getNotifPermission();
+      if (p === 'granted') {
+        registerMultitoolSW();
+        return;
+      }
+      if (p === 'denied' || p === 'unsupported') return;
+      // default
+      if (sessionStorage.getItem('ios_notif_skip_session') === '1') return;
+      if (_notifPromptShown) return;
+      // небольшая пауза после входа, чтобы не пересечься с boot
+      setTimeout(function() {
+        if (getNotifPermission() !== 'default') return;
+        if (sessionStorage.getItem('ios_notif_skip_session') === '1') return;
+        openNotifPermModal();
+      }, 1600);
+    }
+
+    function showSystemNotification(title, body, opts) {
+      opts = opts || {};
+      if (!notifSupported()) return;
+      if (Notification.permission !== 'granted') return;
+      // если вкладка активна и не force — можно не дублировать
+      if (!opts.force && document.visibilityState === 'visible' && !opts.always) {
+        // всё равно можно тихо не слать; для чата шлём только в фоне
+        if (!opts.whenHidden) {
+          // default: show only when hidden
+        } else {
+          return;
+        }
+      }
+      if (opts.whenHidden && document.visibilityState === 'visible') return;
+
+      var payload = {
+        body: body || '',
+        tag: opts.tag || 'multitool',
+        renotify: !!opts.renotify
+      };
+      try {
+        if (_swReg && _swReg.showNotification) {
+          _swReg.showNotification(title || 'Мультитул', payload);
+          return;
+        }
+        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+          navigator.serviceWorker.ready.then(function(reg) {
+            reg.showNotification(title || 'Мультитул', payload);
+          }).catch(function() {
+            new Notification(title || 'Мультитул', payload);
+          });
+          return;
+        }
+        new Notification(title || 'Мультитул', payload);
+      } catch (e) {
+        try { new Notification(title || 'Мультитул', payload); } catch (e2) {}
+      }
+    }
+
+    // hook: after open app prefs
+    const _openAppPrefsOrig = typeof openAppPrefs === 'function' ? openAppPrefs : null;
 
 
     // ============ АККАУНТ ============
@@ -8421,7 +8897,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
     }
-    const APP_VERSION = '2.5.7';
+    const APP_VERSION = '2.5.8';
     const CHANGELOG = [
       { v: '2.5.6', d: '13.10.2026', t: 'Сообщения от руководства работают стабильно и быстро.' },
       { v: '2.5.0', d: '27.09.2026', t: 'Заказы: категории, галочки, дата изменения. Плавные переходы экранов, умнее ИИ.' },
@@ -8449,6 +8925,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (m) m.classList.remove('active');
     }
     function openAppPrefs() {
+      try { updateNotifSettingsUI(); } catch (e) {}
       const m = document.getElementById('appPrefsModal');
       if (m) m.classList.add('active');
       applyTheme(getTheme());
@@ -10052,8 +10529,12 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       const ov = document.getElementById('keyChatOverlay');
       if (ov) ov.classList.remove('on');
       if (_chatPollTimer) { clearInterval(_chatPollTimer); _chatPollTimer = null; }
+      const wasAdmin = _chatAsAdmin;
       _chatCode = null;
       updateChatBadge();
+      if (wasAdmin) {
+        try { refreshAccessKeysList(true); } catch (e) {}
+      }
     }
 
     async function refreshOpenChat() {
@@ -10141,6 +10622,11 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       // toast once when new arrives while on main
       if (n > _chatLastCount && n > 0 && !_chatCode) {
         showToast('Новое сообщение');
+        try {
+          showSystemNotification('Новое сообщение', 'У вас ' + n + ' непрочитанных', {
+            tag: 'chat-unread', renotify: true, force: true, always: true
+          });
+        } catch (e) {}
       }
       _chatLastCount = n;
     }
@@ -10148,8 +10634,20 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     function startChatPolling() {
       updateChatBadge();
       setInterval(function() {
-        if (document.visibilityState === 'visible') updateChatBadge();
-      }, 4000);
+        if (document.visibilityState !== 'visible') return;
+        updateChatBadge();
+        // бейдж в админке на ключах
+        try {
+          const adm = document.getElementById('screenAdmin');
+          const keys = document.getElementById('screenAdminKeys');
+          const cr = document.getElementById('screenCreator');
+          if ((adm && adm.classList.contains('active')) ||
+              (keys && keys.classList.contains('active')) ||
+              (cr && cr.classList.contains('active'))) {
+            refreshAccessKeysList(true);
+          }
+        } catch (e) {}
+      }, 5000);
     }
 
     async function patchKeyPayload(code, mutator) {
