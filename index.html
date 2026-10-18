@@ -2810,7 +2810,7 @@
         <h1 id="brandTitle">Мультитул</h1>
         <p id="brandSub">Рабочий набор</p>
         <div id="appVerBtn" onclick="openChangelog()" style="margin-top:8px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-sec);background:var(--card-inner);border-radius:999px;padding:4px 9px;cursor:pointer;width:fit-content;">
-          v<span id="appVerLabel">2.5.9</span>
+          v<span id="appVerLabel">2.6.0</span>
         </div>
       </div>
       <div class="header-actions">
@@ -8778,8 +8778,28 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     async function requestNotifFromSettings() {
       const p = getNotifPermission();
       if (p === 'granted') {
-        showSystemNotification('Мультитул', 'Проверка: уведомления работают');
-        showToast('Отправил тест', true);
+        showToast('Подписываю и шлю тест…');
+        try { await registerMultitoolSW(); } catch (e) {}
+        try { await subscribeWebPush(); } catch (e) {}
+        // локальный тест (когда сайт открыт)
+        try {
+          showSystemNotification('Мультитул', 'Локальный тест: сайт открыт', { force: true, always: true });
+        } catch (e) {}
+        // серверный тест (должен дойти и в фоне)
+        const sess = getSession();
+        if (sess && sess.code) {
+          const r = await sendPushToCodes([sess.code], 'Мультитул', 'Серверный тест фона');
+          if (!r || !r.ok) {
+            showToast('Сервер: ' + ((r && r.error) || 'ошибка'));
+          } else if (!r.sent) {
+            showToast('Подписки: ' + r.subs + ', отправлено 0 — смотри Logs');
+          } else {
+            showToast('Сервер ок · отправлено ' + r.sent, true);
+          }
+        } else {
+          showToast('Нет ключа сессии — войди по ключу');
+        }
+        updateNotifSettingsUI();
         return;
       }
       if (p === 'denied') {
@@ -8855,7 +8875,16 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       try {
         const reg = _swReg || await registerMultitoolSW();
         if (!reg) return null;
+        await navigator.serviceWorker.ready;
         let sub = await reg.pushManager.getSubscription();
+        // если подписки нет или ключи битые — новая
+        if (sub) {
+          const j = sub.toJSON();
+          if (!j.keys || !j.keys.p256dh || !j.keys.auth) {
+            try { await sub.unsubscribe(); } catch (e) {}
+            sub = null;
+          }
+        }
         if (!sub) {
           sub = await reg.pushManager.subscribe({
             userVisibleOnly: true,
@@ -8865,12 +8894,19 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         const sess = getSession();
         if (sess && sess.code && sub) {
           const json = sub.toJSON();
+          if (!json.keys || !json.keys.p256dh) {
+            console.warn('push sub without keys');
+            return sub;
+          }
           const list = await loadPushSubs(sess.code);
           const endpoint = json.endpoint;
           const filtered = list.filter(function(s) { return s.endpoint !== endpoint; });
           filtered.unshift({
             endpoint: endpoint,
-            keys: json.keys || {},
+            keys: {
+              p256dh: json.keys.p256dh,
+              auth: json.keys.auth
+            },
             at: new Date().toISOString(),
             device: (navigator.userAgent || '').slice(0, 80)
           });
@@ -8884,7 +8920,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     async function sendPushToCodes(codes, title, body) {
-      if (!codes || !codes.length || !getSbConfig()) return;
+      if (!codes || !codes.length || !getSbConfig()) {
+        return { ok: false, error: 'нет ключей/базы', sent: 0, subs: 0 };
+      }
       const cfg = getSbConfig();
       const allSubs = [];
       for (let i = 0; i < codes.length; i++) {
@@ -8893,9 +8931,11 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           list.forEach(function(s) { allSubs.push(s); });
         } catch (e) {}
       }
-      if (!allSubs.length) return;
+      if (!allSubs.length) {
+        return { ok: false, error: 'нет подписок (зайди с главного экрана и разреши пуши)', sent: 0, subs: 0 };
+      }
       try {
-        await fetch(cfg.url + '/functions/v1/send-push', {
+        const res = await fetch(cfg.url + '/functions/v1/send-push', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -8909,8 +8949,23 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
             url: './'
           })
         });
+        let data = null;
+        try { data = await res.json(); } catch (e) {}
+        if (!res.ok) {
+          const err = (data && data.error) ? data.error : ('HTTP ' + res.status);
+          console.warn('send-push', err);
+          return { ok: false, error: err, sent: 0, subs: allSubs.length };
+        }
+        return {
+          ok: true,
+          sent: (data && data.sent) || 0,
+          subs: allSubs.length,
+          dead: (data && data.dead) || [],
+          error: null
+        };
       } catch (e) {
         console.warn('send-push', e);
+        return { ok: false, error: (e && e.message) || 'сеть', sent: 0, subs: allSubs.length };
       }
     }
 
@@ -9002,7 +9057,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
     }
-    const APP_VERSION = '2.5.9';
+    const APP_VERSION = '2.6.0';
     const CHANGELOG = [
       { v: '2.5.6', d: '13.10.2026', t: 'Сообщения от руководства работают стабильно и быстро.' },
       { v: '2.5.0', d: '27.09.2026', t: 'Заказы: категории, галочки, дата изменения. Плавные переходы экранов, умнее ИИ.' },
