@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -31,16 +31,24 @@
       padding: 0;
     }
 
+    html {
+      background: var(--bg, #000);
+      height: 100%;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
       background-color: var(--bg);
+      background-image: none;
       color: var(--text);
       padding: 16px;
-      padding-bottom: 75px;
+      padding-top: calc(10px + env(safe-area-inset-top, 0px));
+      padding-bottom: calc(75px + env(safe-area-inset-bottom, 0px));
       max-width: 440px;
       margin: 0 auto;
       overflow-x: hidden;
       position: relative;
+      min-height: 100%;
+      min-height: 100dvh;
     }
 
 
@@ -323,8 +331,167 @@
       100% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0); }
     }
 
+
+
+    /* ===== home banner ===== */
+    .home-banner {
+      display: none;
+      position: relative;
+      margin: 0 0 14px;
+      border-radius: 20px;
+      padding: 14px 14px 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+      animation: homeBannerIn 0.45s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .home-banner.on { display: block; }
+    @keyframes homeBannerIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      to { opacity: 1; transform: none; }
+    }
+    .home-banner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(120% 80% at 100% 0%, rgba(255,255,255,0.18), transparent 55%),
+        radial-gradient(80% 60% at 0% 100%, rgba(0,0,0,0.2), transparent 50%);
+      pointer-events: none;
+    }
+    .home-banner.acc-blue {
+      background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 55%, #bf5af2 120%);
+    }
+    .home-banner.acc-orange {
+      background: linear-gradient(135deg, #ff9f0a 0%, #ff6b00 50%, #ff453a 110%);
+    }
+    .home-banner.acc-green {
+      background: linear-gradient(135deg, #30d158 0%, #0a84ff 100%);
+    }
+    .home-banner.acc-purple {
+      background: linear-gradient(135deg, #bf5af2 0%, #5e5ce6 60%, #0a84ff 120%);
+    }
+    .home-banner::after {
+      content: '';
+      position: absolute;
+      top: -40%; left: -30%;
+      width: 60%; height: 180%;
+      background: linear-gradient(100deg, transparent, rgba(255,255,255,0.14), transparent);
+      transform: rotate(18deg);
+      animation: homeBannerShine 4.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes homeBannerShine {
+      0%, 55% { transform: translateX(0) rotate(18deg); opacity: 0; }
+      70% { opacity: 1; }
+      100% { transform: translateX(220%) rotate(18deg); opacity: 0; }
+    }
+    .home-banner-top {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+      position: relative; z-index: 1;
+    }
+    .home-banner-kicker {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.7px;
+      text-transform: uppercase; opacity: 0.9; margin-bottom: 3px;
+    }
+    .home-banner-title {
+      font-size: 17px; font-weight: 850; letter-spacing: -0.3px; line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+    .home-banner-body {
+      font-size: 13px; line-height: 1.4; margin-top: 6px; opacity: 0.95;
+      position: relative; z-index: 1; white-space: pre-wrap;
+    }
+    .home-banner-timer {
+      display: inline-flex; align-items: center; gap: 5px;
+      flex-shrink: 0;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.28);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.22);
+      font-size: 12px; font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .home-banner-timer svg { width: 12px; height: 12px; fill: currentColor; opacity: 0.9; }
+    body.liquid-glass .home-banner {
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      backdrop-filter: blur(20px) saturate(160%);
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,0.25), 0 12px 32px rgba(0,0,0,0.25);
+    }
+
+    /* ===== admin promo coachmark ===== */
+    .admin-promo-overlay {
+      position: fixed; inset: 0; z-index: 2200;
+      background: rgba(0,0,0,0.62);
+      -webkit-backdrop-filter: blur(5px);
+      backdrop-filter: blur(5px);
+      display: none;
+      opacity: 0;
+      transition: opacity 0.28s ease;
+    }
+    .admin-promo-overlay.on { display: block; opacity: 1; }
+    .admin-promo-spot {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      box-shadow:
+        0 0 0 3px rgba(255,159,10,0.95),
+        0 0 0 8px rgba(255,159,10,0.22),
+        0 0 28px 6px rgba(255,159,10,0.35);
+      animation: adminSpotPulse 1.5s ease-in-out infinite;
+      z-index: 2;
+    }
+    @keyframes adminSpotPulse {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(255,159,10,0.95), 0 0 0 8px rgba(255,159,10,0.22), 0 0 28px 6px rgba(255,159,10,0.35); }
+      50% { box-shadow: 0 0 0 4px rgba(255,159,10,1), 0 0 0 14px rgba(255,159,10,0.12), 0 0 36px 10px rgba(255,159,10,0.45); }
+    }
+    .admin-promo-line {
+      position: absolute;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(255,159,10,1), rgba(255,159,10,0.15));
+      border-radius: 2px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .admin-promo-card {
+      position: absolute;
+      width: min(300px, calc(100vw - 28px));
+      background: rgba(28,28,30,0.98);
+      border: 1px solid rgba(255,159,10,0.45);
+      border-radius: 18px;
+      padding: 16px 16px 14px;
+      box-shadow: 0 18px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+      animation: adminPromoIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+      z-index: 3;
+    }
+    @keyframes adminPromoIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.96); }
+      to { opacity: 1; transform: none; }
+    }
+    .admin-promo-kicker {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.6px;
+      text-transform: uppercase; color: var(--accent-orange); margin-bottom: 4px;
+    }
+    .admin-promo-title {
+      font-size: 18px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px;
+      line-height: 1.2;
+    }
+    .admin-promo-text {
+      font-size: 13px; color: var(--text-sec); line-height: 1.45; margin-bottom: 14px;
+    }
+    .admin-promo-card .btn { height: 44px; font-size: 15px; margin: 0; font-weight: 700; }
+    #adminEntryBtn.admin-promo-pulse {
+      position: relative;
+      z-index: 2201 !important;
+      background: rgba(255,159,10,0.2) !important;
+      border-color: rgba(255,159,10,0.8) !important;
+      color: var(--accent-orange) !important;
+      transform: scale(1.12);
+    }
+
     .header {
-      margin: 15px 0 20px 4px;
+      margin: 6px 0 20px 4px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -3250,6 +3417,20 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
       </div>
     </div>
 
+    <div class="home-banner" id="homeBanner">
+      <div class="home-banner-top">
+        <div>
+          <div class="home-banner-kicker">Объявление</div>
+          <div class="home-banner-title" id="homeBannerTitle"></div>
+        </div>
+        <div class="home-banner-timer" id="homeBannerTimer">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"/></svg>
+          <span id="homeBannerTimerText">—</span>
+        </div>
+      </div>
+      <div class="home-banner-body" id="homeBannerBody"></div>
+    </div>
+
     <div class="qgrid">
       <div class="qtile a" onclick="sheetGo(null,'screenShifts','shiftTotal')">Смена<small>Добавить выручку</small></div>
       <div class="qtile c" onclick="openScreen('screenChange')">Сдача<small>Калькулятор</small></div>
@@ -3744,10 +3925,11 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
       <div class="adm-tile" onclick="openScreen('screenEmployees')"><div class="adm-ic icon-purple"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div><div><h3>Сотрудники</h3><p>Имена и VK</p></div></div>
       <div class="adm-tile" onclick="openScreen('screenSupply')"><div class="adm-ic icon-green"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 2H4c-1 0-2 1-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4l16-.02V7z"/></svg></div><div><h3>Поставки</h3><p>Даты последних</p></div></div>
     </div>
-    <div class="adm-sec">Ключи и сообщения</div>
+    <div class="adm-sec">Ключи и объявления</div>
     <div class="adm-grid">
-      <div class="adm-tile" onclick="openScreen('screenAdminKeys')"><div class="adm-ic icon-green"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg></div><div><h3>Создание ключей</h3><p>Новые и все ключи</p></div></div>
-      <div class="adm-tile" onclick="openScreen('screenAdminMsgs')"><div class="adm-ic icon-blue"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM7 9h10v2H7V9zm0-3h10v2H7V6zm0 6h7v2H7v-2z"/></svg></div><span class="menu-item-badge" id="adminKeysChatBadge" style="position:absolute;top:12px;right:12px;margin:0;">0</span><div><h3>Сообщения</h3><p>Уведомление или чат</p></div></div>
+      <div class="adm-tile" onclick="openScreen('screenAdminKeys')"><div class="adm-ic icon-green"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg></div><span class="menu-item-badge" id="adminKeysChatBadge" style="position:absolute;top:12px;right:12px;margin:0;display:none;">0</span><div><h3>Создание ключей</h3><p>Ключи · чат · бейдж новых</p></div></div>
+      <div class="adm-tile" onclick="openScreen('screenAdminMsgs')"><div class="adm-ic icon-blue"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></div><div><h3>Оффлайн при входе</h3><p>Окно при открытии сайта</p></div></div>
+      <div class="adm-tile" onclick="openScreen('screenAdminBanner')"><div class="adm-ic icon-orange"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 11v2h4v-2h-4zm-2 6.61c.96.71 2.21 1.65 3.2 2.39.4-.53.8-1.07 1.2-1.6-.99-.74-2.24-1.68-3.2-2.4-.4.54-.8 1.08-1.2 1.61zM20.4 5.6c-.4-.53-.8-1.07-1.2-1.6-.99.74-2.24 1.68-3.2 2.4.4.53.8 1.07 1.2 1.6.96-.72 2.21-1.65 3.2-2.4zM4 9c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h1v4h2v-4h1l5 3V6L8 9H4zm11.5 3c0-1.33-.58-2.53-1.5-3.37v6.74c.92-.84 1.5-2.04 1.5-3.37z"/></svg></div><div><h3>Баннер на главной</h3><p>Объявление для всех</p></div></div>
     </div>
   </div>
 
@@ -3755,7 +3937,7 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
     <div class="back-btn" onclick="openScreen('screenAdmin')">
       <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админ-панель
     </div>
-    <div class="header"><div class="header-title"><h1>Сообщения</h1><p>Уведомление или чат по ключу</p></div></div>
+    <div class="header"><div class="header-title"><h1>Оффлайн при входе</h1><p>Окно, которое видят при открытии сайта</p></div></div>
     <div class="card">
       <div class="card-title">Кому</div>
       <div style="margin-bottom:10px;">
@@ -3766,7 +3948,7 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
       <div id="msgKeys"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
     </div>
     <div class="card">
-      <div class="card-title">Уведомление</div>
+      <div class="card-title">Текст окна при входе</div>
       <div class="tpl-row">
         <button type="button" class="kf-chip" onclick="applyMsgTpl(0)">Закрой неделю</button>
         <button type="button" class="kf-chip" onclick="applyMsgTpl(1)">Привезли товар</button>
@@ -3780,6 +3962,44 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
         <span><strong style="color:#ff6961;">Важно</strong><span style="display:block;font-size:11px;color:var(--text-sec);margin-top:2px;">Красный мигающий увед</span></span>
       </div>
       <button class="btn btn-orange" id="msgSendBtn" onclick="sendMsgToSelected()">Отправить</button>
+    </div>
+  </div>
+
+
+  <div id="screenAdminBanner" class="screen">
+    <div class="back-btn" onclick="openScreen('screenAdmin')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админ-панель
+    </div>
+    <div class="header"><div class="header-title"><h1>Баннер на главной</h1><p>Видят все, пока не истечёт время</p></div></div>
+    <div class="card">
+      <div class="card-title">Сейчас</div>
+      <div id="adminBannerStatus" style="font-size:13px;color:var(--text-sec);">Загрузка…</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Новый баннер</div>
+      <div class="input-group"><label>Заголовок</label><input type="text" id="bannerTitle" placeholder="Важно" maxlength="48"></div>
+      <div class="input-group"><label>Текст</label><textarea id="bannerBody" placeholder="Что нужно знать всем…" maxlength="280" style="min-height:88px;"></textarea></div>
+      <div class="input-group"><label>Сколько висит</label>
+        <select id="bannerHours" class="employee-select">
+          <option value="1">1 час</option>
+          <option value="3">3 часа</option>
+          <option value="6">6 часов</option>
+          <option value="12">12 часов</option>
+          <option value="24" selected>1 сутки</option>
+          <option value="72">3 дня</option>
+          <option value="168">7 дней</option>
+        </select>
+      </div>
+      <div class="input-group"><label>Цвет</label>
+        <select id="bannerAccent" class="employee-select">
+          <option value="blue">Синий</option>
+          <option value="orange">Оранжевый</option>
+          <option value="green">Зелёный</option>
+          <option value="purple">Фиолетовый</option>
+        </select>
+      </div>
+      <button class="btn btn-orange" onclick="publishHomeBanner()">Вывесить баннер</button>
+      <button class="btn btn-red-soft" style="margin-top:8px;" onclick="clearHomeBanner()">Снять баннер</button>
     </div>
   </div>
 
@@ -4489,6 +4709,18 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
     </div>
   </div>
 
+
+  <div class="admin-promo-overlay" id="adminPromoOverlay" onclick="if(event.target===this) dismissAdminPromo()">
+    <div class="admin-promo-spot" id="adminPromoSpot"></div>
+    <div class="admin-promo-line" id="adminPromoLine"></div>
+    <div class="admin-promo-card" id="adminPromoCard" onclick="event.stopPropagation()">
+      <div class="admin-promo-kicker">Доступ</div>
+      <div class="admin-promo-title">Вас назначили администратором</div>
+      <div class="admin-promo-text">Оранжевый замок справа сверху — это админ-панель. Нажмите на него.</div>
+      <button type="button" class="btn btn-orange" onclick="dismissAdminPromo(true)">Открыть админку</button>
+    </div>
+  </div>
+
   <div class="tabbar" id="tabBar">
     <div class="tab-bubble" id="tabBubble"></div>
     <button type="button" class="tab on" data-tab="home" onclick="tabGo('home')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Главная</button>
@@ -4780,6 +5012,8 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
 
     function afterScreenOpen(screenId) {
       if (screenId === 'screenAdminMsgs') { try { renderMsgScreen(); } catch (e) {} }
+      if (screenId === 'screenAdminBanner') { try { refreshAdminBannerStatus(); } catch (e) {} }
+      if (screenId === 'screenMenu') { try { renderHomeBanner(); } catch (e) {} }
       if (screenId === 'screenAdmin') { try { renderAdminHome(); pullOrderList().then(renderAdminHome); pullPointOpens().then(renderAdminHome); pullAdminSharedData().then(renderAdminHome); } catch (e) {} }
       try { updateTabBar(screenId); } catch (e) {}
       if (screenId === 'screenStats') renderStats();
@@ -8069,7 +8303,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         return '<div class="stat-box" onclick="showCreatorTab(\'' + tab + '\')"><div class="card-title" style="margin:0;">' + l + '</div><div class="stat-num" style="color:' + col + ';">' + v + '</div></div>';
       }
       box.innerHTML = tile('В сети', online, 'people', 'var(--accent-green)') + tile('Ключей активно', active, 'keys', 'var(--accent-blue)') +
-        tile('Новых сообщений', unread, 'keys', unread > 0 ? 'var(--accent-red)' : 'var(--text)') + tile('Уведов в очереди', queue, 'alerts', 'var(--accent-orange)');
+        tile('Уведов в очереди', queue, 'alerts', 'var(--accent-orange)');
     }
     window._kf = { q: '', s: 'all' };
     function setKeyFilter(k, v) {
@@ -8236,11 +8470,146 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       function st(l, n, col, act) { return '<div class="adm-stat" onclick="' + act + '"><div class="l">' + l + '</div><div class="n" style="color:' + col + ';">' + n + '</div></div>'; }
       box.innerHTML = st('Открыто точек', open + '/' + total, open === total ? 'var(--accent-green)' : 'var(--accent-orange)', "openScreen('screenControl')") +
         st('На смене сегодня', onShift, 'var(--accent-blue)', "openScreen('screenControl')") +
-        st('Позиций в заказах', ord, 'var(--accent-orange)', "openScreen('screenAdminOrders')") +
-        st('Новых сообщений', un, un > 0 ? 'var(--accent-red)' : 'var(--text)', "openScreen('screenAdminKeys')");
+        st('Позиций в заказах', ord, 'var(--accent-orange)', "openScreen('screenAdminOrders')");
       const ob = document.getElementById('admOrdBadge');
       if (ob) { ob.textContent = ord > 99 ? '99+' : String(ord); ob.classList.toggle('on', ord > 0); }
+      // бейдж чата на плитке ключей
+      try {
+        const kb = document.getElementById('adminKeysChatBadge');
+        if (kb) {
+          kb.textContent = un > 99 ? '99+' : String(un);
+          kb.classList.toggle('on', un > 0);
+        }
+      } catch (e) {}
     }
+
+    // ===== баннер на главной =====
+    let _homeBanner = null;
+    let _homeBannerTimer = null;
+    function formatBannerLeft(ms) {
+      if (ms <= 0) return 'истекло';
+      const s = Math.floor(ms / 1000);
+      const d = Math.floor(s / 86400);
+      const h = Math.floor((s % 86400) / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      if (d > 0) return d + 'д ' + h + 'ч';
+      if (h > 0) return h + 'ч ' + m + 'м';
+      if (m > 0) return m + 'м ' + sec + 'с';
+      return sec + 'с';
+    }
+    async function fetchHomeBanner() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.home_banner&select=value');
+        let v = rows && rows[0] ? rows[0].value : null;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+        if (!v || typeof v !== 'object') return null;
+        if (!v.endsAt || !v.title) return null;
+        if (new Date(v.endsAt).getTime() <= Date.now()) return null;
+        return v;
+      } catch (e) { return null; }
+    }
+    async function pullHomeBanner() {
+      _homeBanner = await fetchHomeBanner();
+      renderHomeBanner();
+      try { refreshAdminBannerStatus(); } catch (e) {}
+    }
+    function renderHomeBanner() {
+      const el = document.getElementById('homeBanner');
+      if (!el) return;
+      const b = _homeBanner;
+      if (!b || !b.endsAt || new Date(b.endsAt).getTime() <= Date.now()) {
+        el.classList.remove('on');
+        if (_homeBannerTimer) { clearInterval(_homeBannerTimer); _homeBannerTimer = null; }
+        return;
+      }
+      const acc = ['blue','orange','green','purple'].indexOf(b.accent) >= 0 ? b.accent : 'blue';
+      el.className = 'home-banner on acc-' + acc;
+      const t = document.getElementById('homeBannerTitle');
+      const body = document.getElementById('homeBannerBody');
+      if (t) t.textContent = b.title || '';
+      if (body) {
+        body.textContent = b.body || '';
+        body.style.display = (b.body && String(b.body).trim()) ? '' : 'none';
+      }
+      function tick() {
+        const left = new Date(b.endsAt).getTime() - Date.now();
+        const tt = document.getElementById('homeBannerTimerText');
+        if (tt) tt.textContent = formatBannerLeft(left);
+        if (left <= 0) {
+          _homeBanner = null;
+          el.classList.remove('on');
+          if (_homeBannerTimer) { clearInterval(_homeBannerTimer); _homeBannerTimer = null; }
+        }
+      }
+      tick();
+      if (_homeBannerTimer) clearInterval(_homeBannerTimer);
+      _homeBannerTimer = setInterval(tick, 1000);
+    }
+    async function refreshAdminBannerStatus() {
+      const box = document.getElementById('adminBannerStatus');
+      if (!box) return;
+      const b = _homeBanner || await fetchHomeBanner();
+      _homeBanner = b;
+      if (!b) {
+        box.innerHTML = 'Сейчас баннер <b style="color:var(--text);">не висит</b>.';
+        return;
+      }
+      const left = new Date(b.endsAt).getTime() - Date.now();
+      box.innerHTML =
+        '<div style="font-weight:800;color:var(--text);margin-bottom:4px;">' + escapeHtml(b.title || '') + '</div>' +
+        (b.body ? ('<div style="margin-bottom:6px;">' + escapeHtml(b.body) + '</div>') : '') +
+        '<div>Осталось: <b style="color:var(--accent-orange);">' + formatBannerLeft(left) + '</b>' +
+        ' · до ' + new Date(b.endsAt).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) + '</div>';
+    }
+    async function publishHomeBanner() {
+      const title = (document.getElementById('bannerTitle') && document.getElementById('bannerTitle').value || '').trim();
+      const body = (document.getElementById('bannerBody') && document.getElementById('bannerBody').value || '').trim();
+      const hours = parseFloat(document.getElementById('bannerHours') && document.getElementById('bannerHours').value) || 24;
+      const accent = (document.getElementById('bannerAccent') && document.getElementById('bannerAccent').value) || 'blue';
+      if (!title) return showToast('Нужен заголовок');
+      const endsAt = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+      const payload = {
+        title: title.slice(0, 48),
+        body: body.slice(0, 280),
+        accent: accent,
+        endsAt: endsAt,
+        createdAt: new Date().toISOString()
+      };
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'home_banner', value: payload, updated_at: new Date().toISOString() })
+        });
+        _homeBanner = payload;
+        renderHomeBanner();
+        refreshAdminBannerStatus();
+        showToast('Баннер вывешен', true);
+        try {
+          // лёгкий пуш всем активным — через выбранных не шлём, только локально
+        } catch (e) {}
+      } catch (e) {
+        showToast(e.message || 'Не удалось сохранить');
+      }
+    }
+    async function clearHomeBanner() {
+      if (!confirm('Снять баннер с главной у всех?')) return;
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'home_banner', value: null, updated_at: new Date().toISOString() })
+        });
+        _homeBanner = null;
+        renderHomeBanner();
+        refreshAdminBannerStatus();
+        showToast('Баннер снят', true);
+      } catch (e) {
+        showToast(e.message || 'Не снялся');
+      }
+    }
+
     // ===== админы по ключу + сообщения =====
     function getAdminCodes() { try { return JSON.parse(localStorage.getItem('ios_admin_codes') || '[]'); } catch (e) { return []; } }
     function isAdminSession() { const x = getSession(); return !!(x && x.code && getAdminCodes().indexOf(String(x.code).toUpperCase()) >= 0); }
@@ -8255,6 +8624,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     async function pullAdminKeys() {
       try { localStorage.setItem('ios_admin_codes', JSON.stringify(await fetchAdminKeys())); } catch (e) {}
       applyAdminEntry();
+      try { await checkAdminPromotion(); } catch (e) {}
     }
     async function renderAdminAssign() {
       const sel = document.getElementById('adminAssignSel'), box = document.getElementById('adminAssignedList');
@@ -8268,6 +8638,140 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         keys.forEach(function(k) { names[String(k.code).toUpperCase()] = k.name; });
         box.innerHTML = admins.length ? admins.map(function(c) { return '<div class="key-item-meta">★ ' + escapeHtml((names[c] || '—') + ' · ' + c) + '</div>'; }).join('') : '<div class="key-item-meta">Админов пока нет</div>';
       }
+    }
+    async function loadAdminPromoPending() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.admin_promo_pending&select=value');
+        let v = rows && rows[0] ? rows[0].value : null;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = {}; } }
+        return v && typeof v === 'object' ? v : {};
+      } catch (e) { return {}; }
+    }
+    async function saveAdminPromoPending(map) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'admin_promo_pending',
+          value: map || {},
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+    function layoutAdminPromoCoachmark() {
+      const btn = document.getElementById('adminEntryBtn');
+      const spot = document.getElementById('adminPromoSpot');
+      const line = document.getElementById('adminPromoLine');
+      const card = document.getElementById('adminPromoCard');
+      if (!btn || !spot || !card) return;
+      const r = btn.getBoundingClientRect();
+      const pad = 10;
+      const size = Math.max(r.width, r.height) + pad * 2;
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      spot.style.width = size + 'px';
+      spot.style.height = size + 'px';
+      spot.style.left = (cx - size / 2) + 'px';
+      spot.style.top = (cy - size / 2) + 'px';
+
+      const cardW = Math.min(300, window.innerWidth - 28);
+      let cardLeft = Math.min(window.innerWidth - cardW - 14, Math.max(14, cx - cardW + 28));
+      let cardTop = cy + size / 2 + 18;
+      // если снизу мало места — карточка слева от кнопки / ниже по центру
+      if (cardTop + 180 > window.innerHeight) {
+        cardTop = Math.max(12, cy - size / 2 - 190);
+      }
+      card.style.width = cardW + 'px';
+      card.style.left = cardLeft + 'px';
+      card.style.top = cardTop + 'px';
+      card.style.right = 'auto';
+
+      if (line) {
+        const cardRectTop = cardTop;
+        const lineTop = Math.min(cy + size / 2, cardRectTop);
+        const lineBottom = Math.max(cy + size / 2, cardRectTop);
+        const h = Math.max(8, lineBottom - lineTop);
+        line.style.left = (cx - 1) + 'px';
+        line.style.top = lineTop + 'px';
+        line.style.height = h + 'px';
+        line.style.display = h > 12 ? 'block' : 'none';
+      }
+    }
+    function showAdminPromoCoachmark() {
+      // всегда с главной — иначе кнопка замка не в кадре
+      try {
+        if (typeof openScreen === 'function') openScreen('screenMenu');
+      } catch (e) {}
+      applyAdminEntry();
+      const btn = document.getElementById('adminEntryBtn');
+      if (btn) {
+        btn.style.display = '';
+        btn.classList.add('admin-promo-pulse');
+      }
+      const ov = document.getElementById('adminPromoOverlay');
+      function reveal() {
+        if (ov) ov.classList.add('on');
+        layoutAdminPromoCoachmark();
+        requestAnimationFrame(function() {
+          layoutAdminPromoCoachmark();
+          requestAnimationFrame(layoutAdminPromoCoachmark);
+        });
+      }
+      // чуть подождать переход на главную
+      setTimeout(reveal, 280);
+      setTimeout(layoutAdminPromoCoachmark, 450);
+      try {
+        showSystemNotification('Мультитул', 'Вас назначили администратором', {
+          tag: 'admin-promo', renotify: true, force: true, always: true
+        });
+      } catch (e) {}
+    }
+    function dismissAdminPromo(openAdmin) {
+      const ov = document.getElementById('adminPromoOverlay');
+      if (ov) ov.classList.remove('on');
+      const btn = document.getElementById('adminEntryBtn');
+      if (btn) btn.classList.remove('admin-promo-pulse');
+      const sess = getSession();
+      if (sess && sess.code) {
+        localStorage.setItem('ios_admin_promo_seen', String(sess.code).toUpperCase() + '|' + (localStorage.getItem('ios_admin_promo_token') || ''));
+      }
+      // снять pending в облаке
+      try {
+        const code = sess && sess.code ? String(sess.code).toUpperCase() : '';
+        if (code && getSbConfig()) {
+          loadAdminPromoPending().then(function(map) {
+            if (map && map[code]) {
+              delete map[code];
+              return saveAdminPromoPending(map);
+            }
+          }).catch(function() {});
+        }
+      } catch (e) {}
+      if (openAdmin && isAdminSession()) {
+        try { openAdminEntry(); } catch (e) {}
+      }
+    }
+    async function checkAdminPromotion() {
+      try {
+        const sess = getSession();
+        if (!sess || !sess.code) return;
+        if (!isAdminSession()) return;
+        const code = String(sess.code).toUpperCase();
+        let token = '';
+        let pending = {};
+        try { pending = await loadAdminPromoPending(); } catch (e) {}
+        if (pending && pending[code]) {
+          token = String(pending[code]);
+        } else {
+          // нет облачного флага — не показываем повторно
+          return;
+        }
+        localStorage.setItem('ios_admin_promo_token', token);
+        const seen = localStorage.getItem('ios_admin_promo_seen') || '';
+        if (seen === code + '|' + token) return;
+        // подождать отрисовку главной / кнопки
+        setTimeout(function() { showAdminPromoCoachmark(); }, 500);
+      } catch (e) {}
     }
     async function assignAdmin(on) {
       const sel = document.getElementById('adminAssignSel');
@@ -8284,9 +8788,37 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         });
         localStorage.setItem('ios_admin_codes', JSON.stringify(list));
         applyAdminEntry();
+        // флаг «назначен» + пуш
+        try {
+          const map = await loadAdminPromoPending();
+          if (on) {
+            map[code] = new Date().toISOString();
+            await saveAdminPromoPending(map);
+            try {
+              await sendPushToCodes([code], 'Мультитул', 'Вас назначили администратором');
+            } catch (e) {}
+          } else {
+            if (map[code]) {
+              delete map[code];
+              await saveAdminPromoPending(map);
+            }
+          }
+        } catch (e) {}
+        // если назначили самого себя на этом устройстве — сразу подсказка
+        const sess = getSession();
+        if (on && sess && String(sess.code).toUpperCase() === code) {
+          try {
+            const pmap = await loadAdminPromoPending();
+            if (pmap[code]) localStorage.setItem('ios_admin_promo_token', String(pmap[code]));
+          } catch (e2) {}
+          setTimeout(function() { showAdminPromoCoachmark(); }, 300);
+        }
         showToast(on ? 'Ключ теперь админ' : 'Админ снят', true);
         renderAdminAssign();
       } catch (e) { showToast(e.message || 'не вышло'); }
+    }
+    function mapTokenSafe() {
+      return localStorage.getItem('ios_admin_promo_token') || new Date().toISOString();
     }
     window._msgSel = {}; window._msgList = []; window._msgImp = false;
     async function renderMsgScreen() {
@@ -9598,6 +10130,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     async function heartbeatDeviceSession() {
       try { pullMyRole(); } catch (e) {}
       try { pullSupplyDates(); } catch (e) {}
+      try { await pullHomeBanner(); } catch (e) {}
+      try { await pullAdminKeys(); } catch (e) {}
       try { await fetchGateFromCloud(); enforceGateScreen(); } catch (e) {}
       try {
         await validateCurrentSession();
@@ -10760,6 +11294,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
     async function pullMyRole() {
       try { pullAdminKeys(); } catch (e) {}
+      try { pullHomeBanner(); } catch (e) {}
       const sess = getSession();
       if (!sess || !sess.code) { applyRoleBadge(null); return; }
       const map = await fetchAllRoles();
