@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#03284d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Мультитул">
@@ -3103,14 +3103,13 @@ body.liquid-glass {
   background-image: none !important;
 }
 body.liquid-glass::before {
-  content:''; position:fixed; left:0; right:0; bottom:0;
-  top:-120px; z-index:-1; pointer-events:none;
+  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
   background-color: #000;
   background-image:
     linear-gradient(180deg,
       color-mix(in srgb, var(--accent-blue) 30%, #000) 0,
-      color-mix(in srgb, var(--accent-blue) 16%, transparent) 260px,
-      transparent 420px),
+      color-mix(in srgb, var(--accent-blue) 30%, #000) 64px,
+      transparent 430px),
     radial-gradient(70% 50% at 10% 5%, color-mix(in srgb, var(--accent-blue) 38%, transparent), transparent 68%),
     radial-gradient(60% 45% at 100% 30%, color-mix(in srgb, var(--accent-purple) 28%, transparent), transparent 70%),
     radial-gradient(65% 45% at 15% 110%, color-mix(in srgb, var(--accent-green) 18%, transparent), transparent 70%);
@@ -3119,7 +3118,7 @@ body.liquid-glass::before {
 @supports not (background: color-mix(in srgb, #000 50%, transparent)) {
   body.liquid-glass::before {
     background:
-      linear-gradient(180deg, #03203f 0, rgba(10,132,255,0.16) 260px, transparent 420px),
+      linear-gradient(180deg, #03284d 0, #03284d 64px, transparent 430px),
       radial-gradient(70% 50% at 10% 5%, rgba(10,132,255,0.32), transparent 68%),
       radial-gradient(60% 45% at 100% 30%, rgba(191,90,242,0.22), transparent 70%),
       radial-gradient(65% 45% at 15% 110%, rgba(48,209,88,0.14), transparent 70%),
@@ -3238,6 +3237,35 @@ body.liquid-glass .control-link-btn {
 body.liquid-glass .chat-bubble.them { background: rgba(255,255,255,.1); }
 body.liquid-glass .chat-bubble.me { background: color-mix(in srgb, var(--accent-blue) 55%, transparent); }
 body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
+
+/* ===== слайдер «в архив» (в стиле .btn-orange) ===== */
+.swipe-btn{position:relative;height:50px;margin-top:8px;border-radius:18px;overflow:hidden;
+  background:color-mix(in srgb,var(--accent-orange) 38%,transparent);color:#fff;
+  border:.5px solid rgba(255,255,255,.18);
+  -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+  box-shadow:inset 1px 1px 0 rgba(255,255,255,.28),inset -1px -1px 0 rgba(255,255,255,.05),0 4px 14px rgba(0,0,0,.15);
+  -webkit-user-select:none;user-select:none;touch-action:pan-y}
+.swipe-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:18px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--accent-orange) 25%,transparent),color-mix(in srgb,var(--accent-orange) 70%,transparent));
+  pointer-events:none}
+.swipe-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-left:40px;pointer-events:none;font-size:16px;font-weight:600}
+.swipe-label span{background:linear-gradient(100deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.55) 38%,#fff 50%,rgba(255,255,255,.55) 62%,rgba(255,255,255,.55) 100%);
+  background-size:260% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+  animation:swipeShine 2.6s linear infinite}
+@keyframes swipeShine{0%{background-position:130% 0}100%{background-position:-30% 0}}
+.swipe-knob{position:absolute;left:4px;top:4px;width:42px;height:42px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;color:var(--accent-orange);
+  background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(255,255,255,.80));
+  box-shadow:0 4px 12px rgba(0,0,0,.32),inset 0 1px 0 #fff;
+  touch-action:pan-y;cursor:grab;will-change:transform}
+.swipe-knob svg{width:22px;height:22px}
+.swipe-knob .ic-check{display:none}
+.swipe-btn.drag .swipe-knob{cursor:grabbing;transform-origin:center}
+.swipe-btn.snap .swipe-knob{transition:transform .38s cubic-bezier(.3,1.35,.5,1)}
+.swipe-btn.snap .swipe-fill{transition:width .38s cubic-bezier(.3,1.35,.5,1)}
+.swipe-btn.done .ic-arrow{display:none}
+.swipe-btn.done .ic-check{display:block;animation:checkPop .4s cubic-bezier(.175,.885,.32,1.275) both}
+.swipe-btn.done .swipe-label span{animation:none;-webkit-text-fill-color:#fff;color:#fff;background:none}
   </style>
 </head>
 <body>
@@ -3627,7 +3655,14 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
         <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
         Сохранить картинкой
       </button>
-      <button class="btn btn-orange" onclick="archiveWeek()">Завершить неделю и в архив</button>
+      <div class="swipe-btn" id="archiveSwipe" aria-label="Протяни вправо, чтобы завершить неделю и отправить в архив">
+        <div class="swipe-fill"></div>
+        <div class="swipe-label"><span>Протяни: неделя в архив</span></div>
+        <div class="swipe-knob">
+          <svg class="ic-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l6 6-6 6"/><path d="M13 6l6 6-6 6" opacity=".55"/></svg>
+          <svg class="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </div>
+      </div>
       <button class="btn btn-red" onclick="resetWeek()">Сбросить без сохранения</button>
     </div>
   </div>
@@ -8898,6 +8933,75 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       /* всегда включено */
       applyLiquid();
     }
+
+    // ===== слайдер «в архив» =====
+    (function initArchiveSwipe() {
+      var track = document.getElementById('archiveSwipe');
+      if (!track) return;
+      var knob = track.querySelector('.swipe-knob');
+      var fill = track.querySelector('.swipe-fill');
+      var labelWrap = track.querySelector('.swipe-label');
+      var label = labelWrap.querySelector('span');
+      var IDLE = 'Протяни: неделя в архив';
+      var PAD = 4, x = 0, max = 0, startX = 0, startPos = 0, drag = false, busy = false, hapticArmed = true;
+      function setX(v, animate) {
+        if (animate) track.classList.add('snap');
+        x = Math.max(0, Math.min(max || v, v));
+        knob.style.transform = 'translate3d(' + x + 'px,0,0)';
+        fill.style.width = x > 0 ? (x + knob.offsetWidth + PAD) + 'px' : '0px';
+        var p = max ? x / max : 0;
+        if (!busy) labelWrap.style.opacity = String(Math.max(0, 1 - p * 1.6));
+        if (animate) setTimeout(function() { track.classList.remove('snap'); }, 420);
+      }
+      function measure() { max = Math.max(0, track.clientWidth - knob.offsetWidth - PAD * 2); }
+      function reset() {
+        busy = false;
+        track.classList.remove('done');
+        label.textContent = IDLE;
+        labelWrap.style.opacity = '1';
+        measure();
+        setX(0, true);
+      }
+      function complete() {
+        busy = true;
+        track.classList.add('done');
+        setX(max, true);
+        label.textContent = 'Готово';
+        labelWrap.style.opacity = '1';
+        if (navigator.vibrate) navigator.vibrate([12, 40, 18]);
+        setTimeout(function() { try { archiveWeek(); } catch (e) {} }, 280);
+        setTimeout(reset, 1200);
+      }
+      knob.addEventListener('pointerdown', function(e) {
+        if (busy) return;
+        measure();
+        drag = true; hapticArmed = true;
+        startX = e.clientX; startPos = x;
+        track.classList.remove('snap');
+        track.classList.add('drag');
+        try { knob.setPointerCapture(e.pointerId); } catch (err) {}
+      });
+      knob.addEventListener('pointermove', function(e) {
+        if (!drag) return;
+        setX(startPos + (e.clientX - startX));
+        if (hapticArmed && max && x >= max * 0.9) {
+          hapticArmed = false;
+          if (navigator.vibrate) navigator.vibrate(8);
+        } else if (max && x < max * 0.8) {
+          hapticArmed = true;
+        }
+      });
+      function end() {
+        if (!drag) return;
+        drag = false;
+        track.classList.remove('drag');
+        if (max && x >= max * 0.9) complete();
+        else setX(0, true);
+      }
+      knob.addEventListener('pointerup', end);
+      knob.addEventListener('pointercancel', end);
+      window.addEventListener('resize', function() { if (!busy) { measure(); setX(0); } });
+    })();
     function syncStatusBarColor() {
       try {
         var c = getComputedStyle(document.body).getPropertyValue('--accent-blue').trim();
