@@ -3058,7 +3058,7 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
         <h1 id="brandTitle">Мультитул</h1>
         <p id="brandSub">Рабочий набор</p>
         <div id="appVerBtn" onclick="openChangelog()" style="margin-top:8px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-sec);background:var(--card-inner);border-radius:999px;padding:4px 9px;cursor:pointer;width:fit-content;">
-          v<span id="appVerLabel">2.6.4</span>
+          v<span id="appVerLabel">2.6.6</span>
         </div>
       </div>
       <div class="header-actions">
@@ -6772,10 +6772,24 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
         // Мои смены (календарь)
         try {
           const ms = (typeof getMonthShifts === 'function') ? getMonthShifts() : {};
-          const keys = Object.keys(ms || {});
+          const keys = Object.keys(ms || {}).sort(function(a, b) {
+            const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+            return (pa[2]-pb[2]) || (pa[1]-pb[1]) || (pa[0]-pb[0]);
+          });
+          const now = new Date();
           ctx += '\n=== МОИ СМЕНЫ (КАЛЕНДАРЬ) ===\n';
+          ctx += 'Сегодня: ' + String(now.getDate()).padStart(2,'0') + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + now.getFullYear() + '\n';
           ctx += 'Отмечено дней: ' + keys.length + '\n';
-          if (keys.length) ctx += 'Даты: ' + keys.slice(-15).join(', ') + (keys.length > 15 ? '…' : '') + '\n';
+          if (keys.length) {
+            const upcoming = keys.filter(function(k) {
+              const p = k.split('.').map(Number);
+              const d = new Date(p[2], p[1]-1, p[0]);
+              const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              return d >= t0;
+            });
+            ctx += 'Ближайшие: ' + (upcoming.slice(0, 20).join(', ') || 'нет') + '\n';
+            ctx += 'Все даты: ' + keys.join(', ') + '\n';
+          }
         } catch (e) {}
 
         // Архив
@@ -6904,6 +6918,22 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
         'Иконка слева внизу, если сайт ещё не на домашнем экране. iPhone: Поделиться → На экран «Домой». Android: меню браузера → на главный экран.\n\n' +
         'ОБЛАКО\n' +
         'Смены, архив, заметки и заказы привязаны к ключу и подтягиваются на телефон. Если в ДАННЫХ пусто — человек ещё ничего не внёс или сеть не подтянула.\n\n' +
+        'ДЕЙСТВИЯ (ВАЖНО)\n' +
+        'Ты умеешь МЕНЯТЬ данные приложения. Когда пользователь просит добавить/удалить смену, поставить график, отметить дни в календаре или добавить заметку — выполни действие.\n' +
+        'В конце ответа (после короткого текста человеку) добавь блок строго в формате:\n' +
+        '<<<ACTIONS\n' +
+        '[{\"action\":\"...\", ...}]\n' +
+        'ACTIONS>>>\n' +
+        'Доступные action:\n' +
+        '1) add_shift — смена в учёт недели (выручка). Поля: date (ДД.ММ.ГГГГ), total (число рублей).\n' +
+        '2) remove_shift — удалить смену недели по дате. Поля: date.\n' +
+        '3) add_calendar — отметить рабочие дни в «Мои смены». Поля: dates (массив ДД.ММ.ГГГГ).\n' +
+        '4) remove_calendar — снять отметки. Поля: dates.\n' +
+        '5) set_schedule — график на месяц. Поля: pattern (\"2/2\"|\"5/2\"|…), month (1-12), year, start (\"work\"|\"off\"), skipWeekends (true если сб/вс выходные). Для 5/2 + skipWeekends = пн–пт.\n' +
+        '6) add_note — заметка. Поля: text.\n' +
+        '7) add_deduction — вычет. Поля: reason, amount.\n' +
+        'Правила: год подставляй текущий, если не указан. \"13.10\" = 13.10 текущего года. \"следующий месяц\" = month/year следующего. Не выдумывай даты. Если данных не хватает — спроси, не пиши ACTIONS.\n' +
+        'Можно несколько действий в массиве. Текст человеку — без JSON, человеческим языком.\n\n' +
         'ТИПОВЫЕ ВОПРОСЫ\n' +
         'сколько за неделю / остаток / сколько смен — только цифры из ДАННЫХ.\n' +
         'как поменять 1300 — шестерёнка внутри учёта недельной.\n' +
@@ -6913,19 +6943,305 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
         'Ниже живые цифры ЭТОГО человека. Пустой блок ≠ пустое приложение.\nДАННЫЕ:\n' + ctx
       );
     }
+    function aiPad2(n) { return String(n).padStart(2, '0'); }
+    function aiTodayParts() {
+      const n = new Date();
+      return { y: n.getFullYear(), m: n.getMonth() + 1, d: n.getDate() };
+    }
+    function aiParseDateFlex(raw, defaultYear) {
+      if (!raw) return null;
+      const s = String(raw).trim().toLowerCase().replace(/[^\d./\-]/g, ' ').replace(/\s+/g, ' ').trim();
+      let m;
+      m = s.match(/^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})$/);
+      if (m) {
+        let y = parseInt(m[3], 10);
+        if (y < 100) y += 2000;
+        return aiPad2(m[1]) + '.' + aiPad2(m[2]) + '.' + y;
+      }
+      m = s.match(/^(\d{1,2})[./\-](\d{1,2})$/);
+      if (m) {
+        const y = defaultYear || aiTodayParts().y;
+        return aiPad2(m[1]) + '.' + aiPad2(m[2]) + '.' + y;
+      }
+      m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if (m) return aiPad2(m[3]) + '.' + aiPad2(m[2]) + '.' + m[1];
+      if (/^сегодня$/.test(String(raw).trim().toLowerCase())) {
+        const t = aiTodayParts();
+        return aiPad2(t.d) + '.' + aiPad2(t.m) + '.' + t.y;
+      }
+      if (/^завтра$/.test(String(raw).trim().toLowerCase())) {
+        const n = new Date(); n.setDate(n.getDate() + 1);
+        return aiPad2(n.getDate()) + '.' + aiPad2(n.getMonth() + 1) + '.' + n.getFullYear();
+      }
+      return null;
+    }
+    function aiParseMoney(raw) {
+      if (raw == null) return NaN;
+      const n = parseFloat(String(raw).replace(/\s/g, '').replace(',', '.').replace(/[^\d.]/g, ''));
+      return isNaN(n) ? NaN : n;
+    }
+    function aiDoAddShift(dateStr, total) {
+      total = aiParseMoney(total);
+      if (!dateStr || isNaN(total)) return 'Не понял дату или сумму';
+      let store = getData();
+      if (store.shifts.length >= 5) {
+        return 'В неделе уже 5 смен. Закрой неделю в учёте, потом добавим.';
+      }
+      const exists = store.shifts.some(function(s) { return s.date === dateStr; });
+      if (exists) {
+        store.shifts = store.shifts.map(function(s) {
+          if (s.date === dateStr) return { date: dateStr, total: total };
+          return s;
+        });
+        saveData(store);
+        try { render(); } catch (e) {}
+        try { rebuildStreakFromShifts(); } catch (e) {}
+        return 'Обновил смену ' + dateStr + ' → ' + total.toLocaleString('ru-RU') + ' ₽';
+      }
+      store.shifts.push({ date: dateStr, total: total });
+      saveData(store);
+      try { render(); } catch (e) {}
+      try { rebuildStreakFromShifts(); } catch (e) {}
+      return 'Добавил смену ' + dateStr + ' · ' + total.toLocaleString('ru-RU') + ' ₽';
+    }
+    function aiDoRemoveShift(dateStr) {
+      let store = getData();
+      const before = store.shifts.length;
+      store.shifts = store.shifts.filter(function(s) { return s.date !== dateStr; });
+      if (store.shifts.length === before) return 'Смены ' + dateStr + ' в неделе нет';
+      saveData(store);
+      try { render(); } catch (e) {}
+      return 'Удалил смену ' + dateStr + ' из недели';
+    }
+    function aiDoCalendar(dates, add) {
+      if (!dates || !dates.length) return 'Нет дат';
+      let shifts = getMonthShifts();
+      let n = 0;
+      dates.forEach(function(d) {
+        const key = aiParseDateFlex(d) || d;
+        if (!/^\d{2}\.\d{2}\.\d{4}$/.test(key)) return;
+        if (add) {
+          if (!shifts[key]) { shifts[key] = true; n++; }
+        } else {
+          if (shifts[key]) { delete shifts[key]; n++; }
+        }
+      });
+      saveMonthShifts(shifts);
+      try { renderCalendar(); } catch (e) {}
+      return (add ? 'Отметил дней: ' : 'Снял отметок: ') + n;
+    }
+    function aiMonthFromText(low) {
+      const map = [
+        [/январ/, 1], [/феврал/, 2], [/март/, 3], [/апрел/, 4], [/ма[йя]/, 5], [/июн/, 6],
+        [/июл/, 7], [/август/, 8], [/сентябр/, 9], [/октябр/, 10], [/ноябр/, 11], [/декабр/, 12]
+      ];
+      for (let i = 0; i < map.length; i++) {
+        if (map[i][0].test(low)) return map[i][1];
+      }
+      return null;
+    }
+    function aiDoSetSchedule(pattern, month, year, start, opts) {
+      opts = opts || {};
+      const skipWeekends = !!(opts.skipWeekends || opts.noWeekends || opts.weekendsOff);
+      pattern = String(pattern || '2/2').replace(/\s/g, '');
+      const parts = pattern.split('/');
+      let on = parseInt(parts[0], 10), off = parseInt(parts[1], 10);
+      if (!on || on < 1) on = 2;
+      if (isNaN(off) || off < 0) off = 2;
+      const now = new Date();
+      year = parseInt(year, 10) || now.getFullYear();
+      month = parseInt(month, 10);
+      if (!month || month < 1 || month > 12) {
+        if (opts.nextMonth) {
+          const nm = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+          month = nm.getMonth() + 1;
+          year = nm.getFullYear();
+        } else {
+          month = now.getMonth() + 1;
+          year = now.getFullYear();
+        }
+      }
+      const daysInMonth = new Date(year, month, 0).getDate();
+      let shifts = getMonthShifts();
+      Object.keys(shifts).forEach(function(k) {
+        const p = k.split('.').map(Number);
+        if (p[1] === month && p[2] === year) delete shifts[k];
+      });
+      let work = !(String(start || 'work').toLowerCase() === 'off');
+      let streak = 0;
+      const added = [];
+      // классика 5/2 + выходные = пн–пт
+      const weekdayOnly = skipWeekends && on === 5 && off === 2;
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dow = new Date(year, month - 1, day).getDay(); // 0=вс … 6=сб
+        const isWeekend = (dow === 0 || dow === 6);
+        if (weekdayOnly) {
+          if (!isWeekend) {
+            const key = aiPad2(day) + '.' + aiPad2(month) + '.' + year;
+            shifts[key] = true;
+            added.push(key);
+          }
+          continue;
+        }
+        if (skipWeekends && isWeekend) {
+          // выходные всегда выходные, цикл не двигаем
+          continue;
+        }
+        if (work) {
+          const key = aiPad2(day) + '.' + aiPad2(month) + '.' + year;
+          shifts[key] = true;
+          added.push(key);
+          streak++;
+          if (streak >= on) { work = false; streak = 0; }
+        } else {
+          streak++;
+          if (streak >= off) { work = true; streak = 0; }
+        }
+      }
+      saveMonthShifts(shifts);
+      try {
+        currentCalDate = new Date(year, month - 1, 1);
+        renderCalendar();
+      } catch (e) {}
+      let msg = 'График ' + on + '/' + off + ' на ' + aiPad2(month) + '.' + year + ': ' + added.length + ' смен';
+      if (skipWeekends) msg += ' (сб/вс выходные)';
+      return msg;
+    }
+    function aiDoAddNote(t) {
+      t = String(t || '').trim();
+      if (!t) return 'Пустая заметка';
+      const notes = getNotes();
+      notes.push({ text: t.slice(0, 500), done: false });
+      saveNotes(notes);
+      try { renderNotes(); } catch (e) {}
+      return 'Заметка добавлена';
+    }
+    function aiDoAddDeduction(reason, amount) {
+      amount = aiParseMoney(amount);
+      reason = String(reason || '').trim();
+      if (!reason || isNaN(amount)) return 'Нужны причина и сумма вычета';
+      let store = getData();
+      store.deductions.push({ reason: reason, amount: amount });
+      saveData(store);
+      try { render(); } catch (e) {}
+      return 'Вычет −' + amount.toLocaleString('ru-RU') + ' ₽ (' + reason + ')';
+    }
+    function executeAiActions(actions) {
+      if (!Array.isArray(actions) || !actions.length) return [];
+      const results = [];
+      actions.forEach(function(a) {
+        if (!a || !a.action) return;
+        try {
+          const act = String(a.action).toLowerCase();
+          if (act === 'add_shift') {
+            const d = aiParseDateFlex(a.date);
+            results.push(aiDoAddShift(d, a.total != null ? a.total : a.amount));
+          } else if (act === 'remove_shift') {
+            results.push(aiDoRemoveShift(aiParseDateFlex(a.date) || a.date));
+          } else if (act === 'add_calendar') {
+            results.push(aiDoCalendar(a.dates || (a.date ? [a.date] : []), true));
+          } else if (act === 'remove_calendar') {
+            results.push(aiDoCalendar(a.dates || (a.date ? [a.date] : []), false));
+          } else if (act === 'set_schedule') {
+            results.push(aiDoSetSchedule(a.pattern || a.graph, a.month, a.year, a.start, {
+              skipWeekends: !!(a.skipWeekends || a.noWeekends || a.weekendsOff || a.offWeekends),
+              nextMonth: !!a.nextMonth
+            }));
+          } else if (act === 'add_note') {
+            results.push(aiDoAddNote(a.text || a.note));
+          } else if (act === 'add_deduction') {
+            results.push(aiDoAddDeduction(a.reason || a.text, a.amount || a.total));
+          } else {
+            results.push('Неизвестное действие: ' + act);
+          }
+        } catch (e) {
+          results.push('Ошибка: ' + (e.message || 'не вышло'));
+        }
+      });
+      return results;
+    }
+    function extractAiActions(reply) {
+      if (!reply) return { text: reply || '', actions: [] };
+      let text = reply;
+      let actions = [];
+      const re = /<<<ACTIONS\s*([\s\S]*?)\s*ACTIONS>>>/i;
+      const m = text.match(re);
+      if (m) {
+        text = (text.slice(0, m.index) + text.slice(m.index + m[0].length)).trim();
+        try {
+          let raw = m[1].trim();
+          // иногда модель оборачивает в ```json
+          raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+          const parsed = JSON.parse(raw);
+          actions = Array.isArray(parsed) ? parsed : (parsed ? [parsed] : []);
+        } catch (e) { actions = []; }
+      }
+      // запасной вариант: чистый JSON-массив в конце
+      if (!actions.length) {
+        const m2 = text.match(/(\[[\s\S]*"action"[\s\S]*\])\s*$/);
+        if (m2) {
+          try {
+            const parsed = JSON.parse(m2[1]);
+            if (Array.isArray(parsed) && parsed[0] && parsed[0].action) {
+              actions = parsed;
+              text = text.slice(0, m2.index).trim();
+            }
+          } catch (e) {}
+        }
+      }
+      return { text: text, actions: actions };
+    }
+    function tryLocalAiCommand(text) {
+      const t = String(text || '').trim();
+      const low = t.toLowerCase().replace(/ё/g, 'е');
+      // добавить смену 13.10 21000
+      let m = low.match(/(?:добавь|добавить|запиши|поставь)\s+(?:смену\s+)?(?:на\s+)?(\d{1,2}[./\-]\d{1,2}(?:[./\-]\d{2,4})?|сегодня|завтра)(?:\s*[^\d]{0,24}?)(\d[\d\s]{2,})/i);
+      if (!m) m = low.match(/смена\s+(\d{1,2}[./\-]\d{1,2}(?:[./\-]\d{2,4})?)\s+(\d[\d\s]{2,})/i);
+      if (m) {
+        const d = aiParseDateFlex(m[1]);
+        const sum = aiParseMoney(m[2]);
+        if (d && !isNaN(sum)) {
+          return { reply: aiDoAddShift(d, sum), actions: true };
+        }
+      }
+      // график 5/2 октябрь, сб вс выходные
+      m = low.match(/график\s*(\d)\s*[\/]\s*(\d)/i);
+      if (!m) m = low.match(/(?:поставь|проставь|сделай)\s+(?:мне\s+)?(?:график\s+)?(\d)\s*[\/]\s*(\d)/i);
+      if (m) {
+        const now = new Date();
+        let month = aiMonthFromText(low);
+        let year = now.getFullYear();
+        let nextMonth = false;
+        if (month == null) {
+          if (/следующ/i.test(low)) {
+            nextMonth = true;
+            const n = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            month = n.getMonth() + 1; year = n.getFullYear();
+          } else {
+            month = now.getMonth() + 1;
+          }
+        }
+        // если месяц уже прошёл в этом году и явно назван — ок; год текущий
+        const skipWeekends = /(сб|суббот|вс\b|воскрес|выходн|без\s*выход)/i.test(low);
+        const msg = aiDoSetSchedule(m[1] + '/' + m[2], month, year, 'work', {
+          skipWeekends: skipWeekends,
+          nextMonth: nextMonth
+        });
+        return { reply: msg, actions: true };
+      }
+      // отметь в календаре 15.10, 16.10
+      m = low.match(/(?:отметь|поставь|добавь)\s+(?:в\s+календар\w+\s+)?((?:\d{1,2}[./\-]\d{1,2}(?:[./\-]\d{2,4})?[,\s]*)+)/i);
+      if (m && /календар|мои смены/i.test(low)) {
+        const dates = m[1].match(/\d{1,2}[./\-]\d{1,2}(?:[./\-]\d{2,4})?/g) || [];
+        if (dates.length) return { reply: aiDoCalendar(dates, true), actions: true };
+      }
+      return null;
+    }
     async function sendAiMessage() {
       if (aiBusy) return;
       const input = document.getElementById('aiInput');
       const text = (input && input.value || '').trim();
       if (!text) return;
-
-      const key = getGroqKey();
-      if (!key) {
-        const keyCard = document.getElementById('aiKeyCard');
-        if (keyCard) keyCard.style.display = 'block';
-        showToast('Нужен ключ Groq API');
-        return;
-      }
 
       aiMessages.push({ role: 'user', content: text });
       if (input) input.value = '';
@@ -6934,12 +7250,38 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
       if (sendBtn) sendBtn.disabled = true;
       renderAiMessages();
 
+      // быстрые локальные команды без API
+      try {
+        const local = tryLocalAiCommand(text);
+        if (local && local.reply) {
+          aiMessages.push({ role: 'assistant', content: local.reply });
+          try { playAppStoreSound(); } catch (e) {}
+          showToast('Сделано', true);
+          aiBusy = false;
+          if (sendBtn) sendBtn.disabled = false;
+          renderAiMessages();
+          return;
+        }
+      } catch (e) {}
+
+      const key = getGroqKey();
+      if (!key) {
+        const keyCard = document.getElementById('aiKeyCard');
+        if (keyCard) keyCard.style.display = 'block';
+        // убрать неотправлённое? уже в истории — ок
+        aiMessages.push({ role: 'error', content: 'Нужен ключ Groq API — сохрани в настройках' });
+        showToast('Нужен ключ Groq API');
+        aiBusy = false;
+        if (sendBtn) sendBtn.disabled = false;
+        renderAiMessages();
+        return;
+      }
+
       const systemPrompt = buildAiSystemPrompt();
 
       const apiMessages = [
         { role: 'system', content: systemPrompt }
       ];
-      // не тащим в API старые error-сообщения
       aiMessages.filter(function(m){ return m.role === 'user' || m.role === 'assistant'; }).slice(-8).forEach(function(m) {
         apiMessages.push({ role: m.role, content: m.content });
       });
@@ -6957,14 +7299,13 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
             body: JSON.stringify({
               model: model,
               messages: apiMessages,
-              temperature: 0.35,
-              max_tokens: 900
+              temperature: 0.2,
+              max_tokens: 1100
             })
           });
-          const data = await res.json().catch(() => ({}));
+          const data = await res.json().catch(function() { return {}; });
           if (!res.ok) {
             lastErr = (data && data.error && data.error.message) ? data.error.message : ('Ошибка ' + res.status);
-            // если модель недоступна — пробуем следующую
             if (/model|access|does not exist/i.test(lastErr)) continue;
             throw new Error(lastErr);
           }
@@ -6975,7 +7316,18 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
           break;
         }
         if (reply == null) throw new Error(lastErr || 'Нет доступных моделей');
-        aiMessages.push({ role: 'assistant', content: reply });
+
+        const parsed = extractAiActions(reply);
+        let finalText = parsed.text || '';
+        if (parsed.actions && parsed.actions.length) {
+          const results = executeAiActions(parsed.actions);
+          if (results.length) {
+            finalText = (finalText ? finalText + '\n\n' : '') + results.join('\n');
+            showToast('Сделано', true);
+          }
+        }
+        if (!finalText) finalText = 'Готово';
+        aiMessages.push({ role: 'assistant', content: finalText });
         try {
           const sub = document.querySelector('#screenAI .header-title p');
           if (sub) sub.textContent = 'Groq · ' + GROQ_MODEL;
@@ -9584,8 +9936,10 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
     }
-    const APP_VERSION = '2.6.4';
+    const APP_VERSION = '2.6.6';
     const CHANGELOG = [
+      { v: '2.6.6', d: '22.10.2026', t: 'График учитывает месяц и выходные (сб/вс).' },
+      { v: '2.6.5', d: '22.10.2026', t: 'ИИ умеет добавлять смены, ставить график 2/2 и менять календарь по команде.' },
       { v: '2.6.4', d: '22.10.2026', t: 'Жидкое стекло всегда включено. «Мои смены» в таббаре. Настройки обновлены, режим разработчика убран из меню.' },
       { v: '2.6.3', d: '22.10.2026', t: 'Удалены рулетка, монеты и магазин наград.' },
       { v: '2.6.2', d: '22.10.2026', t: 'Убрана вкладка «Ещё». Плавнее пузырь вкладок. Вертикальный свайп больше не переключает на «Заказ».' },
