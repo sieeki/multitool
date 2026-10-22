@@ -2632,6 +2632,196 @@
       0%, 100% { transform: rotate(-8deg) scale(0.94); opacity: 0.75; }
       50% { transform: rotate(8deg) scale(1.12); opacity: 1; }
     }
+
+/* ===== UI v3: вкладки, плитки, FAB, создатель ===== */
+body.has-tabs{padding-bottom:150px}
+.tabbar{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(440px,100%);z-index:150;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(22,22,26,.82);-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);border-top:.5px solid rgba(255,255,255,.12);grid-template-columns:repeat(5,1fr);gap:2px}
+body.has-tabs .tabbar{display:grid}
+.tab{border:none;background:none;color:var(--text-sec);display:flex;flex-direction:column;align-items:center;gap:3px;font:600 10px inherit;font-family:inherit;padding:6px 0;border-radius:12px;cursor:pointer}
+.tab svg{width:24px;height:24px;fill:currentColor}
+.tab.on{color:var(--accent-blue)}
+.tab:active{transform:scale(.92)}
+.fab-plus{display:none;position:fixed;right:16px;bottom:88px;width:52px;height:52px;border-radius:50%;border:none;background:var(--accent-blue);color:#fff;font-size:30px;line-height:1;z-index:140;box-shadow:0 8px 22px rgba(0,0,0,.4);cursor:pointer}
+body.has-tabs .fab-plus{display:block}
+.fab-plus:active{transform:scale(.92)}
+body.has-tabs .online-bar{bottom:84px}
+body.has-tabs .reload-fab{bottom:84px}
+body.has-tabs .add-home-fab{bottom:132px}
+body.has-tabs .toast{bottom:140px}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.qtile{background:var(--card-bg);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:3px;font-weight:700;font-size:16px;cursor:pointer}
+.qtile small{color:var(--text-sec);font-weight:500;font-size:12px}
+.qtile:active{transform:scale(.97)}
+.qtile.a{border-color:rgba(10,132,255,.4)}.qtile.b{border-color:rgba(255,159,10,.4)}.qtile.c{border-color:rgba(48,209,88,.4)}.qtile.d{border-color:rgba(191,90,242,.4)}
+.header-actions .icon-btn{width:42px;height:42px}
+.crdash{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.crdash .stat-box{cursor:pointer}
+#screenCreator>.cr-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(440px,100%);margin:0;padding:8px 8px calc(8px + env(safe-area-inset-bottom));grid-template-columns:repeat(6,1fr);gap:4px;background:rgba(18,18,22,.86);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-top:.5px solid rgba(255,255,255,.12);z-index:40}
+#screenCreator>.cr-nav .cr-nav-item{padding:8px 2px 6px;font-size:9px}
+body:has(#screenCreator.active) .online-bar,body:has(#screenCreator.active) .reload-fab,body:has(#screenCreator.active) .add-home-fab{display:none}
+.kfbar{margin-bottom:10px}
+.kfbar input{width:100%;background:var(--card-inner);border:none;border-radius:12px;padding:11px 14px;color:#fff;font-size:15px;outline:none;font-family:inherit;margin-bottom:8px}
+.kf-chip{border:none;border-radius:999px;padding:6px 12px;margin:0 6px 6px 0;font-size:12px;font-weight:650;background:var(--card-inner);color:var(--text-sec);cursor:pointer}
+.kf-chip.on{background:var(--accent-blue);color:#fff}
+.tpl-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+body.liquid-glass .qtile,body.liquid-glass .tabbar,body.liquid-glass #screenCreator>.cr-nav{background:rgba(255,255,255,.06)!important;-webkit-backdrop-filter:blur(28px) saturate(170%);backdrop-filter:blur(28px) saturate(170%);border:.5px solid rgba(255,255,255,.14)!important;box-shadow:inset 1px 1px 0 rgba(255,255,255,.2)}
+body.liquid-glass .fab-plus{background:color-mix(in srgb,var(--accent-blue) 55%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:.5px solid rgba(255,255,255,.3)}
+/* ===== плавающая капсула-таббар (liquid glass) ===== */
+.tabbar{bottom:calc(10px + env(safe-area-inset-bottom));width:min(400px,calc(100% - 24px));padding:6px;border-radius:999px;border:.5px solid rgba(255,255,255,.2);background:rgba(44,44,50,.36);-webkit-backdrop-filter:blur(26px) saturate(200%);backdrop-filter:blur(26px) saturate(200%);box-shadow:inset 1px 1px 0 rgba(255,255,255,.32),inset -1px -1px 0 rgba(255,255,255,.08),0 16px 40px rgba(0,0,0,.45);touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.tab{position:relative;z-index:1;padding:7px 0 6px;transition:color .25s}
+.tab-bubble{position:absolute;top:6px;bottom:6px;left:0;width:0;border-radius:999px;z-index:0;pointer-events:none;transform:translateX(var(--bx,0px)) scale(var(--bs,1));transition:transform .5s cubic-bezier(.3,1.45,.5,1),width .4s ease;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(4px) saturate(220%) brightness(1.2);backdrop-filter:blur(4px) saturate(220%) brightness(1.2);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.4),inset 2px 3px 7px rgba(255,255,255,.22),inset -2px -3px 9px rgba(120,170,255,.16),0 6px 18px rgba(0,0,0,.3)}
+.tabbar.drag .tab-bubble{transition:width .2s ease,transform .18s ease-out;background:rgba(255,255,255,.2)}
+body.has-tabs .fab-plus{bottom:100px}
+body.has-tabs .online-bar,body.has-tabs .reload-fab{bottom:94px}
+body.has-tabs .add-home-fab{bottom:142px}
+body.has-tabs .toast{bottom:152px}
+body.liquid-glass .tabbar{border-radius:999px}
+.tab-bubble{transition:width .3s ease!important;will-change:transform}
+.tabbar.drag .tab-bubble{transition:width .3s ease!important}
+/* ===== админка v3 ===== */
+.adm-hero{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adm-stat{border-radius:18px;padding:14px;background:linear-gradient(145deg,rgba(255,159,10,.16),rgba(255,159,10,.03));border:1px solid rgba(255,159,10,.2);cursor:pointer}
+.adm-stat:active{transform:scale(.97)}
+.adm-stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--text-sec);font-weight:700}
+.adm-stat .n{font-size:28px;font-weight:800;margin-top:4px;letter-spacing:-.5px}
+.adm-sec{font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--text-sec);margin:22px 4px 10px}
+.adm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adm-tile{position:relative;background:var(--card-bg);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px;min-height:118px;cursor:pointer;transition:transform .15s}
+.adm-tile:active{transform:scale(.96)}
+.adm-ic{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center}
+.adm-tile h3{font-size:16px;font-weight:700}
+.adm-tile p{font-size:12px;color:var(--text-sec);margin-top:2px}
+body.liquid-glass .adm-tile,body.liquid-glass .adm-stat{background:rgba(255,255,255,.055)!important;-webkit-backdrop-filter:blur(28px) saturate(170%);backdrop-filter:blur(28px) saturate(170%);border:.5px solid rgba(255,255,255,.14)!important;box-shadow:inset 1px 1px 0 rgba(255,255,255,.2)}
+/* ===== сообщения / админы ===== */
+.msg-row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer}
+.msg-row:last-child{border-bottom:none}
+.msg-ck{width:24px;height:24px;border-radius:8px;border:2px solid var(--text-sec);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.msg-row.on .msg-ck{background:var(--accent-blue);border-color:var(--accent-blue)}
+.msg-row.on .msg-ck::after{content:"✓";color:#fff;font-weight:800;font-size:14px}
+.msg-info{flex:1;min-width:0}
+.msg-info b{display:block;font-size:15px}
+.msg-info small{color:var(--text-sec);font-family:"SF Mono",Menlo,monospace;font-size:12px}
+.msg-chat{border:none;border-radius:12px;padding:8px 12px;font-size:13px;font-weight:650;background:rgba(10,132,255,.16);color:#7ab8ff;display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+/* ===== ЖИДКОЕ СТЕКЛО v2 (мягкое, как iOS) ===== */
+body.liquid-glass::before {
+  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(60% 40% at 8% 0%, color-mix(in srgb, var(--accent-blue) 26%, transparent), transparent 70%),
+    radial-gradient(55% 40% at 100% 35%, color-mix(in srgb, var(--accent-purple) 20%, transparent), transparent 70%),
+    radial-gradient(60% 40% at 20% 100%, color-mix(in srgb, var(--accent-green) 14%, transparent), transparent 70%);
+}
+body.liquid-glass .screen,
+body.liquid-glass #screenGate.screen.active { background: transparent; }
+
+/* поверхности: почти прозрачные, тонкая кромка, блик только по верхнему левому краю */
+body.liquid-glass .card,
+body.liquid-glass #screenCreator .cr-body .card,
+body.liquid-glass .menu-item,
+body.liquid-glass .supply-card,
+body.liquid-glass .control-card,
+body.liquid-glass .location-card,
+body.liquid-glass .key-item,
+body.liquid-glass .online-bar,
+body.liquid-glass .reload-fab,
+body.liquid-glass .add-home-fab,
+body.liquid-glass .icon-btn,
+body.liquid-glass #globalDropdown,
+body.liquid-glass .toast {
+  background: rgba(255,255,255,.055) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+  border: 0.5px solid rgba(255,255,255,.14) !important;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,.22),
+    inset -1px -1px 0 rgba(255,255,255,.04),
+    0 10px 30px rgba(0,0,0,.18) !important;
+}
+/* окна — чуть плотнее, чтобы текст читался */
+body.liquid-glass .modal,
+body.liquid-glass .confirm-box,
+body.liquid-glass .roulette-box,
+body.liquid-glass .shop-box,
+body.liquid-glass .chat-sheet,
+body.liquid-glass .notice-sheet:not(.important) {
+  background: rgba(28,28,34,.55) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(40px) saturate(180%);
+  border: 0.5px solid rgba(255,255,255,.16) !important;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,.2), 0 24px 60px rgba(0,0,0,.4) !important;
+}
+body.liquid-glass #screenCreator .cr-body .card::before { display:none; }
+body.liquid-glass .cr-top {
+  background: rgba(20,20,24,.3);
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+  backdrop-filter: blur(30px) saturate(170%);
+  border-bottom: 0.5px solid rgba(255,255,255,.12);
+  box-shadow: none;
+}
+
+/* внутренние плашки — просто лёгкая подложка, без рамок и бликов */
+body.liquid-glass .input-group,
+body.liquid-glass #screenCreator .input-group,
+body.liquid-glass .option-btn,
+body.liquid-glass .cash-btn,
+body.liquid-glass .stat-box,
+body.liquid-glass .control-stat,
+body.liquid-glass .shop-item,
+body.liquid-glass .theme-chip,
+body.liquid-glass .cal-day:not(.empty),
+body.liquid-glass .ord-cat,
+body.liquid-glass .shop-tab,
+body.liquid-glass .employee-vk-row,
+body.liquid-glass .change-display,
+body.liquid-glass .report-box {
+  background: rgba(255,255,255,.06) !important;
+  border: 0.5px solid rgba(255,255,255,.08) !important;
+  box-shadow: none !important;
+}
+body.liquid-glass .cal-day.active-shift,
+body.liquid-glass .cal-day.green { background: rgba(48,209,88,.26) !important; }
+body.liquid-glass .cal-day.red { background: rgba(255,69,58,.26) !important; }
+body.liquid-glass .option-btn.selected,
+body.liquid-glass .ord-cat.on,
+body.liquid-glass .shop-tab.on,
+body.liquid-glass .theme-chip.on {
+  background: color-mix(in srgb, var(--accent-blue) 30%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent-blue) 60%, transparent) !important;
+}
+
+/* кнопки: тонированное стекло, без глянцевой полосы */
+body.liquid-glass .btn {
+  border: 0.5px solid rgba(255,255,255,.18);
+  border-radius: 18px;
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,.28), inset -1px -1px 0 rgba(255,255,255,.05), 0 4px 14px rgba(0,0,0,.15);
+  font-weight: 600;
+}
+body.liquid-glass .btn::after { display:none; }
+body.liquid-glass .btn-blue   { background: color-mix(in srgb, var(--accent-blue) 38%, transparent); color:#fff; }
+body.liquid-glass .btn-orange { background: color-mix(in srgb, var(--accent-orange) 38%, transparent); color:#fff; }
+body.liquid-glass .btn-green  { background: color-mix(in srgb, var(--accent-green) 28%, transparent); color:#fff; }
+body.liquid-glass .btn-purple { background: color-mix(in srgb, var(--accent-purple) 32%, transparent); color:#fff; }
+body.liquid-glass .btn-red,
+body.liquid-glass .btn-red-soft { background: color-mix(in srgb, var(--accent-red) 24%, transparent); color:#ff6961; }
+body.liquid-glass .btn-shimmer,
+body.liquid-glass .btn-dev { background: rgba(255,255,255,.08); color:#fff; animation: none; }
+body.liquid-glass .btn-shimmer::before { display:none; }
+body.liquid-glass .btn:active,
+body.liquid-glass .icon-btn:active,
+body.liquid-glass .menu-item:active { transform: scale(.975); opacity:.9; }
+body.liquid-glass .key-act,
+body.liquid-glass .disable-dur,
+body.liquid-glass .notice-pos-chip,
+body.liquid-glass .ai-quick-btn,
+body.liquid-glass .control-link-btn {
+  background: rgba(255,255,255,.07) !important;
+  border: 0.5px solid rgba(255,255,255,.12) !important;
+  box-shadow: none !important;
+}
+body.liquid-glass .chat-bubble.them { background: rgba(255,255,255,.1); }
+body.liquid-glass .chat-bubble.me { background: color-mix(in srgb, var(--accent-blue) 55%, transparent); }
+body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
   </style>
 </head>
 <body>
@@ -2684,7 +2874,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
         <div>
           <div style="font-size:20px;font-weight:800;">Что нового</div>
-          <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">Сейчас v<span id="appVerLabel2">2.5.6</span></div>
+          <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">Сейчас v<span id="appVerLabel2">3.0.0</span></div>
         </div>
         <div class="icon-btn" onclick="closeChangelog()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>
       </div>
@@ -2711,6 +2901,13 @@
       <div class="modal-title">Настройки</div>
       <div style="font-size:13px;color:var(--text-sec);margin-bottom:6px;">Тема оформления</div>
       <div class="theme-grid" id="themeGrid"></div>
+      <div onclick="toggleLiquidGlass()" style="margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:var(--card-inner);display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;">
+        <div>
+          <div style="font-size:14px;font-weight:600;">Жидкое стекло</div>
+          <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">Стеклянные кнопки, карточки и окна</div>
+        </div>
+        <button type="button" class="dev-sw" id="swLiquid"></button>
+      </div>
       <div id="notifSettingsRow" style="margin:12px 0 4px;padding:12px 14px;border-radius:14px;background:var(--card-inner);">
         <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Уведомления</div>
         <div id="notifSettingsStatus" style="font-size:12px;color:var(--text-sec);line-height:1.4;margin-bottom:10px;">Проверка…</div>
@@ -2818,7 +3015,7 @@
           <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h10v2H7V9zm0-3h10v2H7V6zm0 6h7v2H7v-2z"/></svg>
           <span class="chat-badge" id="chatUnreadBadge">0</span>
         </div>
-        <div class="icon-btn admin-btn" onclick="openAdminAuthModal()" title="Админ-панель">
+        <div class="icon-btn admin-btn" id="adminEntryBtn" style="display:none;" onclick="openAdminEntry()" title="Админ-панель">
           <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
         </div>
         <div style="position: relative;">
@@ -2847,6 +3044,12 @@
       </div>
     </div>
 
+    <div class="qgrid">
+      <div class="qtile a" onclick="sheetGo(null,'screenShifts','shiftTotal')">Смена<small>Добавить выручку</small></div>
+      <div class="qtile c" onclick="openScreen('screenChange')">Сдача<small>Калькулятор</small></div>
+      <div class="qtile b" onclick="sheetGo(null,'screenOrder','ordInput')">Заказать<small>Что кончилось</small></div>
+      <div class="qtile d" onclick="sheetGo(null,'screenNotes','noteInput')">Заметка<small>Напоминание</small></div>
+    </div>
     <div class="supply-card" id="supplyCard">
       <div class="supply-head">С последней поставки</div>
       <div class="supply-row">
@@ -3326,96 +3529,51 @@
       </div>
     </div>
 
-    <div class="menu-item" onclick="openScreen('screenAdminOrders')" style="border-color: rgba(255, 159, 10, 0.35);">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-orange">
-          <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0020 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Заказы точек</h3>
-          <p>Что просят привезти</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    <div class="adm-hero" id="admHero"></div>
+    <div class="adm-sec">Операции</div>
+    <div class="adm-grid">
+      <div class="adm-tile" onclick="openScreen('screenAdminOrders')"><div class="adm-ic icon-orange"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0020 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg></div><span class="menu-item-badge" id="admOrdBadge" style="position:absolute;top:12px;right:12px;margin:0;">0</span><div><h3>Заказы</h3><p>Что просят привезти</p></div></div>
+      <div class="adm-tile" onclick="openScreen('screenControl')"><div class="adm-ic icon-blue"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg></div><div><h3>Контроль</h3><p>Кто сегодня на смене</p></div></div>
+      <div class="adm-tile" onclick="openScreen('screenLocations')"><div class="adm-ic icon-orange"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div><div><h3>Графики</h3><p>Адреса и время</p></div></div>
+      <div class="adm-tile" onclick="openScreen('screenEmployees')"><div class="adm-ic icon-purple"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div><div><h3>Сотрудники</h3><p>Имена и VK</p></div></div>
+      <div class="adm-tile" onclick="openScreen('screenSupply')"><div class="adm-ic icon-green"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 2H4c-1 0-2 1-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4l16-.02V7z"/></svg></div><div><h3>Поставки</h3><p>Даты последних</p></div></div>
     </div>
-
-    <div class="menu-item" onclick="openScreen('screenControl')" style="border-color: rgba(10, 132, 255, 0.35);">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-blue">
-          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Контроль точек</h3>
-          <p>Кто сегодня на смене</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    <div class="adm-sec">Ключи и сообщения</div>
+    <div class="adm-grid">
+      <div class="adm-tile" onclick="openScreen('screenAdminKeys')"><div class="adm-ic icon-green"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg></div><div><h3>Создание ключей</h3><p>Новые и все ключи</p></div></div>
+      <div class="adm-tile" onclick="openScreen('screenAdminMsgs')"><div class="adm-ic icon-blue"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM7 9h10v2H7V9zm0-3h10v2H7V6zm0 6h7v2H7v-2z"/></svg></div><span class="menu-item-badge" id="adminKeysChatBadge" style="position:absolute;top:12px;right:12px;margin:0;">0</span><div><h3>Сообщения</h3><p>Уведомление или чат</p></div></div>
     </div>
+  </div>
 
-    <div class="menu-item" onclick="openScreen('screenLocations')" style="border-color: rgba(255, 159, 10, 0.3);">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-orange">
-          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Графики точек</h3>
-          <p>Адреса и время работы</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+  <div id="screenAdminMsgs" class="screen">
+    <div class="back-btn" onclick="openScreen('screenAdmin')">
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Админ-панель
     </div>
-
-    <div class="menu-item" onclick="openScreen('screenEmployees')" style="border-color: rgba(191, 90, 242, 0.3);">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-purple">
-          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Сотрудники</h3>
-          <p>Список имён для графика</p>
-        </div>
+    <div class="header"><div class="header-title"><h1>Сообщения</h1><p>Уведомление или чат по ключу</p></div></div>
+    <div class="card">
+      <div class="card-title">Кому</div>
+      <div style="margin-bottom:10px;">
+        <button type="button" class="kf-chip" onclick="msgSelectAll(true)">Выбрать всех</button>
+        <button type="button" class="kf-chip" onclick="msgSelectAll(false)">Сбросить</button>
+        <button type="button" class="kf-chip" onclick="renderMsgScreen()">Обновить</button>
       </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+      <div id="msgKeys"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
     </div>
-
-    <div class="menu-item" onclick="openScreen('screenAdminKeys')" style="border-color: rgba(48, 209, 88, 0.35);">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-green">
-          <svg viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Ключи доступа</h3>
-          <p>Создать ключ сотруднику</p>
-        </div>
-        <span class="menu-item-badge" id="adminKeysChatBadge">0</span>
+    <div class="card">
+      <div class="card-title">Уведомление</div>
+      <div class="tpl-row">
+        <button type="button" class="kf-chip" onclick="applyMsgTpl(0)">Закрой неделю</button>
+        <button type="button" class="kf-chip" onclick="applyMsgTpl(1)">Привезли товар</button>
+        <button type="button" class="kf-chip" onclick="applyMsgTpl(2)">Смена</button>
+        <button type="button" class="kf-chip" onclick="applyMsgTpl(3)">Внеси смену</button>
       </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
-    </div>
-
-    <div class="menu-item" onclick="registerAdminFace()" style="border-color: rgba(10, 132, 255, 0.35);">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-blue">
-          <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.93-1.38z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Привязать Face ID</h3>
-          <p>Вход в админку лицом</p>
-        </div>
+      <div class="input-group"><label>Заголовок</label><input type="text" id="msgTitle" placeholder="Важно" maxlength="40"></div>
+      <div class="input-group"><label>Текст</label><textarea id="msgBody" placeholder="Текст… можно **жирным**" maxlength="500" style="min-height:80px;"></textarea></div>
+      <div class="notice-important-toggle" id="msgImpRow" onclick="toggleMsgImp()">
+        <span class="notice-important-check"></span>
+        <span><strong style="color:#ff6961;">Важно</strong><span style="display:block;font-size:11px;color:var(--text-sec);margin-top:2px;">Красный мигающий увед</span></span>
       </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
-    </div>
-
-    <div class="menu-item" onclick="openScreen('screenAdminPin')" style="border-color: rgba(142, 142, 147, 0.35);">
-      <div class="menu-item-left">
-        <div class="menu-icon" style="background:rgba(142,142,147,0.15);color:#8e8e93;">
-          <svg viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Сменить PIN</h3>
-          <p>Код входа в админку</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+      <button class="btn btn-orange" id="msgSendBtn" onclick="sendMsgToSelected()">Отправить</button>
     </div>
   </div>
 
@@ -3491,7 +3649,8 @@
     </div>
     <div class="card">
       <div class="card-title">Все ключи</div>
-      <div id="adminAccessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
+      <div class="kfbar"><input type="text" placeholder="Поиск по имени или ключу" oninput="setKeyFilter('q',this.value)"><div><button type="button" class="kf-chip on" data-s="all" onclick="setKeyFilter('s','all')">Все</button><button type="button" class="kf-chip" data-s="active" onclick="setKeyFilter('s','active')">Активные</button><button type="button" class="kf-chip" data-s="exp" onclick="setKeyFilter('s','exp')">Истекли</button><button type="button" class="kf-chip" data-s="off" onclick="setKeyFilter('s','off')">Выкл</button></div></div>
+          <div id="adminAccessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
       <button class="btn btn-blue" onclick="void refreshAccessKeysList()" style="margin-top:10px;">Обновить список</button>
     </div>
   </div>
@@ -3570,6 +3729,8 @@
 
     <div class="cr-body">
       <div class="cr-panel on" id="crPanelOverview">
+      <div class="crdash" id="crDash"></div>
+      <button class="btn btn-orange" onclick="openScreen('screenAdmin')" style="margin:0 0 14px;">Открыть админку</button>
         <div class="card">
           <div class="card-title">PIN админки</div>
           <div style="text-align:center; padding: 12px;">
@@ -3628,7 +3789,18 @@
 
       <div class="cr-panel" id="crPanelKeys">
         <div class="card">
+          <div class="card-title">Админы</div>
+          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">У ключа-админа на главной появляется вход в админку.</p>
+          <select id="adminAssignSel" class="employee-select" style="margin-bottom:10px;"></select>
+          <div class="cr-notice-actions">
+            <button class="btn btn-green" onclick="assignAdmin(true)">Назначить</button>
+            <button class="btn btn-red-soft" onclick="assignAdmin(false)">Снять</button>
+          </div>
+          <div id="adminAssignedList" style="margin-top:12px;"></div>
+        </div>
+        <div class="card">
           <div class="card-title">Все ключи</div>
+          <div class="kfbar"><input type="text" placeholder="Поиск по имени или ключу" oninput="setKeyFilter('q',this.value)"><div><button type="button" class="kf-chip on" data-s="all" onclick="setKeyFilter('s','all')">Все</button><button type="button" class="kf-chip" data-s="active" onclick="setKeyFilter('s','active')">Активные</button><button type="button" class="kf-chip" data-s="exp" onclick="setKeyFilter('s','exp')">Истекли</button><button type="button" class="kf-chip" data-s="off" onclick="setKeyFilter('s','off')">Выкл</button></div></div>
           <div id="accessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
           <button class="btn btn-blue" onclick="void refreshAccessKeysList()" style="margin-top:10px;">Обновить список</button>
         </div>
@@ -3654,6 +3826,7 @@
               <span style="display:block;font-size:11px;color:var(--text-sec);font-weight:500;margin-top:2px;">Красный мигающий увед · danger</span>
             </span>
           </label>
+          <div class="tpl-row"><button type="button" class="kf-chip" onclick="applyTpl(0)">Закрой неделю</button><button type="button" class="kf-chip" onclick="applyTpl(1)">Привезли товар</button><button type="button" class="kf-chip" onclick="applyTpl(2)">Напомин. о смене</button><button type="button" class="kf-chip" onclick="applyTpl(3)">Внеси смену</button></div>
           <div class="input-group"><label>Заголовок</label><input type="text" id="noticeTitle" placeholder="Важно" maxlength="40"></div>
           <div class="input-group"><label>Текст</label><textarea id="noticeBody" placeholder="Текст…&#10;Можно **жирным**" maxlength="500"></textarea></div>
           <div class="input-group"><label>Ссылка (необязательно)</label><input type="url" id="noticeLink" placeholder="https://…"></div>
@@ -4134,6 +4307,34 @@
     </div>
   </div>
 
+  <div class="tabbar" id="tabBar">
+    <div class="tab-bubble" id="tabBubble"></div>
+    <button type="button" class="tab on" data-tab="home" onclick="tabGo('home')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Главная</button>
+    <button type="button" class="tab" data-tab="week" onclick="tabGo('week')"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg> Недельная</button>
+    <button type="button" class="tab" data-tab="order" onclick="tabGo('order')"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42l.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0020 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg> Заказ</button>
+    <button type="button" class="tab" data-tab="ai" onclick="tabGo('ai')"><svg viewBox="0 0 24 24"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/></svg> AI</button>
+    <button type="button" class="tab" data-tab="more" onclick="tabGo('more')"><svg viewBox="0 0 24 24"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg> Ещё</button>
+  </div>
+  <button type="button" class="fab-plus" id="fabPlus" onclick="openQuickAdd()" aria-label="Добавить">+</button>
+  <div class="modal-overlay" id="moreModal" onclick="if(event.target===this) closeSheet('moreModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-title">Ещё</div>
+      <div class="option-btn" onclick="sheetGo('moreModal','screenNotes')"><span>Заметки смены</span></div>
+      <div class="option-btn" onclick="sheetGo('moreModal','screenChange')"><span>Расчет сдачи</span></div>
+      <div class="option-btn" onclick="sheetGo('moreModal','screenMyShifts')"><span>Мои смены</span></div>
+      <div class="option-btn" onclick="sheetGo('moreModal','screenStats')"><span>Статистика и архив</span></div>
+      <div class="option-btn" onclick="sheetGo('moreModal','screenSalary')"><span>Зарплата</span></div>
+      <div class="option-btn" onclick="sheetGo('moreModal','screenPayQr')"><span>Мой QR</span></div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="quickAddModal" onclick="if(event.target===this) closeSheet('quickAddModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-title">Быстро добавить</div>
+      <div class="option-btn" onclick="sheetGo('quickAddModal','screenShifts','shiftTotal')"><span>Смену</span></div>
+      <div class="option-btn" onclick="sheetGo('quickAddModal','screenNotes','noteInput')"><span>Заметку</span></div>
+      <div class="option-btn" onclick="sheetGo('quickAddModal','screenOrder','ordInput')"><span>Позицию в заказ</span></div>
+    </div>
+  </div>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
     (function initRealOnlineCounter() {
@@ -4353,6 +4554,7 @@
       if (target) target.classList.add('active');
       document.body.classList.toggle('on-gate', screenId === 'screenGate');
       screenStack = [screenId];
+      try { updateTabBar(screenId); } catch (e) {}
     }
     function openScreen(screenId) {
       try { devLog('screen ' + screenId); } catch (e) {}
@@ -4395,6 +4597,9 @@
     }
 
     function afterScreenOpen(screenId) {
+      if (screenId === 'screenAdminMsgs') { try { renderMsgScreen(); } catch (e) {} }
+      if (screenId === 'screenAdmin') { try { renderAdminHome(); pullOrderList().then(renderAdminHome); pullPointOpens().then(renderAdminHome); pullAdminSharedData().then(renderAdminHome); } catch (e) {} }
+      try { updateTabBar(screenId); } catch (e) {}
       if (screenId === 'screenStats') renderStats();
       if (screenId === 'screenMyShifts') renderCalendar();
       if (screenId === 'screenLocations') {
@@ -6792,7 +6997,8 @@
       'ios_pay_qr',
       'ios_theme',
       'ios_shift_streak',
-      'ios_my_role'
+      'ios_my_role',
+      'ios_liquid'
     ];
 
     const SUPABASE_SQL = `-- Выполни в Supabase → SQL Editor\ncreate table if not exists access_keys (\n  code text primary key,\n  name text not null,\n  expires_at timestamptz,\n  active boolean default true,\n  created_at timestamptz default now()\n);\ncreate table if not exists key_data (\n  code text primary key references access_keys(code) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz default now()\n);\nalter table access_keys enable row level security;\nalter table key_data enable row level security;\ncreate policy "anon_all_keys" on access_keys for all using (true) with check (true);\ncreate policy "anon_all_data" on key_data for all using (true) with check (true);
@@ -6972,6 +7178,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       catch (e) { return null; }
     }
     function setSession(s) {
+      setTimeout(function() { try { applyAdminEntry(); pullAdminKeys(); } catch (e) {} }, 0);
       if (s) localStorage.setItem('ios_access_session', JSON.stringify(s));
       else localStorage.removeItem('ios_access_session');
     }
@@ -7016,6 +7223,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       try { persistStreakToCloudLocal(); } catch (e) {}
     }
     function refreshAfterCloud() {
+      try { applyLiquid(); } catch (e) {}
       try { applyTheme(getTheme()); } catch (e) {}
       try { startSeasonMode(localStorage.getItem('ios_season_mode') || 'off'); } catch (e) {}
       try { render(); } catch (e) {}
@@ -7242,6 +7450,306 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     ];
 
     function getTheme() { return localStorage.getItem('ios_theme') || 'classic'; }
+        // ===== UI v3 =====
+    const TAB_MAP = { screenMenu:'home', screenShifts:'week', screenOrder:'order', screenAI:'ai', screenMyShifts:'more', screenNotes:'more', screenChange:'more', screenPayQr:'more', screenStats:'more', screenArchiveWeek:'more', screenSalary:'more' };
+    function updateTabBar(id) {
+      const t = TAB_MAP[id];
+      document.body.classList.toggle('has-tabs', !!t);
+      document.querySelectorAll('#tabBar .tab').forEach(function(b) { b.classList.toggle('on', b.dataset.tab === t); });
+      positionBubble();
+    }
+    function tabGo(t) {
+      if (t === 'more') return document.getElementById('moreModal').classList.add('active');
+      openScreen({ home:'screenMenu', week:'screenShifts', order:'screenOrder', ai:'screenAI' }[t]);
+    }
+    function closeSheet(id) { const m = document.getElementById(id); if (m) m.classList.remove('active'); try { positionBubble(); } catch (e) {} }
+    function openQuickAdd() { document.getElementById('quickAddModal').classList.add('active'); }
+    function sheetGo(sheet, screen, focusId) {
+      if (sheet) closeSheet(sheet);
+      openScreen(screen);
+      if (focusId) setTimeout(function() { const el = document.getElementById(focusId); if (el) el.focus(); }, 400);
+    }
+    async function renderCreatorDash() {
+      const box = document.getElementById('crDash');
+      if (!box) return;
+      let online = '—', active = '—', unread = '—', queue = '—';
+      try {
+        const r = await Promise.all([
+          sbFetch('device_sessions?select=last_seen,revoked').catch(function() { return []; }),
+          sbFetch('access_keys?select=code,active').catch(function() { return []; }),
+          loadNoticeOutbox()
+        ]);
+        const devs = r[0] || [], keys = r[1] || [], ob = r[2] || [];
+        online = devs.filter(function(d) { return !d.revoked && isDeviceOnline(d.last_seen); }).length;
+        active = keys.filter(function(k) { return k.active !== false; }).length;
+        queue = ob.filter(function(it) { return it.status !== 'cancelled' && noticeStatusLabel(it) !== 'просмотрено'; }).length;
+        const u = await Promise.all(keys.map(function(k) { return countUnreadFromUser(String(k.code).toUpperCase()); }));
+        unread = u.reduce(function(a, b) { return a + b; }, 0);
+      } catch (e) {}
+      function tile(l, v, tab, col) {
+        return '<div class="stat-box" onclick="showCreatorTab(\'' + tab + '\')"><div class="card-title" style="margin:0;">' + l + '</div><div class="stat-num" style="color:' + col + ';">' + v + '</div></div>';
+      }
+      box.innerHTML = tile('В сети', online, 'people', 'var(--accent-green)') + tile('Ключей активно', active, 'keys', 'var(--accent-blue)') +
+        tile('Новых сообщений', unread, 'keys', unread > 0 ? 'var(--accent-red)' : 'var(--text)') + tile('Уведов в очереди', queue, 'alerts', 'var(--accent-orange)');
+    }
+    window._kf = { q: '', s: 'all' };
+    function setKeyFilter(k, v) {
+      window._kf[k] = v;
+      if (k === 's') document.querySelectorAll('.kf-chip[data-s]').forEach(function(c) { c.classList.toggle('on', c.dataset.s === v); });
+      refreshAccessKeysList(true);
+    }
+    function keyMatchesFilter(k) {
+      const f = window._kf, q = f.q.trim().toLowerCase();
+      if (q && ((k.name || '') + ' ' + (k.code || '')).toLowerCase().indexOf(q) < 0) return false;
+      const c = keyIsValid(k);
+      if (f.s === 'active') return c.ok;
+      if (f.s === 'off') return k.active === false;
+      if (f.s === 'exp') return !c.ok && k.active !== false;
+      return true;
+    }
+    const NOTICE_TPL = [
+      ['Закрой неделю', 'Не забудь завершить неделю и отправить отчёт.'],
+      ['Привезли товар', 'Поставка приехала. Проверь остатки на точке.'],
+      ['Смена', 'Напоминаю: завтра у тебя смена.'],
+      ['Внеси смену', 'Ты ещё не внёс смену за сегодня.']
+    ];
+    function applyTpl(i) {
+      document.getElementById('noticeTitle').value = NOTICE_TPL[i][0];
+      document.getElementById('noticeBody').value = NOTICE_TPL[i][1];
+    }
+    document.addEventListener('click', function(e) {
+      if (e.target.closest && e.target.closest('.btn, .menu-item, .tab, .qtile, .option-btn, .fab-plus') && navigator.vibrate) navigator.vibrate(8);
+    }, true);
+    (function() {
+      let sx = 0, sy = 0;
+      document.addEventListener('touchstart', function(e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+      document.addEventListener('touchend', function(e) {
+        const t = e.changedTouches[0];
+        if (sx < 28 && t.clientX - sx > 80 && Math.abs(t.clientY - sy) < 60 && screenStack.length > 1) {
+          const prev = screenStack[screenStack.length - 2];
+          if (prev && prev !== 'screenGate') openScreen(prev);
+        }
+      }, { passive: true });
+      const n = document.querySelector('.cr-nav'), sc = document.getElementById('screenCreator');
+      if (n && sc) sc.appendChild(n);
+    })();
+        const PH = { x: 0, v: 0, target: 0, w: 0, px: 0, press: 1, sx: 1, drag: false, raf: 0, last: 0, init: false };
+    function paintBubble() {
+      const bub = document.getElementById('tabBubble');
+      if (!bub) return;
+      const sc = PH.press;
+      bub.style.transform = 'translate3d(' + PH.x.toFixed(2) + 'px,0,0) scale(' + (PH.sx * sc).toFixed(3) + ',' + (sc / PH.sx).toFixed(3) + ')';
+    }
+    function bubbleLoop(now) {
+      const dt = Math.min(0.032, (now - PH.last) / 1000 || 0.016);
+      PH.last = now;
+      const prev = PH.x;
+      if (PH.drag) {
+        PH.x += (PH.px - PH.x) * Math.min(1, dt * 22);
+        PH.v = (PH.x - prev) / dt;
+      } else {
+        const k = 240, c = 13;
+        PH.v += (-k * (PH.x - PH.target) - c * PH.v) * dt;
+        PH.x += PH.v * dt;
+      }
+      const wantPress = PH.drag ? 1.16 : 1;
+      PH.press += (wantPress - PH.press) * Math.min(1, dt * 14);
+      const stretch = 1 + Math.min(0.32, Math.abs(PH.v) / 2600);
+      PH.sx += (stretch - PH.sx) * Math.min(1, dt * 16);
+      paintBubble();
+      const calm = !PH.drag && Math.abs(PH.x - PH.target) < 0.15 && Math.abs(PH.v) < 0.6 && Math.abs(PH.press - 1) < 0.003 && Math.abs(PH.sx - 1) < 0.003;
+      if (calm) { PH.x = PH.target; PH.v = 0; PH.press = 1; PH.sx = 1; paintBubble(); PH.raf = 0; return; }
+      PH.raf = requestAnimationFrame(bubbleLoop);
+    }
+    function kickBubble() {
+      if (PH.raf) return;
+      PH.last = performance.now();
+      PH.raf = requestAnimationFrame(bubbleLoop);
+    }
+    function positionBubble() {
+      const bub = document.getElementById('tabBubble'), t = document.querySelector('#tabBar .tab.on');
+      if (!bub || !t || !t.offsetWidth) return;
+      bub.style.width = t.offsetWidth + 'px';
+      PH.w = t.offsetWidth;
+      PH.target = t.offsetLeft;
+      if (!PH.init) { PH.init = true; PH.x = PH.target; paintBubble(); return; }
+      kickBubble();
+    }
+    window.addEventListener('resize', positionBubble);
+    (function() {
+      const bar = document.getElementById('tabBar');
+      if (!bar) return;
+      let moved = false, sx0 = 0;
+      function tabs() { return Array.prototype.slice.call(bar.querySelectorAll('.tab')); }
+      bar.addEventListener('pointerdown', function(e) {
+        if (!PH.w) return;
+        PH.drag = true; moved = false; sx0 = e.clientX;
+        bar.classList.add('drag');
+        const r = bar.getBoundingClientRect();
+        PH.px = Math.max(0, Math.min(r.width - PH.w, e.clientX - r.left - PH.w / 2));
+        kickBubble();
+      });
+      window.addEventListener('pointermove', function(e) {
+        if (!PH.drag) return;
+        if (Math.abs(e.clientX - sx0) > 8) moved = true;
+        if (!moved) return;
+        const r = bar.getBoundingClientRect();
+        let px = Math.max(0, Math.min(r.width - PH.w, e.clientX - r.left - PH.w / 2));
+        // лёгкое «залипание» возле вкладок
+        let best = null, bd = 1e9;
+        tabs().forEach(function(t) { const d = Math.abs(t.offsetLeft - px); if (d < bd) { bd = d; best = t; } });
+        if (best && bd < PH.w * 0.35) px += (best.offsetLeft - px) * 0.28;
+        PH.px = px;
+        kickBubble();
+      });
+      function end() {
+        if (!PH.drag) return;
+        PH.drag = false;
+        bar.classList.remove('drag');
+        if (!moved) { kickBubble(); return; }
+        const proj = PH.x + PH.v * 0.12;
+        let best = null, bd = 1e9;
+        tabs().forEach(function(t) { const d = Math.abs(t.offsetLeft - proj); if (d < bd) { bd = d; best = t; } });
+        if (best) {
+          PH.target = best.offsetLeft;
+          if (!best.classList.contains('on')) tabGo(best.dataset.tab);
+        }
+        kickBubble();
+      }
+      window.addEventListener('pointerup', end);
+      window.addEventListener('pointercancel', end);
+      bar.addEventListener('click', function(e) { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+    })();
+    function renderAdminHome() {
+      const box = document.getElementById('admHero');
+      if (!box) return;
+      let open = 0, onShift = 0, total = 0;
+      try {
+        const tk = getTodayDateKey();
+        Object.keys(POINTS).forEach(function(k) {
+          total++;
+          if (getPointOpenToday(k)) open++;
+          const st = getPointData(k).days[tk];
+          if (st === 'green' || st === 'red') onShift++;
+        });
+      } catch (e) {}
+      let ord = 0;
+      try { ord = getOrderList().filter(function(i) { return !i.done; }).length; } catch (e) {}
+      const un = window._admUnread || 0;
+      function st(l, n, col, act) { return '<div class="adm-stat" onclick="' + act + '"><div class="l">' + l + '</div><div class="n" style="color:' + col + ';">' + n + '</div></div>'; }
+      box.innerHTML = st('Открыто точек', open + '/' + total, open === total ? 'var(--accent-green)' : 'var(--accent-orange)', "openScreen('screenControl')") +
+        st('На смене сегодня', onShift, 'var(--accent-blue)', "openScreen('screenControl')") +
+        st('Позиций в заказах', ord, 'var(--accent-orange)', "openScreen('screenAdminOrders')") +
+        st('Новых сообщений', un, un > 0 ? 'var(--accent-red)' : 'var(--text)', "openScreen('screenAdminKeys')");
+      const ob = document.getElementById('admOrdBadge');
+      if (ob) { ob.textContent = ord > 99 ? '99+' : String(ord); ob.classList.toggle('on', ord > 0); }
+    }
+    // ===== админы по ключу + сообщения =====
+    function getAdminCodes() { try { return JSON.parse(localStorage.getItem('ios_admin_codes') || '[]'); } catch (e) { return []; } }
+    function isAdminSession() { const x = getSession(); return !!(x && x.code && getAdminCodes().indexOf(String(x.code).toUpperCase()) >= 0); }
+    function applyAdminEntry() { const b = document.getElementById('adminEntryBtn'); if (b) b.style.display = isAdminSession() ? '' : 'none'; }
+    function openAdminEntry() { if (isAdminSession()) openScreen('screenAdmin'); else showToast('Нет доступа'); }
+    async function fetchAdminKeys() {
+      const rows = await sbFetch('app_settings?key=eq.admin_keys&select=value');
+      let v = rows && rows[0] ? rows[0].value : null;
+      if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = []; } }
+      return Array.isArray(v) ? v.map(function(c) { return String(c).toUpperCase(); }) : [];
+    }
+    async function pullAdminKeys() {
+      try { localStorage.setItem('ios_admin_codes', JSON.stringify(await fetchAdminKeys())); } catch (e) {}
+      applyAdminEntry();
+    }
+    async function renderAdminAssign() {
+      const sel = document.getElementById('adminAssignSel'), box = document.getElementById('adminAssignedList');
+      if (!sel) return;
+      let keys = [], admins = [];
+      try { keys = await sbFetch('access_keys?select=code,name&order=created_at.desc') || []; } catch (e) { keys = getLocalKeys(); }
+      try { admins = await fetchAdminKeys(); } catch (e) { admins = getAdminCodes(); }
+      sel.innerHTML = keys.map(function(k) { return '<option value="' + escapeHtml(k.code) + '">' + escapeHtml((k.name || '') + ' · ' + k.code) + (admins.indexOf(String(k.code).toUpperCase()) >= 0 ? ' ★' : '') + '</option>'; }).join('');
+      if (box) {
+        const names = {};
+        keys.forEach(function(k) { names[String(k.code).toUpperCase()] = k.name; });
+        box.innerHTML = admins.length ? admins.map(function(c) { return '<div class="key-item-meta">★ ' + escapeHtml((names[c] || '—') + ' · ' + c) + '</div>'; }).join('') : '<div class="key-item-meta">Админов пока нет</div>';
+      }
+    }
+    async function assignAdmin(on) {
+      const sel = document.getElementById('adminAssignSel');
+      const code = sel && sel.value ? String(sel.value).toUpperCase() : '';
+      if (!code) return showToast('Выбери ключ');
+      try {
+        let list = await fetchAdminKeys();
+        list = list.filter(function(c) { return c !== code; });
+        if (on) list.push(code);
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'admin_keys', value: JSON.stringify(list), updated_at: new Date().toISOString() })
+        });
+        localStorage.setItem('ios_admin_codes', JSON.stringify(list));
+        applyAdminEntry();
+        showToast(on ? 'Ключ теперь админ' : 'Админ снят', true);
+        renderAdminAssign();
+      } catch (e) { showToast(e.message || 'не вышло'); }
+    }
+    window._msgSel = {}; window._msgList = []; window._msgImp = false;
+    async function renderMsgScreen() {
+      const box = document.getElementById('msgKeys');
+      if (!box) return;
+      let list = [];
+      try { list = await sbFetch('access_keys?select=*&order=created_at.desc') || []; } catch (e) { list = getLocalKeys(); }
+      list = list.filter(function(k) { return k.active !== false; });
+      window._msgList = list.map(function(k) { return String(k.code).toUpperCase(); });
+      if (!list.length) { box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Ключей нет. Создай их в «Создание ключей».</div>'; updateMsgSendBtn(); return; }
+      const un = await Promise.all(list.map(function(k) { return countUnreadFromUser(String(k.code).toUpperCase()); }));
+      box.innerHTML = list.map(function(k, i) {
+        const c = String(k.code).toUpperCase().replace(/'/g, '');
+        const nm = String(k.name || '').replace(/['\\]/g, '');
+        return '<div class="msg-row' + (window._msgSel[c] ? ' on' : '') + '" onclick="toggleMsgKey(\'' + c + '\')">' +
+          '<div class="msg-ck"></div><div class="msg-info"><b>' + escapeHtml(k.name || 'Без имени') + '</b><small>' + escapeHtml(c) + '</small></div>' +
+          '<button type="button" class="msg-chat" onclick="event.stopPropagation();openKeyChat(\'' + c + '\',\'' + nm + '\',true)">Чат' + (un[i] ? '<span class="key-chat-badge">' + (un[i] > 9 ? '9+' : un[i]) + '</span>' : '') + '</button></div>';
+      }).join('');
+      updateMsgSendBtn();
+    }
+    function toggleMsgKey(c) { window._msgSel[c] = !window._msgSel[c]; renderMsgScreen(); }
+    function msgSelectAll(on) { window._msgSel = {}; if (on) window._msgList.forEach(function(c) { window._msgSel[c] = true; }); renderMsgScreen(); }
+    function updateMsgSendBtn() {
+      const n = Object.keys(window._msgSel).filter(function(c) { return window._msgSel[c]; }).length;
+      const b = document.getElementById('msgSendBtn');
+      if (b) b.textContent = n ? 'Отправить (' + n + ')' : 'Отправить';
+    }
+    function toggleMsgImp() { window._msgImp = !window._msgImp; const r = document.getElementById('msgImpRow'); if (r) r.classList.toggle('on', window._msgImp); }
+    function applyMsgTpl(i) { document.getElementById('msgTitle').value = NOTICE_TPL[i][0]; document.getElementById('msgBody').value = NOTICE_TPL[i][1]; }
+    async function sendMsgToSelected() {
+      const codes = Object.keys(window._msgSel).filter(function(c) { return window._msgSel[c]; });
+      if (!codes.length) return showToast('Выбери, кому отправить');
+      const title = (document.getElementById('msgTitle').value || '').trim() || 'Сообщение';
+      const body = (document.getElementById('msgBody').value || '').trim();
+      if (!body) return showToast('Напиши текст');
+      const notice = { id: 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title: title.slice(0, 40), body: body.slice(0, 500), link: '', linkText: 'Открыть', image: '', pos: 'center', important: !!window._msgImp, at: new Date().toISOString() };
+      showToast('Отправляю…');
+      let ok = 0;
+      for (let i = 0; i < codes.length; i++) { try { await deliverNoticeToCode(codes[i], notice); ok++; } catch (e) {} }
+      if (!ok) return showToast('Не отправилось');
+      try {
+        await pushNoticeToOutbox({ id: notice.id, title: notice.title, body: notice.body, link: '', image: '', pos: 'center', important: notice.important, all: codes.length === window._msgList.length, targetCodes: codes, seen: {}, status: 'pending', at: notice.at });
+      } catch (e) {}
+      try { await sendPushToCodes(codes, notice.important ? 'Важно: ' + notice.title : notice.title, notice.body); } catch (e) {}
+      document.getElementById('msgBody').value = '';
+      showToast('Отправлено: ' + ok, true);
+      try { logAction('сообщение сотрудникам', 'ключей ' + ok); } catch (e) {}
+    }
+    function isLiquid() { return localStorage.getItem('ios_liquid') === '1'; }
+    function applyLiquid() {
+      document.body.classList.toggle('liquid-glass', isLiquid());
+      const sw = document.getElementById('swLiquid');
+      if (sw) sw.classList.toggle('on', isLiquid());
+    }
+    function toggleLiquidGlass() {
+      localStorage.setItem('ios_liquid', isLiquid() ? '0' : '1');
+      applyLiquid();
+      try { scheduleCloudSave(); } catch (e) {}
+      showToast(isLiquid() ? 'Жидкое стекло включено' : 'Жидкое стекло выключено', isLiquid());
+    }
     function applyTheme(id) {
       id = id || getTheme();
       if (id === 'classic') document.body.removeAttribute('data-theme');
@@ -8217,6 +8725,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     async function updateAdminKeysChatBadge(total) {
+      window._admUnread = total; setTimeout(function() { try { renderAdminHome(); } catch (e) {} }, 0);
       const el = document.getElementById('adminKeysChatBadge');
       if (!el) return;
       if (total > 0) {
@@ -8278,6 +8787,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
             escapeHtml(String(err)) + ' · локальный список</div>';
         }
         list.forEach(function(k) {
+          if (!keyMatchesFilter(k)) return;
           const check = keyIsValid(k);
           const badge = check.ok
             ? '<span class="key-badge ok">активен</span>'
@@ -8587,7 +9097,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (screen) screen.scrollTop = 0;
       window.scrollTo(0, 0);
       if (id === 'people') { refreshDeviceSessions(); refreshPeekAccounts(); }
-      if (id === 'keys') refreshAccessKeysList();
+      if (id === 'keys') { refreshAccessKeysList(); renderAdminAssign(); }
       if (id === 'log') refreshActivityLog();
       if (id === 'alerts') refreshNoticeOutbox();
     }
@@ -8598,6 +9108,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     function renderCreatorScreen() {
+      try { renderCreatorDash(); } catch (e) {}
       showCreatorTab('overview');
       const el = document.getElementById('creatorPinDisplay');
       if (el) el.textContent = getAdminPin();
@@ -9054,6 +9565,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
     const APP_VERSION = '2.6.1';
     const CHANGELOG = [
+     { v: '3.0.0', d: '22.10.2026', t: 'Полное обновление стилистики сайта, добавлен режим "Жидкое стекло" и другие изменения.' },
       { v: '2.5.6', d: '13.10.2026', t: 'Сообщения от руководства работают стабильно и быстро.' },
       { v: '2.5.0', d: '27.09.2026', t: 'Заказы: категории, галочки, дата изменения. Плавные переходы экранов, умнее ИИ.' },
       { v: '2.4.0', d: '27.09.2026', t: 'Версия на главной и список изменений.' },
@@ -9080,6 +9592,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (m) m.classList.remove('active');
     }
     function openAppPrefs() {
+      try { applyLiquid(); } catch (e) {}
       try { updateNotifSettingsUI(); } catch (e) {}
       const m = document.getElementById('appPrefsModal');
       if (m) m.classList.add('active');
@@ -9642,6 +10155,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     async function pullMyRole() {
+      try { pullAdminKeys(); } catch (e) {}
       const sess = getSession();
       if (!sess || !sess.code) { applyRoleBadge(null); return; }
       const map = await fetchAllRoles();
@@ -10941,6 +11455,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     try { applyRoleBadge(JSON.parse(localStorage.getItem('ios_my_role')||'null')); } catch(e) {}
     pullMyRole();
     applyTheme(getTheme());
+    applyLiquid();
     rebuildStreakFromShifts();
     bootAccessGate();
     (function(){
@@ -10975,6 +11490,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       } catch (err) {}
     }, true);
 
+    updateTabBar((document.querySelector(".screen.active")||{}).id);
+    try { applyAdminEntry(); } catch (e) {}
     setInterval(heartbeatDeviceSession, 20000);
     updateAddHomeFabVisibility();
     window.matchMedia('(display-mode: standalone)').addEventListener('change', updateAddHomeFabVisibility);
