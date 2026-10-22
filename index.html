@@ -3266,6 +3266,30 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
 .swipe-btn.done .ic-arrow{display:none}
 .swipe-btn.done .ic-check{display:block;animation:checkPop .4s cubic-bezier(.175,.885,.32,1.275) both}
 .swipe-btn.done .swipe-label span{animation:none;-webkit-text-fill-color:#fff;color:#fff;background:none}
+
+
+/* ===== графики выручки ===== */
+.bars-plot{position:relative;height:150px;margin:26px 2px 0;display:flex;align-items:stretch;gap:6px}
+.bars-col{position:relative;flex:1;min-width:0;cursor:pointer}
+.bars-bar{position:absolute;left:12%;right:12%;bottom:0;height:0;border-radius:9px 9px 5px 5px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent-blue) 90%,#fff),color-mix(in srgb,var(--accent-blue) 45%,transparent));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35);transition:height .7s cubic-bezier(.2,.9,.25,1)}
+.bars-col.max .bars-bar{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-green) 90%,#fff),color-mix(in srgb,var(--accent-green) 45%,transparent));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 16px color-mix(in srgb,var(--accent-green) 35%,transparent)}
+.bars-col.min .bars-bar{background:linear-gradient(180deg,color-mix(in srgb,var(--accent-orange) 90%,#fff),color-mix(in srgb,var(--accent-orange) 40%,transparent))}
+.bars-col:active .bars-bar{filter:brightness(1.25)}
+.bars-val{position:absolute;left:-4px;right:-4px;text-align:center;font-size:10.5px;font-weight:800;color:#fff;
+  white-space:nowrap;bottom:0;opacity:0;transition:bottom .7s cubic-bezier(.2,.9,.25,1),opacity .4s .3s}
+.bars-avg{position:absolute;left:0;right:0;height:0;border-top:1.5px dashed rgba(255,255,255,.38);pointer-events:none;z-index:2}
+.bars-avg span{position:absolute;right:0;top:-17px;font-size:10px;font-weight:700;color:var(--text-sec);background:rgba(0,0,0,.45);padding:1px 6px;border-radius:6px}
+.bars-axis{display:flex;gap:6px;margin:8px 2px 0}
+.bars-axis div{flex:1;min-width:0;text-align:center;font-size:11px;font-weight:700;line-height:1.25}
+.bars-axis small{display:block;font-size:10px;font-weight:600;color:var(--text-sec)}
+.chart-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.chart-sum div{background:var(--card-inner);border-radius:12px;padding:10px 8px;text-align:center}
+.chart-sum b{display:block;font-size:14px;margin-top:3px}
+.chart-sum small{font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--text-sec);font-weight:700}
+body.liquid-glass .chart-sum div{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.08)}
   </style>
 </head>
 <body>
@@ -3764,6 +3788,11 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
       </div>
     </div>
 
+    <div class="card" id="weeksTrendCard" style="display:none;">
+      <div class="card-title">Динамика по неделям</div>
+      <div id="weeksTrend"></div>
+      <div class="color-hint">Последние недели слева направо · нажми на столбик, чтобы открыть</div>
+    </div>
     <div class="card">
       <div class="card-title">Архив закрытых недель</div>
       <p style="font-size:12px;color:var(--text-sec);margin:-4px 0 10px;line-height:1.4;">Нажми на неделю, чтобы открыть</p>
@@ -3792,6 +3821,11 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
           <div class="stat-num" id="arcWeekRev" style="font-size:22px;">0 ₽</div>
         </div>
       </div>
+    </div>
+    <div class="card" id="arcWeekChartCard" style="display:none;">
+      <div class="card-title">График выручки</div>
+      <div id="arcWeekChart"></div>
+      <div class="chart-sum" id="arcWeekChartSum"></div>
     </div>
     <div class="card">
       <div class="card-title">Смены</div>
@@ -3972,7 +4006,6 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
       </div>
     </div>
 
-    <div class="adm-hero" id="admHero"></div>
     <div class="adm-sec">Операции</div>
     <div class="adm-grid">
       <div class="adm-tile" onclick="openScreen('screenAdminOrders')"><div class="adm-ic icon-orange"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0020 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg></div><span class="menu-item-badge" id="admOrdBadge" style="position:absolute;top:12px;right:12px;margin:0;">0</span><div><h3>Заказы</h3><p>Что просят привезти</p></div></div>
@@ -6843,6 +6876,7 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
       }
       if (report) report.textContent = item.reportText || 'Нет текста отчёта';
       openScreen('screenArchiveWeek');
+      try { renderArcWeekChart(item); } catch (e) {}
     }
 
     function copyArchiveWeekReport() {
@@ -7003,6 +7037,7 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
     }
 
     function renderStats() {
+      try { renderWeeksTrend(); } catch (e) {}
       const store = getData();
       document.getElementById('statShiftsCount').innerText = store.shifts.length;
       if (store.shifts.length > 0) {
@@ -8508,28 +8543,11 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       bar.addEventListener('click', function(e) { if (moved || cancelled) { e.stopPropagation(); e.preventDefault(); moved = false; cancelled = false; } }, true);
     })();
     function renderAdminHome() {
-      const box = document.getElementById('admHero');
-      if (!box) return;
-      let open = 0, onShift = 0, total = 0;
-      try {
-        const tk = getTodayDateKey();
-        Object.keys(POINTS).forEach(function(k) {
-          total++;
-          if (getPointOpenToday(k)) open++;
-          const st = getPointData(k).days[tk];
-          if (st === 'green' || st === 'red') onShift++;
-        });
-      } catch (e) {}
       let ord = 0;
       try { ord = getOrderList().filter(function(i) { return !i.done; }).length; } catch (e) {}
       const un = window._admUnread || 0;
-      function st(l, n, col, act) { return '<div class="adm-stat" onclick="' + act + '"><div class="l">' + l + '</div><div class="n" style="color:' + col + ';">' + n + '</div></div>'; }
-      box.innerHTML = st('Открыто точек', open + '/' + total, open === total ? 'var(--accent-green)' : 'var(--accent-orange)', "openScreen('screenControl')") +
-        st('На смене сегодня', onShift, 'var(--accent-blue)', "openScreen('screenControl')") +
-        st('Позиций в заказах', ord, 'var(--accent-orange)', "openScreen('screenAdminOrders')");
       const ob = document.getElementById('admOrdBadge');
       if (ob) { ob.textContent = ord > 99 ? '99+' : String(ord); ob.classList.toggle('on', ord > 0); }
-      // бейдж чата на плитке ключей
       try {
         const kb = document.getElementById('adminKeysChatBadge');
         if (kb) {
@@ -9002,6 +9020,102 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       knob.addEventListener('pointercancel', end);
       window.addEventListener('resize', function() { if (!busy) { measure(); setX(0); } });
     })();
+
+
+    // ===== графики выручки =====
+    function fmtMoneyShort(v) {
+      v = Number(v) || 0;
+      if (v >= 1000) return (v / 1000).toFixed(1).replace('.0', '').replace('.', ',') + 'к';
+      return String(Math.round(v));
+    }
+    function renderBars(boxId, pts) {
+      var box = document.getElementById(boxId);
+      if (!box) return;
+      if (!pts || !pts.length) { box.innerHTML = ''; return; }
+      var vals = pts.map(function(p) { return Number(p.value) || 0; });
+      var max = Math.max.apply(null, vals), min = Math.min.apply(null, vals);
+      var avg = vals.reduce(function(a, b) { return a + b; }, 0) / vals.length;
+      var top = max || 1;
+      var multi = pts.length > 1 && max !== min;
+      var cols = '', axis = '';
+      pts.forEach(function(p, i) {
+        var cls = 'bars-col' + (multi && vals[i] === max ? ' max' : '') + (multi && vals[i] === min ? ' min' : '');
+        var click = p.click ? ' onclick="' + p.click + '"' : '';
+        cols += '<div class="' + cls + '"' + click + ' data-h="' + (vals[i] / top * 100).toFixed(1) + '">' +
+          '<div class="bars-val">' + fmtMoneyShort(vals[i]) + '</div><div class="bars-bar"></div></div>';
+        axis += '<div>' + escapeHtml(p.label || '') + '<small>' + escapeHtml(p.sub || '') + '</small></div>';
+      });
+      var avgPct = (avg / top * 100).toFixed(1);
+      box.innerHTML = '<div class="bars-plot">' + cols +
+        (pts.length > 1 ? '<div class="bars-avg" style="bottom:' + avgPct + '%"><span>ср. ' + fmtMoneyShort(avg) + '</span></div>' : '') +
+        '</div><div class="bars-axis">' + axis + '</div>';
+      // анимация роста
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          box.querySelectorAll('.bars-col').forEach(function(c, i) {
+            var h = parseFloat(c.getAttribute('data-h')) || 0;
+            h = Math.max(h, 3);
+            c.querySelector('.bars-bar').style.height = h + '%';
+            var v = c.querySelector('.bars-val');
+            v.style.bottom = 'calc(' + h + '% + 4px)';
+            v.style.opacity = '1';
+          });
+        });
+      });
+    }
+    var _WD = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+    function parseRuDate(str) {
+      var m = String(str || '').match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+      if (!m) return null;
+      return new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+    }
+    function renderArcWeekChart(item) {
+      var card = document.getElementById('arcWeekChartCard');
+      var sum = document.getElementById('arcWeekChartSum');
+      var shifts = (item && item.shifts) || [];
+      if (!card) return;
+      if (!shifts.length) { card.style.display = 'none'; return; }
+      card.style.display = '';
+      var pts = shifts.map(function(sh) {
+        var d = parseRuDate(sh.date);
+        return {
+          value: Number(sh.total) || 0,
+          label: String(sh.date || '').slice(0, 5),
+          sub: d ? _WD[d.getDay()] : ''
+        };
+      });
+      renderBars('arcWeekChart', pts);
+      if (!sum) return;
+      var vals = pts.map(function(p) { return p.value; });
+      var max = Math.max.apply(null, vals), min = Math.min.apply(null, vals);
+      var avg = Math.round(vals.reduce(function(a, b) { return a + b; }, 0) / vals.length);
+      var best = pts[vals.indexOf(max)], worst = pts[vals.indexOf(min)];
+      function cell(t, b, sub, col) {
+        return '<div><small>' + t + '</small><b style="color:' + col + ';">' + b + '</b><small style="text-transform:none;">' + sub + '</small></div>';
+      }
+      sum.innerHTML = vals.length > 1
+        ? cell('Лучший', max.toLocaleString('ru-RU') + ' ₽', best.label + ' ' + best.sub, 'var(--accent-green)') +
+          cell('Среднее', avg.toLocaleString('ru-RU') + ' ₽', 'за смену', '#fff') +
+          cell('Слабый', min.toLocaleString('ru-RU') + ' ₽', worst.label + ' ' + worst.sub, 'var(--accent-orange)')
+        : cell('Выручка', max.toLocaleString('ru-RU') + ' ₽', best.label + ' ' + best.sub, 'var(--accent-blue)');
+    }
+    function renderWeeksTrend() {
+      var card = document.getElementById('weeksTrendCard');
+      if (!card) return;
+      var arc = getArchive().slice(0, 8).reverse();
+      if (arc.length < 2) { card.style.display = 'none'; return; }
+      card.style.display = '';
+      var pts = arc.map(function(w) {
+        var first = String(w.dateRange || '').match(/\d{2}\.\d{2}/);
+        return {
+          value: Number(w.totalRevenue) || 0,
+          label: first ? first[0] : '',
+          sub: (w.shiftsCount || 0) + ' см.',
+          click: 'openArchiveWeek(' + w.id + ')'
+        };
+      });
+      renderBars('weeksTrend', pts);
+    }
     function syncStatusBarColor() {
       try {
         var c = getComputedStyle(document.body).getPropertyValue('--accent-blue').trim();
