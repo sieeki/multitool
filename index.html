@@ -1796,6 +1796,162 @@
     }
 
     .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+
+    /* ===== changelog ===== */
+    .cl-sheet {
+      width: min(400px, 100%);
+      max-height: min(78vh, 640px);
+      display: flex;
+      flex-direction: column;
+      background: rgba(28, 28, 30, 0.92);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 22px;
+      padding: 18px 16px 12px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      transform: translateY(18px) scale(0.96);
+      opacity: 0;
+      transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      backdrop-filter: blur(24px) saturate(160%);
+    }
+    .modal-overlay.active .cl-sheet {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    .cl-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+    .cl-kicker {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: var(--accent-blue);
+      margin-bottom: 3px;
+    }
+    .cl-title {
+      font-size: 22px;
+      font-weight: 850;
+      letter-spacing: -0.4px;
+    }
+    .cl-now {
+      font-size: 12px;
+      color: var(--text-sec);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cl-ver-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(10,132,255,0.16);
+      color: var(--accent-blue);
+      font-weight: 800;
+      font-size: 11px;
+    }
+    .cl-close {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.06);
+      color: var(--text-sec);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .cl-close svg { width: 18px; height: 18px; fill: currentColor; }
+    .cl-close:active { transform: scale(0.94); }
+    .cl-list {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-right: 2px;
+      margin: 0 -2px 0 0;
+      flex: 1;
+      min-height: 0;
+    }
+    .cl-item {
+      display: grid;
+      grid-template-columns: 14px 1fr;
+      gap: 10px;
+      padding: 0 2px 14px;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: clItemIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .cl-item:last-child { padding-bottom: 4px; }
+    .cl-rail {
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+    .cl-rail::before {
+      content: '';
+      position: absolute;
+      top: 10px; bottom: -14px;
+      width: 2px;
+      border-radius: 2px;
+      background: linear-gradient(180deg, rgba(10,132,255,0.45), rgba(255,255,255,0.06));
+    }
+    .cl-item:last-child .cl-rail::before { display: none; }
+    .cl-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-top: 5px;
+      background: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(10,132,255,0.18);
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+    }
+    .cl-item:not(.latest) .cl-dot {
+      background: rgba(255,255,255,0.28);
+      box-shadow: none;
+    }
+    .cl-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 11px 12px 12px;
+    }
+    .cl-item.latest .cl-card {
+      background: linear-gradient(145deg, rgba(10,132,255,0.14), rgba(255,255,255,0.04));
+      border-color: rgba(10,132,255,0.28);
+    }
+    .cl-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+    .cl-v {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+    .cl-item.latest .cl-v { color: var(--accent-blue); }
+    .cl-d {
+      font-size: 11px;
+      color: var(--text-sec);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .cl-t {
+      font-size: 13px;
+      color: var(--text-sec);
+      line-height: 1.4;
+    }
+    @keyframes clItemIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; text-align: center; }
 
     .option-btn {
@@ -2906,15 +3062,18 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
   </div>
 
   <div class="modal-overlay" id="changelogModal" onclick="if(event.target===this) closeChangelog()">
-    <div class="modal-card" style="max-width:400px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <div class="cl-sheet" onclick="event.stopPropagation()">
+      <div class="cl-head">
         <div>
-          <div style="font-size:20px;font-weight:800;">Что нового</div>
-          <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">Сейчас v<span id="appVerLabel2">3.0.0</span></div>
+          <div class="cl-kicker">Обновления</div>
+          <div class="cl-title">Что нового</div>
+          <div class="cl-now">Сейчас <span class="cl-ver-pill">v<span id="appVerLabel2">2.6.6</span></span></div>
         </div>
-        <div class="icon-btn" onclick="closeChangelog()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>
+        <button type="button" class="cl-close" onclick="closeChangelog()" aria-label="Закрыть">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
       </div>
-      <div id="changelogList"></div>
+      <div class="cl-list" id="changelogList"></div>
     </div>
   </div>
   <div class="modal-overlay" id="notifPermModal" onclick="if(event.target===this) dismissNotifPrompt()">
@@ -3817,9 +3976,9 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
 
       <div class="cr-panel" id="crPanelPeople">
         <div class="card">
-          <div class="card-title">Устройства на сайте</div>
+          <div class="card-title">Входы по ключу</div>
           <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-            Онлайн — был активен за последнюю минуту. «Выбить» сбросит ключ.
+            Только устройства, которые вошли с ключом. Онлайн — активность за последнюю минуту. «Выбить» сбросит сессию на том устройстве.
           </p>
           <div id="deviceSessionsList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
           <button class="btn btn-blue" onclick="void refreshDeviceSessions()" style="margin-top:10px;">Обновить устройства</button>
@@ -6789,6 +6948,18 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
             });
             ctx += 'Ближайшие: ' + (upcoming.slice(0, 20).join(', ') || 'нет') + '\n';
             ctx += 'Все даты: ' + keys.join(', ') + '\n';
+            // хвост прошлого и текущего месяца для продолжения графика
+            try {
+              const now2 = new Date();
+              const y = now2.getFullYear(), m = now2.getMonth() + 1;
+              const prevLast = new Date(y, m - 1, 0);
+              const tail = [];
+              for (let d = Math.max(1, prevLast.getDate() - 5); d <= prevLast.getDate(); d++) {
+                const k = String(d).padStart(2,'0') + '.' + String(prevLast.getMonth()+1).padStart(2,'0') + '.' + prevLast.getFullYear();
+                tail.push(k + (ms[k] ? '=раб' : '=вых'));
+              }
+              ctx += 'Хвост прошлого месяца: ' + tail.join(', ') + '\n';
+            } catch (e2) {}
           }
         } catch (e) {}
 
@@ -6929,7 +7100,7 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
         '2) remove_shift — удалить смену недели по дате. Поля: date.\n' +
         '3) add_calendar — отметить рабочие дни в «Мои смены». Поля: dates (массив ДД.ММ.ГГГГ).\n' +
         '4) remove_calendar — снять отметки. Поля: dates.\n' +
-        '5) set_schedule — график на месяц. Поля: pattern (\"2/2\"|\"5/2\"|…), month (1-12), year, start (\"work\"|\"off\"), skipWeekends (true если сб/вс выходные). Для 5/2 + skipWeekends = пн–пт.\n' +
+        '5) set_schedule — график на месяц. Поля: pattern (\"2/2\"|\"5/2\"), month, year, skipWeekends, continueFromPrev (true = продолжить цикл с хвоста прошлого месяца: если 30–31 выхи, то 1–2 рабочие). По умолчанию continueFromPrev=true.\n' +
         '6) add_note — заметка. Поля: text.\n' +
         '7) add_deduction — вычет. Поля: reason, amount.\n' +
         'Правила: год подставляй текущий, если не указан. \"13.10\" = 13.10 текущего года. \"следующий месяц\" = month/year следующего. Не выдумывай даты. Если данных не хватает — спроси, не пиши ACTIONS.\n' +
@@ -7040,10 +7211,48 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
       }
       return null;
     }
+    /** Состояние цикла 2/2 по хвосту предыдущего месяца */
+    function aiInferContinueState(on, off, month, year) {
+      const prevLast = new Date(year, month - 1, 0); // последний день пред. месяца
+      const py = prevLast.getFullYear();
+      const pm = prevLast.getMonth() + 1;
+      const daysPrev = prevLast.getDate();
+      const shifts = getMonthShifts();
+      let any = false;
+      let lastWasWork = null;
+      let streak = 0;
+      for (let day = 1; day <= daysPrev; day++) {
+        const key = aiPad2(day) + '.' + aiPad2(pm) + '.' + py;
+        const isWork = !!shifts[key];
+        if (isWork) any = true;
+        if (lastWasWork === null) {
+          lastWasWork = isWork;
+          streak = 1;
+        } else if (isWork === lastWasWork) {
+          streak++;
+        } else {
+          lastWasWork = isWork;
+          streak = 1;
+        }
+      }
+      if (!any || lastWasWork === null) return null;
+      // что должно быть 1-го числа целевого месяца
+      if (lastWasWork) {
+        if (streak >= on) return { work: false, streak: 0 };
+        return { work: true, streak: streak };
+      }
+      if (streak >= off) return { work: true, streak: 0 };
+      return { work: false, streak: streak };
+    }
     function aiDoSetSchedule(pattern, month, year, start, opts) {
       opts = opts || {};
       const skipWeekends = !!(opts.skipWeekends || opts.noWeekends || opts.weekendsOff);
-      pattern = String(pattern || '2/2').replace(/\s/g, '');
+      const continueFromPrev = !!(opts.continueFromPrev || opts.fromPrev || opts.alignPrev);
+      pattern = String(pattern || '2/2').replace(/\s+/g, '').replace(/[–—-]/g, '/');
+      if (!/\//.test(pattern)) {
+        const m2 = String(pattern).match(/(\d)\D*(\d)/);
+        if (m2) pattern = m2[1] + '/' + m2[2];
+      }
       const parts = pattern.split('/');
       let on = parseInt(parts[0], 10), off = parseInt(parts[1], 10);
       if (!on || on < 1) on = 2;
@@ -7069,11 +7278,22 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
       });
       let work = !(String(start || 'work').toLowerCase() === 'off');
       let streak = 0;
+      let continued = false;
+      // по умолчанию продолжаем с прошлого месяца, если там есть отметки
+      const inferred = aiInferContinueState(on, off, month, year);
+      if ((continueFromPrev || inferred) && inferred && start == null) {
+        work = inferred.work;
+        streak = inferred.streak;
+        continued = true;
+      } else if (continueFromPrev && inferred) {
+        work = inferred.work;
+        streak = inferred.streak;
+        continued = true;
+      }
       const added = [];
-      // классика 5/2 + выходные = пн–пт
       const weekdayOnly = skipWeekends && on === 5 && off === 2;
       for (let day = 1; day <= daysInMonth; day++) {
-        const dow = new Date(year, month - 1, day).getDay(); // 0=вс … 6=сб
+        const dow = new Date(year, month - 1, day).getDay();
         const isWeekend = (dow === 0 || dow === 6);
         if (weekdayOnly) {
           if (!isWeekend) {
@@ -7083,10 +7303,7 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
           }
           continue;
         }
-        if (skipWeekends && isWeekend) {
-          // выходные всегда выходные, цикл не двигаем
-          continue;
-        }
+        if (skipWeekends && isWeekend) continue;
         if (work) {
           const key = aiPad2(day) + '.' + aiPad2(month) + '.' + year;
           shifts[key] = true;
@@ -7104,6 +7321,7 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
         renderCalendar();
       } catch (e) {}
       let msg = 'График ' + on + '/' + off + ' на ' + aiPad2(month) + '.' + year + ': ' + added.length + ' смен';
+      if (continued) msg += ' · продолжение с прошлого месяца';
       if (skipWeekends) msg += ' (сб/вс выходные)';
       return msg;
     }
@@ -7145,7 +7363,8 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
           } else if (act === 'set_schedule') {
             results.push(aiDoSetSchedule(a.pattern || a.graph, a.month, a.year, a.start, {
               skipWeekends: !!(a.skipWeekends || a.noWeekends || a.weekendsOff || a.offWeekends),
-              nextMonth: !!a.nextMonth
+              nextMonth: !!a.nextMonth,
+              continueFromPrev: a.continueFromPrev !== false
             }));
           } else if (act === 'add_note') {
             results.push(aiDoAddNote(a.text || a.note));
@@ -7204,9 +7423,9 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
           return { reply: aiDoAddShift(d, sum), actions: true };
         }
       }
-      // график 5/2 октябрь, сб вс выходные
-      m = low.match(/график\s*(\d)\s*[\/]\s*(\d)/i);
-      if (!m) m = low.match(/(?:поставь|проставь|сделай)\s+(?:мне\s+)?(?:график\s+)?(\d)\s*[\/]\s*(\d)/i);
+      // график 2/2 | 2 2 | 2 на 2
+      m = low.match(/график\s*(\d)\s*[\/\sна]+\s*(\d)/i);
+      if (!m) m = low.match(/(?:поставь|проставь|сделай)\s+(?:мне\s+)?(?:график\s+)?(\d)\s*[\/\sна]+\s*(\d)/i);
       if (m) {
         const now = new Date();
         let month = aiMonthFromText(low);
@@ -7221,11 +7440,13 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
             month = now.getMonth() + 1;
           }
         }
-        // если месяц уже прошёл в этом году и явно назван — ок; год текущий
         const skipWeekends = /(сб|суббот|вс\b|воскрес|выходн|без\s*выход)/i.test(low);
-        const msg = aiDoSetSchedule(m[1] + '/' + m[2], month, year, 'work', {
+        // продолжить с прошлого месяца (по умолчанию да, если есть хвост)
+        const forceContinue = /(соответств|продолж|от\s+прошл|как\s+прошл|по\s+прошл|учитывая\s+прошл)/i.test(low);
+        const msg = aiDoSetSchedule(m[1] + '/' + m[2], month, year, null, {
           skipWeekends: skipWeekends,
-          nextMonth: nextMonth
+          nextMonth: nextMonth,
+          continueFromPrev: forceContinue || true
         });
         return { reply: msg, actions: true };
       }
@@ -9356,13 +9577,14 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     async function registerDeviceSession() {
       try {
         const sess = getSession();
+        if (!sess || !sess.code) return; // только вход по ключу
         await sbFetch('device_sessions?on_conflict=id', {
           method: 'POST',
           headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
           body: JSON.stringify({
             id: getDeviceId(),
-            access_code: sess ? sess.code : null,
-            access_name: sess ? sess.name : null,
+            access_code: String(sess.code).trim().toUpperCase(),
+            access_name: sess.name || null,
             device_name: guessDeviceName(),
             last_seen: new Date().toISOString(),
             revoked: false
@@ -9389,18 +9611,20 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           return;
         }
         const sess = getSession();
-        await sbFetch('device_sessions?on_conflict=id', {
-          method: 'POST',
-          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-          body: JSON.stringify({
-            id: getDeviceId(),
-            access_code: sess ? sess.code : null,
-            access_name: sess ? sess.name : null,
-            device_name: guessDeviceName(),
-            last_seen: new Date().toISOString(),
-            revoked: false
-          })
-        });
+        if (sess && sess.code) {
+          await sbFetch('device_sessions?on_conflict=id', {
+            method: 'POST',
+            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+            body: JSON.stringify({
+              id: getDeviceId(),
+              access_code: String(sess.code).trim().toUpperCase(),
+              access_name: sess.name || null,
+              device_name: guessDeviceName(),
+              last_seen: new Date().toISOString(),
+              revoked: false
+            })
+          });
+        }
       } catch (e) {
         console.warn('device beat', e);
       }
@@ -9412,15 +9636,21 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Обновляю…</div>';
       try {
         const list = await sbFetch('device_sessions?select=*&order=last_seen.desc') || [];
-        if (!list.length) {
-          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Пока никого. Нужна таблица device_sessions в Supabase.</div>';
+        // только входы с ключом
+        const keyed = list.filter(function(d) {
+          return d && d.access_code && String(d.access_code).trim();
+        });
+        if (!keyed.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Пока нет входов по ключу.</div>';
           return;
         }
         const myId = getDeviceId();
         let h = '';
-        list.forEach(function(d) {
+        keyed.forEach(function(d) {
           const online = !d.revoked && isDeviceOnline(d.last_seen);
-          const who = d.access_name ? (d.access_name + (d.access_code ? ' · ' + d.access_code : '')) : 'без ключа';
+          const code = String(d.access_code || '').trim().toUpperCase();
+          const name = (d.access_name || '').trim();
+          const who = (name ? name + ' · ' : '') + code;
           const mine = d.id === myId ? ' · это ты' : '';
           const status = d.revoked
             ? '<span class="key-badge off">выбит</span>'
@@ -9428,12 +9658,13 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           const meta = d.revoked
             ? 'нужно войти заново'
             : (online ? 'сейчас на сайте' : ('был ' + formatLastSeen(d.last_seen)));
+          const safeId = String(d.id).replace(/\\/g, '\\\\').replace(/'/g, '');
           h += '<div class="key-item">' +
             '<div class="key-item-top"><div class="key-item-name">' + escapeHtml((d.device_name || 'Устройство') + mine) + '</div>' + status + '</div>' +
             '<div class="key-item-meta">' + escapeHtml(who) + '</div>' +
             '<div class="key-item-meta">' + escapeHtml(meta) + '</div>' +
             (d.id === myId ? '' :
-              '<button type="button" class="btn btn-red-soft" style="height:36px;font-size:13px;margin-top:8px;" onclick="kickDevice(\'' + String(d.id).replace(/'/g,'') + '\')">Выбить / разлогинить</button>') +
+              '<button type="button" class="btn btn-red-soft" style="height:36px;font-size:13px;margin-top:8px;" onclick="kickDevice(\'' + safeId + '\')">Выбить / разлогинить</button>') +
             '</div>';
         });
         box.innerHTML = h;
@@ -9953,14 +10184,19 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     ];
     function openChangelog() {
       const box = document.getElementById('changelogList');
+      const v2 = document.getElementById('appVerLabel2');
+      if (v2) v2.textContent = APP_VERSION;
       if (box) {
         box.innerHTML = CHANGELOG.map(function(c, i) {
-          return '<div style="padding:12px 0;border-top:1px solid rgba(255,255,255,.08);' + (i===0?'border-top:none;padding-top:0;':'') + '">' +
-            '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;">' +
-            '<div style="font-weight:800;font-size:15px;">v' + c.v + '</div>' +
-            '<div style="font-size:11px;color:var(--text-sec);">' + c.d + '</div></div>' +
-            '<div style="font-size:13px;color:var(--text-sec);margin-top:4px;line-height:1.4;">' + c.t + '</div></div>';
+          const delay = Math.min(i, 12) * 0.045;
+          return '<div class="cl-item' + (i === 0 ? ' latest' : '') + '" style="animation-delay:' + delay + 's">' +
+            '<div class="cl-rail"><div class="cl-dot"></div></div>' +
+            '<div class="cl-card">' +
+              '<div class="cl-row"><div class="cl-v">v' + c.v + '</div><div class="cl-d">' + c.d + '</div></div>' +
+              '<div class="cl-t">' + c.t + '</div>' +
+            '</div></div>';
         }).join('');
+        box.scrollTop = 0;
       }
       const m = document.getElementById('changelogModal');
       if (m) m.classList.add('active');
