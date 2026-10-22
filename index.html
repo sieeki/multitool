@@ -3103,10 +3103,15 @@ body.liquid-glass {
   background-image: none !important;
 }
 body.liquid-glass::before {
-  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  content:''; position:fixed; left:0; right:0; bottom:0;
+  top:-120px; z-index:-1; pointer-events:none;
   background-color: #000;
   background-image:
-    radial-gradient(70% 50% at 10% -5%, color-mix(in srgb, var(--accent-blue) 38%, transparent), transparent 68%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--accent-blue) 30%, #000) 0,
+      color-mix(in srgb, var(--accent-blue) 16%, transparent) 260px,
+      transparent 420px),
+    radial-gradient(70% 50% at 10% 5%, color-mix(in srgb, var(--accent-blue) 38%, transparent), transparent 68%),
     radial-gradient(60% 45% at 100% 30%, color-mix(in srgb, var(--accent-purple) 28%, transparent), transparent 70%),
     radial-gradient(65% 45% at 15% 110%, color-mix(in srgb, var(--accent-green) 18%, transparent), transparent 70%);
 }
@@ -3114,7 +3119,8 @@ body.liquid-glass::before {
 @supports not (background: color-mix(in srgb, #000 50%, transparent)) {
   body.liquid-glass::before {
     background:
-      radial-gradient(70% 50% at 10% -5%, rgba(10,132,255,0.32), transparent 68%),
+      linear-gradient(180deg, #03203f 0, rgba(10,132,255,0.16) 260px, transparent 420px),
+      radial-gradient(70% 50% at 10% 5%, rgba(10,132,255,0.32), transparent 68%),
       radial-gradient(60% 45% at 100% 30%, rgba(191,90,242,0.22), transparent 70%),
       radial-gradient(65% 45% at 15% 110%, rgba(48,209,88,0.14), transparent 70%),
       #000;
@@ -8886,16 +8892,31 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     function applyLiquid() {
       document.body.classList.add('liquid-glass');
       localStorage.setItem('ios_liquid', '1');
+      syncStatusBarColor();
     }
     function toggleLiquidGlass() {
       /* всегда включено */
       applyLiquid();
+    }
+    function syncStatusBarColor() {
+      try {
+        var c = getComputedStyle(document.body).getPropertyValue('--accent-blue').trim();
+        var m = c.match(/^#?([0-9a-f]{6})$/i);
+        if (!m) return;
+        var n = parseInt(m[1], 16), k = 0.30;
+        var r = Math.round(((n >> 16) & 255) * k), g = Math.round(((n >> 8) & 255) * k), b = Math.round((n & 255) * k);
+        var hex = '#' + [r, g, b].map(function(x){ return x.toString(16).padStart(2, '0'); }).join('');
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', hex);
+        document.documentElement.style.backgroundColor = hex;
+      } catch (e) {}
     }
     function applyTheme(id) {
       id = id || getTheme();
       if (id === 'classic') document.body.removeAttribute('data-theme');
       else document.body.setAttribute('data-theme', id);
       localStorage.setItem('ios_theme', id);
+      syncStatusBarColor();
       try { if (typeof scheduleCloudSave === 'function') scheduleCloudSave(); } catch (e) {}
       const grid = document.getElementById('themeGrid');
       if (grid) {
