@@ -342,7 +342,6 @@
       padding: 14px 14px 12px;
       overflow: hidden;
       border: 1px solid rgba(255,255,255,0.12);
-      animation: homeBannerIn 0.45s cubic-bezier(0.16,1,0.3,1) both;
     }
     .home-banner.on { display: block; }
     @keyframes homeBannerIn {
@@ -3290,6 +3289,42 @@ body.liquid-glass .ai-msg.ai { background: rgba(255,255,255,.07); }
 .chart-sum b{display:block;font-size:14px;margin-top:3px}
 .chart-sum small{font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--text-sec);font-weight:700}
 body.liquid-glass .chart-sum div{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.08)}
+
+/* ===== баннер: анимации и расширенные настройки ===== */
+.home-banner.appear{animation:hbAppear .8s cubic-bezier(.2,.9,.25,1.05) both,hbGrow .55s cubic-bezier(.2,.9,.25,1) both}
+@keyframes hbAppear{
+  0%{opacity:0;transform:translateY(-22px) scale(.88);filter:blur(10px)}
+  55%{opacity:1;transform:translateY(5px) scale(1.025);filter:blur(0)}
+  100%{opacity:1;transform:none;filter:none}}
+@keyframes hbGrow{
+  from{max-height:0;margin-bottom:0;padding-top:0;padding-bottom:0}
+  to{max-height:420px;margin-bottom:14px;padding-top:14px;padding-bottom:12px}}
+.home-banner.poof{animation:hbPoof .5s ease forwards}
+@keyframes hbPoof{to{opacity:0;transform:translate(26px,-14px) scale(.96);filter:blur(8px)}}
+.adv-toggle{display:flex;align-items:center;gap:12px;margin:2px 0 14px;padding:12px 14px;border-radius:14px;
+  border:1px solid rgba(10,132,255,.25);background:rgba(10,132,255,.08);cursor:pointer;-webkit-user-select:none;user-select:none}
+.adv-toggle.on{border-color:rgba(10,132,255,.55);background:rgba(10,132,255,.16)}
+.adv-check{width:22px;height:22px;border-radius:7px;flex-shrink:0;border:1.5px solid rgba(10,132,255,.5);
+  display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s}
+.adv-toggle.on .adv-check{background:var(--accent-blue);border-color:var(--accent-blue)}
+.adv-toggle.on .adv-check::after{content:'';width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.adv-panel{display:none}
+.adv-panel.on{display:block;animation:crPanelIn .3s ease}
+.adv-lbl{font-size:12px;font-weight:700;color:var(--text-sec);margin:4px 2px 8px;text-transform:uppercase;letter-spacing:.3px}
+.adv-prev{font-size:13px;line-height:1.55;color:var(--text-sec);background:var(--card-inner);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.adv-prev b{color:#fff}
+.tw{position:relative;display:flex;height:150px;border-radius:16px;background:var(--card-inner);overflow:hidden;margin-bottom:12px}
+.tw-band{position:absolute;left:8px;right:8px;top:50%;height:38px;margin-top:-19px;border-radius:10px;background:rgba(255,255,255,.1);pointer-events:none}
+.tw-c{position:relative;flex:1;min-width:0}
+.tw-s{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  padding:56px 0;box-sizing:border-box;overscroll-behavior:contain;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 28%,#000 72%,transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 28%,#000 72%,transparent 100%)}
+.tw-s::-webkit-scrollbar{display:none}
+.tw-i{height:38px;line-height:38px;text-align:center;padding-right:26px;font-size:21px;font-weight:600;
+  font-variant-numeric:tabular-nums;scroll-snap-align:center}
+.tw-u{position:absolute;right:10px;top:50%;margin-top:-8px;font-size:12px;font-weight:700;color:var(--text-sec);pointer-events:none}
+body.liquid-glass .tw,body.liquid-glass .adv-prev{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.08)}
   </style>
 </head>
 <body>
@@ -4068,7 +4103,18 @@ body.liquid-glass .chart-sum div{background:rgba(255,255,255,.06);border:.5px so
       <div class="card-title">Новый баннер</div>
       <div class="input-group"><label>Заголовок</label><input type="text" id="bannerTitle" placeholder="Важно" maxlength="48"></div>
       <div class="input-group"><label>Текст</label><textarea id="bannerBody" placeholder="Что нужно знать всем…" maxlength="280" style="min-height:88px;"></textarea></div>
-      <div class="input-group"><label>Сколько висит</label>
+      <div class="adv-toggle" id="bannerAdvToggle" onclick="toggleBannerAdv()">
+        <span class="adv-check"></span>
+        <span><strong>Расширенные настройки</strong><span style="display:block;font-size:11px;color:var(--text-sec);font-weight:500;margin-top:2px;">Когда появится и когда исчезнет — до секунд</span></span>
+      </div>
+      <div class="adv-panel" id="bannerAdvPanel">
+        <div class="adv-lbl">Появится через</div>
+        <div class="tw" id="twAppear"></div>
+        <div class="adv-lbl">Висит (отсчёт после появления)</div>
+        <div class="tw" id="twHide"></div>
+        <div class="adv-prev" id="bannerPreview"></div>
+      </div>
+      <div class="input-group" id="bannerSimpleRow"><label>Сколько висит</label>
         <select id="bannerHours" class="employee-select">
           <option value="1">1 час</option>
           <option value="3">3 часа</option>
@@ -5101,7 +5147,7 @@ body.liquid-glass .chart-sum div{background:rgba(255,255,255,.06);border:.5px so
 
     function afterScreenOpen(screenId) {
       if (screenId === 'screenAdminMsgs') { try { renderMsgScreen(); } catch (e) {} }
-      if (screenId === 'screenAdminBanner') { try { refreshAdminBannerStatus(); } catch (e) {} }
+      if (screenId === 'screenAdminBanner') { try { refreshAdminBannerStatus(true); } catch (e) {} }
       if (screenId === 'screenMenu') { try { renderHomeBanner(); } catch (e) {} }
       if (screenId === 'screenAdmin') { try { renderAdminHome(); pullOrderList().then(renderAdminHome); pullPointOpens().then(renderAdminHome); pullAdminSharedData().then(renderAdminHome); } catch (e) {} }
       try { updateTabBar(screenId); } catch (e) {}
@@ -8559,7 +8605,9 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
     // ===== баннер на главной =====
     let _homeBanner = null;
-    let _homeBannerTimer = null;
+    let _hbTick = null, _hbStartT = null, _hbEndT = null;
+    let _hbShownId = null, _hbSnap = null, _hbSnapBusy = false, _hbBusy = false, _hbPending = false;
+
     function formatBannerLeft(ms) {
       if (ms <= 0) return 'истекло';
       const s = Math.floor(ms / 1000);
@@ -8572,6 +8620,16 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (m > 0) return m + 'м ' + sec + 'с';
       return sec + 'с';
     }
+    function bannerId(b) { return b ? String(b.id || ((b.createdAt || '') + '|' + (b.endsAt || ''))) : ''; }
+    function bannerWindow(b) {
+      return {
+        start: b && b.startsAt ? new Date(b.startsAt).getTime() : 0,
+        end: b && b.endsAt ? new Date(b.endsAt).getTime() : 0
+      };
+    }
+    function isElVisible(el) { return !!(el && el.offsetParent !== null); }
+
+    // null — баннера нет, undefined — не смогли спросить (сеть), объект — баннер
     async function fetchHomeBanner() {
       try {
         const rows = await sbFetch('app_settings?key=eq.home_banner&select=value');
@@ -8581,24 +8639,201 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         if (!v.endsAt || !v.title) return null;
         if (new Date(v.endsAt).getTime() <= Date.now()) return null;
         return v;
-      } catch (e) { return null; }
+      } catch (e) { return undefined; }
     }
     async function pullHomeBanner() {
-      _homeBanner = await fetchHomeBanner();
+      const nb = await fetchHomeBanner();
+      if (nb === undefined) return;
+      _homeBanner = nb;
       renderHomeBanner();
-      try { refreshAdminBannerStatus(); } catch (e) {}
+      try { refreshAdminBannerStatus(false); } catch (e) {}
     }
+
+    let _h2cP = null;
+    function loadHtml2Canvas() {
+      if (window.html2canvas) return Promise.resolve();
+      if (_h2cP) return _h2cP;
+      _h2cP = new Promise(function(res, rej) {
+        const sc = document.createElement('script');
+        sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        sc.onload = function() { res(); };
+        sc.onerror = function() { _h2cP = null; rej(new Error('html2canvas')); };
+        document.head.appendChild(sc);
+      });
+      return _h2cP;
+    }
+    function snapBannerEl(el) {
+      const scale = Math.min(2, window.devicePixelRatio || 1);
+      return window.html2canvas(el, { backgroundColor: null, scale: scale, logging: false, useCORS: true });
+    }
+    async function captureBannerSnap() {
+      if (_hbSnapBusy) return;
+      _hbSnapBusy = true;
+      try {
+        const el = document.getElementById('homeBanner');
+        const id = _hbShownId;
+        await loadHtml2Canvas();
+        const cv = await snapBannerEl(el);
+        _hbSnap = { canvas: cv, id: id, t: Date.now() };
+      } catch (e) { _hbSnap = null; }
+      _hbSnapBusy = false;
+    }
+
+    function playBannerAppear(el) {
+      el.classList.remove('appear');
+      void el.offsetWidth;
+      el.classList.add('appear');
+      setTimeout(function() { el.classList.remove('appear'); }, 950);
+      if (navigator.vibrate) navigator.vibrate(10);
+    }
+    function hideBannerNow(el) {
+      el.classList.remove('on', 'appear', 'poof');
+      el.removeAttribute('style');
+      _hbShownId = null;
+    }
+    function finishBannerHide(el) {
+      hideBannerNow(el);
+      const ov = document.getElementById('hbDustCanvas');
+      if (ov) ov.remove();
+      _hbBusy = false;
+      if (_hbPending) { _hbPending = false; renderHomeBanner(); }
+    }
+    function collapseBanner(el, delayMs) {
+      return new Promise(function(res) {
+        setTimeout(function() {
+          const h = el.offsetHeight;
+          el.style.maxHeight = h + 'px';
+          el.style.transition = 'max-height .45s cubic-bezier(.4,0,.2,1), margin-bottom .45s cubic-bezier(.4,0,.2,1), padding .45s cubic-bezier(.4,0,.2,1), border-width .45s';
+          void el.offsetWidth;
+          el.style.maxHeight = '0px';
+          el.style.marginBottom = '0px';
+          el.style.paddingTop = '0px';
+          el.style.paddingBottom = '0px';
+          el.style.borderWidth = '0px';
+          setTimeout(res, 480);
+        }, delayMs);
+      });
+    }
+
+    // «распад на пиксели», как удаление сообщения в Telegram
+    function runBannerDust(el, snap, rect) {
+      return new Promise(function(resolve) {
+        const PAD = 150;
+        const s = ((snap.width / rect.width) + (snap.height / rect.height)) / 2;
+        const ox = Math.round(PAD * s), oy = Math.round(PAD * s);
+        const W = snap.width + ox * 2, H = snap.height + oy * 2;
+        const cv = document.createElement('canvas');
+        cv.id = 'hbDustCanvas';
+        cv.width = W; cv.height = H;
+        cv.style.cssText = 'position:fixed;pointer-events:none;z-index:1900;left:' + (rect.left - PAD) + 'px;top:' + (rect.top - PAD) +
+          'px;width:' + (rect.width + PAD * 2) + 'px;height:' + (rect.height + PAD * 2) + 'px;';
+        const base = document.createElement('canvas');
+        base.width = W; base.height = H;
+        const bctx = base.getContext('2d');
+        bctx.drawImage(snap, ox, oy);
+        const img = bctx.getImageData(0, 0, W, H).data;
+        const cell = Math.max(2, Math.round(3 * s));
+        const P = [];
+        for (let y = oy; y < oy + snap.height; y += cell) {
+          for (let x = ox; x < ox + snap.width; x += cell) {
+            const cy = Math.min(y + (cell >> 1), oy + snap.height - 1);
+            const cx = Math.min(x + (cell >> 1), ox + snap.width - 1);
+            const i = (cy * W + cx) * 4;
+            const a = img[i + 3];
+            const nx = (x - ox) / snap.width;
+            P.push({
+              x: x, y: y,
+              c: 'rgb(' + img[i] + ',' + img[i + 1] + ',' + img[i + 2] + ')',
+              a: a / 255,
+              d: nx * 0.5 + Math.random() * 0.14,
+              du: 0.5 + Math.random() * 0.5,
+              vx: (40 + Math.random() * 110) * s,
+              vy: -(15 + Math.random() * 95) * s,
+              w: Math.random() * 6.28
+            });
+          }
+        }
+        P.sort(function(a, b) { return a.d - b.d; });
+        const ctx = cv.getContext('2d');
+        document.body.appendChild(cv);
+        ctx.drawImage(base, 0, 0);
+        el.style.visibility = 'hidden';
+        if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
+        let t0 = 0, next = 0;
+        const live = [];
+        function frame(now) {
+          if (!t0) t0 = now;
+          const t = (now - t0) / 1000;
+          while (next < P.length && P[next].d <= t) {
+            const p = P[next++];
+            bctx.clearRect(p.x, p.y, cell, cell);
+            live.push(p);
+          }
+          ctx.clearRect(0, 0, W, H);
+          ctx.drawImage(base, 0, 0);
+          for (let i = live.length - 1; i >= 0; i--) {
+            const p = live[i];
+            const age = t - p.d;
+            if (age >= p.du) { live[i] = live[live.length - 1]; live.pop(); continue; }
+            const k = age / p.du;
+            const x = p.x + p.vx * age + Math.sin(p.w + age * 9) * 2 * s;
+            const y = p.y + p.vy * age - 30 * s * age * age;
+            if (p.a < 0.06) continue;
+            const sz = cell * (1 - 0.5 * k);
+            ctx.globalAlpha = p.a * (1 - k);
+            ctx.fillStyle = p.c;
+            ctx.fillRect(x, y, sz, sz);
+          }
+          ctx.globalAlpha = 1;
+          if (next >= P.length && !live.length) { cv.remove(); resolve(); return; }
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+    async function disintegrateHomeBanner(el) {
+      _hbBusy = true;
+      const id = _hbShownId;
+      _hbShownId = null;
+      let snap = null;
+      if (_hbSnap && _hbSnap.id === id && Date.now() - _hbSnap.t < 20000) snap = _hbSnap.canvas;
+      _hbSnap = null;
+      try {
+        if (!snap) { await loadHtml2Canvas(); snap = await snapBannerEl(el); }
+      } catch (e) { snap = null; }
+      const rect = el.getBoundingClientRect();
+      try {
+        if (snap && rect.width > 0 && rect.height > 0) {
+          await Promise.all([runBannerDust(el, snap, rect), collapseBanner(el, 520)]);
+        } else {
+          el.classList.add('poof');
+          await collapseBanner(el, 300);
+        }
+      } catch (e) {}
+      finishBannerHide(el);
+    }
+
     function renderHomeBanner() {
       const el = document.getElementById('homeBanner');
       if (!el) return;
-      const b = _homeBanner;
-      if (!b || !b.endsAt || new Date(b.endsAt).getTime() <= Date.now()) {
-        el.classList.remove('on');
-        if (_homeBannerTimer) { clearInterval(_homeBannerTimer); _homeBannerTimer = null; }
+      if (_hbBusy) { _hbPending = true; return; }
+      clearTimeout(_hbStartT); clearTimeout(_hbEndT);
+      if (_hbTick) { clearInterval(_hbTick); _hbTick = null; }
+      const b = _homeBanner, now = Date.now(), w = bannerWindow(b);
+      const active = !!(b && w.end > now && now >= w.start);
+      if (!active) {
+        if (b && w.start > now && w.end > now) {
+          _hbStartT = setTimeout(renderHomeBanner, Math.min(w.start - now + 30, 2147000000));
+        }
+        if (el.classList.contains('on')) {
+          if (_hbShownId && isElVisible(el)) disintegrateHomeBanner(el);
+          else hideBannerNow(el);
+        }
         return;
       }
-      const acc = ['blue','orange','green','purple'].indexOf(b.accent) >= 0 ? b.accent : 'blue';
-      el.className = 'home-banner on acc-' + acc;
+      const acc = ['blue', 'orange', 'green', 'purple'].indexOf(b.accent) >= 0 ? b.accent : 'blue';
+      ['blue', 'orange', 'green', 'purple'].forEach(function(a) { el.classList.remove('acc-' + a); });
+      el.classList.add('acc-' + acc);
       const t = document.getElementById('homeBannerTitle');
       const body = document.getElementById('homeBannerBody');
       if (t) t.textContent = b.title || '';
@@ -8606,49 +8841,157 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         body.textContent = b.body || '';
         body.style.display = (b.body && String(b.body).trim()) ? '' : 'none';
       }
+      const id = bannerId(b);
+      el.classList.add('on');
+      if (_hbShownId !== id && isElVisible(el)) {
+        _hbShownId = id;
+        _hbSnap = null;
+        playBannerAppear(el);
+        loadHtml2Canvas().catch(function() {});
+      }
       function tick() {
-        const left = new Date(b.endsAt).getTime() - Date.now();
+        const left = w.end - Date.now();
         const tt = document.getElementById('homeBannerTimerText');
         if (tt) tt.textContent = formatBannerLeft(left);
-        if (left <= 0) {
-          _homeBanner = null;
-          el.classList.remove('on');
-          if (_homeBannerTimer) { clearInterval(_homeBannerTimer); _homeBannerTimer = null; }
-        }
+        if (left <= 2500 && !_hbSnap && !_hbSnapBusy && isElVisible(el) && !el.classList.contains('appear')) captureBannerSnap();
       }
       tick();
-      if (_homeBannerTimer) clearInterval(_homeBannerTimer);
-      _homeBannerTimer = setInterval(tick, 1000);
+      _hbTick = setInterval(tick, 1000);
+      _hbEndT = setTimeout(function() { _homeBanner = null; renderHomeBanner(); }, Math.max(0, w.end - now));
     }
-    async function refreshAdminBannerStatus() {
+
+    // ----- админка баннера -----
+    async function refreshAdminBannerStatus(fetchNow) {
       const box = document.getElementById('adminBannerStatus');
       if (!box) return;
-      const b = _homeBanner || await fetchHomeBanner();
-      _homeBanner = b;
+      let b = _homeBanner;
+      if (fetchNow) {
+        const f = await fetchHomeBanner();
+        if (f !== undefined) { _homeBanner = f; b = f; }
+      }
       if (!b) {
         box.innerHTML = 'Сейчас баннер <b style="color:var(--text);">не висит</b>.';
         return;
       }
-      const left = new Date(b.endsAt).getTime() - Date.now();
-      box.innerHTML =
-        '<div style="font-weight:800;color:var(--text);margin-bottom:4px;">' + escapeHtml(b.title || '') + '</div>' +
-        (b.body ? ('<div style="margin-bottom:6px;">' + escapeHtml(b.body) + '</div>') : '') +
-        '<div>Осталось: <b style="color:var(--accent-orange);">' + formatBannerLeft(left) + '</b>' +
-        ' · до ' + new Date(b.endsAt).toLocaleString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) + '</div>';
+      const now = Date.now(), w = bannerWindow(b);
+      let head = '<div style="font-weight:800;color:var(--text);margin-bottom:4px;">' + escapeHtml(b.title || '') + '</div>' +
+        (b.body ? ('<div style="margin-bottom:6px;">' + escapeHtml(b.body) + '</div>') : '');
+      if (w.start > now) {
+        box.innerHTML = head +
+          '<div>Появится через <b style="color:var(--accent-blue);">' + formatBannerLeft(w.start - now) + '</b> · в ' + fmtClock(w.start) + '</div>' +
+          '<div>Исчезнет в ' + fmtClock(w.end) + '</div>';
+      } else {
+        box.innerHTML = head +
+          '<div>Осталось: <b style="color:var(--accent-orange);">' + formatBannerLeft(w.end - now) + '</b>' +
+          ' · до ' + fmtClock(w.end) + '</div>';
+      }
     }
+    function fmtClock(ts) {
+      const d = new Date(ts), p = function(n) { return String(n).padStart(2, '0'); };
+      const t = p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+      if (d.toDateString() === new Date().toDateString()) return t;
+      return p(d.getDate()) + '.' + p(d.getMonth() + 1) + ' ' + t;
+    }
+    function fmtDurFull(sec) {
+      const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+      const parts = [];
+      if (h) parts.push(h + ' ч');
+      if (m) parts.push(m + ' мин');
+      if (s || !parts.length) parts.push(s + ' сек');
+      return parts.join(' ');
+    }
+
+    // колёса времени как в будильнике
+    const TW_ITEM = 38;
+    function buildWheel(boxId, maxH) {
+      const box = document.getElementById(boxId);
+      if (!box) return;
+      const cols = [['ч', maxH], ['мин', 59], ['сек', 59]];
+      box.innerHTML = '<div class="tw-band"></div>' + cols.map(function(c) {
+        let items = '';
+        for (let i = 0; i <= c[1]; i++) items += '<div class="tw-i">' + i + '</div>';
+        return '<div class="tw-c"><div class="tw-s" data-max="' + c[1] + '">' + items + '</div><span class="tw-u">' + c[0] + '</span></div>';
+      }).join('');
+      box.querySelectorAll('.tw-s').forEach(function(sc) {
+        sc._last = 0;
+        sc.addEventListener('scroll', function() {
+          const i = Math.round(sc.scrollTop / TW_ITEM);
+          if (i !== sc._last) {
+            sc._last = i;
+            if (navigator.vibrate) navigator.vibrate(3);
+            updateBannerPreview();
+          }
+        }, { passive: true });
+      });
+    }
+    function setWheel(boxId, h, m, s) {
+      const sc = document.querySelectorAll('#' + boxId + ' .tw-s');
+      [h, m, s].forEach(function(v, i) { if (sc[i]) { sc[i].scrollTop = v * TW_ITEM; sc[i]._last = v; } });
+    }
+    function getWheelSecs(boxId) {
+      const sc = document.querySelectorAll('#' + boxId + ' .tw-s');
+      const v = Array.prototype.map.call(sc, function(x) {
+        return Math.min(parseInt(x.getAttribute('data-max'), 10), Math.max(0, Math.round(x.scrollTop / TW_ITEM)));
+      });
+      return (v[0] || 0) * 3600 + (v[1] || 0) * 60 + (v[2] || 0);
+    }
+    let _bannerAdv = false, _wheelsBuilt = false;
+    function toggleBannerAdv() {
+      _bannerAdv = !_bannerAdv;
+      const row = document.getElementById('bannerAdvToggle');
+      const panel = document.getElementById('bannerAdvPanel');
+      const simple = document.getElementById('bannerSimpleRow');
+      if (row) row.classList.toggle('on', _bannerAdv);
+      if (panel) panel.classList.toggle('on', _bannerAdv);
+      if (simple) simple.style.display = _bannerAdv ? 'none' : '';
+      if (_bannerAdv) {
+        if (!_wheelsBuilt) {
+          buildWheel('twAppear', 99);
+          buildWheel('twHide', 168);
+          _wheelsBuilt = true;
+          setTimeout(function() { setWheel('twAppear', 0, 0, 0); setWheel('twHide', 1, 0, 0); updateBannerPreview(); }, 40);
+        }
+        updateBannerPreview();
+      }
+    }
+    function updateBannerPreview() {
+      const el = document.getElementById('bannerPreview');
+      if (!el || !_bannerAdv) return;
+      const A = getWheelSecs('twAppear'), H = getWheelSecs('twHide'), now = Date.now();
+      if (H <= 0) {
+        el.innerHTML = '<span style="color:var(--accent-red);font-weight:700;">Поставь, сколько баннер будет висеть</span>';
+        return;
+      }
+      el.innerHTML =
+        'Появится ' + (A ? ('в <b>' + fmtClock(now + A * 1000) + '</b> (через ' + fmtDurFull(A) + ')') : '<b>сразу</b>') +
+        '<br>Будет висеть <b>' + fmtDurFull(H) + '</b>' +
+        '<br>Исчезнет в <b>' + fmtClock(now + (A + H) * 1000) + '</b>';
+    }
+
     async function publishHomeBanner() {
       const title = (document.getElementById('bannerTitle') && document.getElementById('bannerTitle').value || '').trim();
       const body = (document.getElementById('bannerBody') && document.getElementById('bannerBody').value || '').trim();
-      const hours = parseFloat(document.getElementById('bannerHours') && document.getElementById('bannerHours').value) || 24;
       const accent = (document.getElementById('bannerAccent') && document.getElementById('bannerAccent').value) || 'blue';
       if (!title) return showToast('Нужен заголовок');
-      const endsAt = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+      let delayMs = 0, endMs;
+      if (_bannerAdv) {
+        const A = getWheelSecs('twAppear'), H = getWheelSecs('twHide');
+        if (H <= 0) return showToast('Поставь, сколько баннер будет висеть');
+        delayMs = A * 1000;
+        endMs = (A + H) * 1000;
+      } else {
+        const hours = parseFloat(document.getElementById('bannerHours') && document.getElementById('bannerHours').value) || 24;
+        endMs = hours * 3600 * 1000;
+      }
+      const now = Date.now();
       const payload = {
+        id: 'b' + now.toString(36) + Math.random().toString(36).slice(2, 5),
         title: title.slice(0, 48),
         body: body.slice(0, 280),
         accent: accent,
-        endsAt: endsAt,
-        createdAt: new Date().toISOString()
+        startsAt: new Date(now + delayMs).toISOString(),
+        endsAt: new Date(now + endMs).toISOString(),
+        createdAt: new Date(now).toISOString()
       };
       try {
         await sbFetch('app_settings?on_conflict=key', {
@@ -8658,11 +9001,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         });
         _homeBanner = payload;
         renderHomeBanner();
-        refreshAdminBannerStatus();
-        showToast('Баннер вывешен', true);
-        try {
-          // лёгкий пуш всем активным — через выбранных не шлём, только локально
-        } catch (e) {}
+        refreshAdminBannerStatus(false);
+        showToast(delayMs ? 'Баннер запланирован' : 'Баннер вывешен', true);
       } catch (e) {
         showToast(e.message || 'Не удалось сохранить');
       }
@@ -8677,12 +9017,23 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         });
         _homeBanner = null;
         renderHomeBanner();
-        refreshAdminBannerStatus();
+        refreshAdminBannerStatus(false);
         showToast('Баннер снят', true);
       } catch (e) {
         showToast(e.message || 'Не снялся');
       }
     }
+    (function bannerBackgroundLoops() {
+      // быстрый опрос, чтобы короткие задержки и снятие баннера срабатывали вовремя
+      setInterval(function() { if (document.visibilityState === 'visible') pullHomeBanner(); }, 6000);
+      document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'visible') pullHomeBanner(); });
+      setInterval(function() {
+        const pv = document.getElementById('bannerPreview');
+        if (_bannerAdv && pv && pv.offsetParent !== null) updateBannerPreview();
+        const scr = document.getElementById('screenAdminBanner');
+        if (scr && scr.classList.contains('active')) refreshAdminBannerStatus(false);
+      }, 1000);
+    })();
 
     // ===== админы по ключу + сообщения =====
     function getAdminCodes() { try { return JSON.parse(localStorage.getItem('ios_admin_codes') || '[]'); } catch (e) { return []; } }
