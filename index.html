@@ -3325,6 +3325,95 @@ body.liquid-glass .chart-sum div{background:rgba(255,255,255,.06);border:.5px so
   font-variant-numeric:tabular-nums;scroll-snap-align:center}
 .tw-u{position:absolute;right:10px;top:50%;margin-top:-8px;font-size:12px;font-weight:700;color:var(--text-sec);pointer-events:none}
 body.liquid-glass .tw,body.liquid-glass .adv-prev{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.08)}
+/* ================= ROOT CONSOLE ================= */
+#screenCreator.screen.active{display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;right:0;width:min(440px,100%);margin:0 auto;padding:0!important;overflow:hidden;min-height:0!important;z-index:30;background:transparent!important}
+.rt-aurora{position:absolute;inset:-20%;z-index:0;pointer-events:none;will-change:transform;
+  background:radial-gradient(45% 32% at 18% 8%,color-mix(in srgb,var(--accent-orange) 34%,transparent),transparent 70%),
+             radial-gradient(40% 30% at 92% 24%,color-mix(in srgb,var(--accent-purple) 30%,transparent),transparent 70%),
+             radial-gradient(50% 34% at 8% 92%,color-mix(in srgb,var(--accent-blue) 26%,transparent),transparent 70%);
+  animation:rtDrift 16s ease-in-out infinite alternate}
+@keyframes rtDrift{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(2%,2%,0) scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.rt-aurora{animation:none}}
+.rt-g{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.14);box-shadow:inset 1px 1px 0 rgba(255,255,255,.2),0 10px 30px rgba(0,0,0,.18);-webkit-backdrop-filter:blur(28px) saturate(170%);backdrop-filter:blur(28px) saturate(170%)}
+.rt-head{position:relative;z-index:3;flex-shrink:0;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
+.rt-row{display:flex;align-items:center;gap:8px}
+.rt-ic{width:40px;height:40px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text);background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.16);box-shadow:inset 1px 1px 0 rgba(255,255,255,.2);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);cursor:pointer;padding:0}
+.rt-ic svg{width:20px;height:20px;fill:currentColor}
+.rt-ic:active{transform:scale(.92)}
+.rt-ic.spin svg{animation:rtSpin .7s linear}
+@keyframes rtSpin{to{transform:rotate(360deg)}}
+.rt-title{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
+.rt-logo{font:800 20px ui-monospace,Menlo,monospace;letter-spacing:-.5px;background:linear-gradient(100deg,#fff,#ffd080 45%,var(--accent-orange));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.rt-tab{font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text-sec);margin-top:2px}
+.rt-live{display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:700;color:var(--text-sec);background:rgba(255,255,255,.07);border:.5px solid rgba(255,255,255,.12)}
+.rt-live i{width:7px;height:7px;border-radius:50%;background:var(--text-sec)}
+.rt-live.ok{color:var(--accent-green)}.rt-live.ok i{background:var(--accent-green);box-shadow:0 0 8px var(--accent-green);animation:pulseDot 2s infinite}
+.rt-live.bad{color:var(--accent-red)}.rt-live.bad i{background:var(--accent-red);box-shadow:0 0 8px var(--accent-red)}
+.rt-cmd{display:flex;align-items:center;gap:8px;height:42px;margin-top:10px;padding:0 12px;border-radius:15px;background:rgba(0,0,0,.34);border:.5px solid rgba(255,255,255,.14);box-shadow:inset 1px 1px 0 rgba(255,255,255,.1)}
+.rt-cmd:focus-within{border-color:color-mix(in srgb,var(--accent-orange) 70%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-orange) 18%,transparent)}
+.rt-prompt{font:800 18px ui-monospace,Menlo,monospace;color:var(--accent-orange)}
+.rt-cmd input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:#fff;font:500 14px ui-monospace,Menlo,monospace}
+.rt-cmd input::placeholder{color:rgba(255,255,255,.3)}
+.rt-cmd kbd{font:700 10px ui-monospace,Menlo,monospace;color:var(--text-sec);padding:3px 7px;border-radius:7px;background:rgba(255,255,255,.08)}
+.rt-out{display:none;margin:8px 2px 0;max-height:96px;overflow:auto;font:500 11.5px/1.45 ui-monospace,Menlo,monospace;color:#ffc857;white-space:pre-wrap}
+.rt-body{position:relative;z-index:2;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:4px 12px calc(96px + env(safe-area-inset-bottom))}
+.rt-panel{display:none}
+.rt-panel.on{display:block;animation:rtIn .32s cubic-bezier(.22,.9,.26,1)}
+@keyframes rtIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.rt-nav{position:absolute;z-index:6;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(6,1fr);gap:2px;padding:6px;border-radius:26px;background:rgba(40,40,46,.4);border:.5px solid rgba(255,255,255,.2);box-shadow:inset 1px 1px 0 rgba(255,255,255,.3),0 16px 40px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(28px) saturate(200%);backdrop-filter:blur(28px) saturate(200%)}
+.rt-nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;border:none;border-radius:20px;background:transparent;color:var(--text-sec);font:700 9.5px inherit;font-family:inherit;cursor:pointer;transition:background .25s,color .25s,transform .15s}
+.rt-nav button svg{width:22px;height:22px;fill:currentColor}
+.rt-nav button:active{transform:scale(.92)}
+.rt-nav button.on{color:var(--accent-orange);background:color-mix(in srgb,var(--accent-orange) 20%,rgba(255,255,255,.08));box-shadow:inset 0 0 0 .5px rgba(255,255,255,.3),inset 1px 2px 6px rgba(255,255,255,.15)}
+/* обзор */
+.rt-hero{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-radius:20px;margin-bottom:8px}
+.rt-clock{font-size:38px;font-weight:800;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;line-height:1}
+.rt-date{font-size:12px;color:var(--text-sec);margin-top:4px}
+.rt-pills{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.rt-pill{font-size:11px;font-weight:600;color:var(--text-sec);padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.07)}
+.rt-pill b{color:#fff}
+.rt-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.rt-st{padding:10px 2px 8px;border-radius:16px;text-align:center;cursor:pointer;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 22%,transparent),rgba(255,255,255,.04));border:.5px solid color-mix(in srgb,var(--c) 40%,transparent);box-shadow:inset 1px 1px 0 rgba(255,255,255,.18)}
+.rt-st:active{transform:scale(.95)}
+.rt-st .n{font-size:24px;font-weight:800;color:var(--c);line-height:1.1}
+.rt-st .l{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--text-sec);margin-top:3px}
+.rt-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.rt-act{display:flex;flex-direction:column;gap:3px;min-height:92px;padding:12px;border-radius:18px;cursor:pointer;transition:transform .15s}
+.rt-act:active{transform:scale(.97)}
+.rt-ai{width:32px;height:32px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:var(--c);background:color-mix(in srgb,var(--c) 18%,transparent);margin-bottom:4px}
+.rt-ai svg{width:18px;height:18px;fill:currentColor}
+.rt-al{font-size:10.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--text-sec)}
+.rt-av{font:800 22px ui-monospace,Menlo,monospace;letter-spacing:4px;color:var(--accent-orange)}
+.rt-as{font-size:11px;line-height:1.3;color:var(--text-sec);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.rt-gate{padding:12px;border-radius:18px;margin-bottom:8px}
+.rt-seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.rt-seg .option-btn{margin:0;padding:11px 6px;font-size:13px;justify-content:center;border-radius:12px}
+.rt-more{border-radius:18px;padding:12px 14px;margin-bottom:8px}
+.rt-more summary{font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--accent-orange);cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.rt-more summary::-webkit-details-marker{display:none}
+.rt-more summary::after{content:'';width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .2s;opacity:.7}
+.rt-more[open] summary::after{transform:rotate(-135deg)}
+.rt-note{font-size:12.5px;line-height:1.5;color:var(--text-sec);margin:6px 2px 10px}
+.rt-sm{font-size:11px;color:var(--text-sec)}
+.rt-empty{font-size:13px;color:var(--text-sec);padding:8px 2px}
+.rt-link{border:none;background:none;color:var(--accent-blue);font-weight:700;font-size:13px;padding:10px 0 0;cursor:pointer}
+.rt-ev{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:9px 0;border-bottom:.5px solid rgba(255,255,255,.08)}
+.rt-ev b{font-size:13px}.rt-ev span{grid-column:1;font-size:12.5px;color:#d1d1d6}.rt-ev small{grid-row:1;grid-column:2;color:var(--text-sec);font-size:10.5px}
+.rt-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rt-two .btn{margin-top:0}
+/* сегменты */
+.rt-segs{display:flex;gap:4px;padding:4px;border-radius:15px;margin-bottom:12px;background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.12)}
+.rt-segs button{flex:1;height:34px;border:none;border-radius:11px;background:transparent;color:var(--text-sec);font:700 13px inherit;font-family:inherit;cursor:pointer;transition:background .2s,color .2s}
+.rt-segs button.on{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.25),0 2px 8px rgba(0,0,0,.2)}
+.rt-sub{display:none}.rt-sub.on{display:block;animation:rtIn .28s ease}
+/* содержимое вкладок */
+#screenCreator .rt-panel .input-group{background:rgba(0,0,0,.28);border:.5px solid rgba(255,255,255,.08)}
+#screenCreator .rt-panel .btn{border-radius:14px;font-weight:700}
+#screenCreator .rt-panel .key-item{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.12);box-shadow:inset 1px 1px 0 rgba(255,255,255,.14);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+#screenCreator .rt-panel .option-btn{background:rgba(255,255,255,.06);border:.5px solid rgba(255,255,255,.1);border-radius:12px}
+#screenCreator .rt-panel .option-btn.selected{border-color:color-mix(in srgb,var(--accent-orange) 60%,transparent);background:color-mix(in srgb,var(--accent-orange) 18%,transparent);color:#fff}
+#screenCreator .rt-imp{margin:0 0 10px;padding:10px 12px}
+#screenCreator .rt-panel .act-row{border-color:rgba(255,255,255,.08)}
   </style>
 </head>
 <body>
@@ -4246,209 +4335,185 @@ body.liquid-glass .tw,body.liquid-glass .adv-prev{background:rgba(255,255,255,.0
     </div>
   </div>
 
-  <!-- МЕНЮ СОЗДАТЕЛЯ -->
+  <!-- ROOT -->
   <div id="screenCreator" class="screen">
-    <div class="cr-top">
-      <div class="cr-top-row">
-        <button type="button" class="cr-back" onclick="creatorGoBack()">
-          <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
-          Назад
-        </button>
-        <div class="cr-mark">Creator</div>
+    <div class="rt-aurora"></div>
+    <header class="rt-head">
+      <div class="rt-row">
+        <button type="button" class="rt-ic" onclick="creatorGoBack()" aria-label="Назад"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg></button>
+        <div class="rt-title"><span class="rt-logo">root</span><span class="rt-tab" id="rtTabName">Обзор</span></div>
+        <div class="rt-live" id="rtLive"><i></i><span id="rtLiveTxt">…</span></div>
+        <button type="button" class="rt-ic" id="rtRefBtn" onclick="rtRefresh()" aria-label="Обновить"><svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0012 4V1L7 6l5 5V7c2.76 0 5 2.24 5 5a5 5 0 01-7.9 4.03l-1.43 1.46A6.98 6.98 0 0019 12c0-1.87-.74-3.6-1.35-5.65zM6 12c0-1.61.61-3.09 1.61-4.22L6.18 6.35A6.98 6.98 0 005 12c0 3.31 2.27 6.09 5.34 6.82l.66-1.94C8.28 16.4 6 14.42 6 12z"/></svg></button>
       </div>
-      <div class="cr-title">
-        <h1>Панель создателя</h1>
-        <p>Ключи, люди, облако</p>
-      </div>
-      <div class="cr-nav">
-        <div class="cr-nav-item on" id="crNavOverview" onclick="showCreatorTab('overview')">
-          <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-          Обзор
-        </div>
-        <div class="cr-nav-item" id="crNavPeople" onclick="showCreatorTab('people')">
-          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-          Люди
-        </div>
-        <div class="cr-nav-item" id="crNavKeys" onclick="showCreatorTab('keys')">
-          <svg viewBox="0 0 24 24"><path d="M12.65 10A5.99 5.99 0 007 6c-3.31 0-6 2.69-6 6s2.69 6 6 6a5.99 5.99 0 005.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
-          Ключи
-        </div>
-        <div class="cr-nav-item" id="crNavPlay" onclick="showCreatorTab('play')">
-          <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1L12 16.9 5.7 20.7 8 13.6 2 9.2h7.6z"/></svg>
-          Игра
-        </div>
-        <div class="cr-nav-item" id="crNavAlerts" onclick="showCreatorTab('alerts')">
-          <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
-          Уведы
-        </div>
-        <div class="cr-nav-item" id="crNavLog" onclick="showCreatorTab('log')">
-          <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-          Лог
-        </div>
-      </div>
-    </div>
+      <label class="rt-cmd"><span class="rt-prompt">›</span><input id="rtCmd" placeholder="команда…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go"><kbd>help</kbd></label>
+      <pre class="rt-out" id="rtOut"></pre>
+    </header>
 
-    <div class="cr-body">
-      <div class="cr-panel on" id="crPanelOverview">
-      <div class="crdash" id="crDash"></div>
-      <button class="btn btn-orange" onclick="openScreen('screenAdmin')" style="margin:0 0 14px;">Открыть админку</button>
-        <div class="card">
-          <div class="card-title">PIN админки</div>
-          <div style="text-align:center; padding: 12px;">
-            <div id="creatorPinDisplay" style="font-size:36px; font-weight:800; letter-spacing:6px; color:var(--accent-orange);">••••</div>
+    <main class="rt-body" id="rtBody">
+
+      <!-- ОБЗОР -->
+      <div class="rt-panel on" id="crPanelOverview">
+        <div class="rt-hero rt-g">
+          <div>
+            <div class="rt-clock" id="rtClock">--:--</div>
+            <div class="rt-date" id="rtDate"></div>
           </div>
-          <button class="btn btn-green" onclick="copyCreatorPin()">Скопировать PIN</button>
-          <button class="btn btn-blue" onclick="changeCreatorPasswordPrompt()" style="margin-top:8px;">Сменить пароль создателя</button>
-        </div>
-        <div class="card">
-          <div class="card-title">Статус базы</div>
-          <div id="sbStatus" style="font-size:14px;line-height:1.45;color:var(--text-sec);">Проверка…</div>
-          <button class="btn btn-blue" onclick="testSupabaseConnection(true)" style="margin-top:12px;">Проверить подключение</button>
-        </div>
-        <div class="card">
-          <div class="card-title">VK-бот открытий</div>
-          <p style="font-size:13px;color:var(--text-sec);line-height:1.45;">
-            Бот в чате ловит «гороховая открыта» и пишет в контроль точек.
-            1) Сообщество VK → управление → работа с API → ключ сообщества и Callback API.<br>
-            2) Cloudflare Worker (файл vk-bot-worker.js рядом с сайтом) — вставить URL в Callback.<br>
-            3) Confirmation string и секрет из VK прописать в воркере.<br>
-            Пока бота нет — в контроле тап по карточке отмечает точку открытой вручную.
-          </p>
-        </div>
-        <div class="card">
-          <div class="card-title">Режим входа</div>
-          <div class="option-btn" id="gateModeOff" onclick="setGateEnabled(false)">
-            <span>Открытый (без ключа)</span>
+          <div class="rt-pills">
+            <span class="rt-pill">вход · <b id="rtGatePill">…</b></span>
+            <span class="rt-pill">v<b id="rtVer">—</b></span>
           </div>
-          <div class="option-btn" id="gateModeOn" onclick="setGateEnabled(true)">
-            <span>Только по ключу</span>
-          </div>
-          <p style="font-size:12px;color:var(--text-sec);margin-top:8px;line-height:1.4;">
-            Общий переключатель. Включил здесь — у всех просит ключ.
-          </p>
         </div>
+        <div class="rt-stats" id="crDash"></div>
+        <div class="rt-acts">
+          <div class="rt-act rt-g" onclick="copyCreatorPin()">
+            <div class="rt-ai" style="--c:var(--accent-orange)"><svg viewBox="0 0 24 24"><path d="M12.65 10A5.99 5.99 0 007 6c-3.31 0-6 2.69-6 6s2.69 6 6 6a5.99 5.99 0 005.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg></div>
+            <div class="rt-al">PIN админки</div>
+            <div class="rt-av" id="creatorPinDisplay">••••</div>
+          </div>
+          <div class="rt-act rt-g" onclick="testSupabaseConnection(true)">
+            <div class="rt-ai" style="--c:var(--accent-green)"><svg viewBox="0 0 24 24"><path d="M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z"/></svg></div>
+            <div class="rt-al">База · тап = проверка</div>
+            <div class="rt-as" id="sbStatus">Проверка…</div>
+          </div>
+          <div class="rt-act rt-g" onclick="openScreen('screenAdmin')">
+            <div class="rt-ai" style="--c:var(--accent-blue)"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+            <div class="rt-al">Админка</div>
+            <div class="rt-as">открыть панель управления</div>
+          </div>
+          <div class="rt-act rt-g" onclick="changeCreatorPasswordPrompt()">
+            <div class="rt-ai" style="--c:var(--accent-purple)"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div>
+            <div class="rt-al">Пароль root</div>
+            <div class="rt-as">сменить пароль создателя</div>
+          </div>
+        </div>
+        <div class="rt-gate rt-g">
+          <div class="rt-al">Вход на сайт — для всех</div>
+          <div class="rt-seg">
+            <div class="option-btn" id="gateModeOff" onclick="setGateEnabled(false)"><span>Открытый</span></div>
+            <div class="option-btn" id="gateModeOn" onclick="setGateEnabled(true)"><span>Только по ключу</span></div>
+          </div>
+        </div>
+        <details class="rt-more rt-g" ontoggle="if(this.open) rtLoadRecent()">
+          <summary>Последние действия</summary>
+          <div id="rtRecent"><div class="rt-empty">Загрузка…</div></div>
+          <button type="button" class="rt-link" onclick="showCreatorTab('log')">Весь лог →</button>
+        </details>
+        <details class="rt-more rt-g">
+          <summary>VK-бот открытий</summary>
+          <p class="rt-note">Бот в чате ловит «гороховая открыта» и пишет в контроль точек.<br>1) Сообщество VK → управление → работа с API → ключ сообщества и Callback API.<br>2) Cloudflare Worker (vk-bot-worker.js) — URL вставить в Callback.<br>3) Confirmation string и секрет из VK прописать в воркере.<br>Пока бота нет — в контроле тап по карточке отмечает точку открытой вручную.</p>
+        </details>
       </div>
 
-      <div class="cr-panel" id="crPanelPeople">
-        <div class="card">
-          <div class="card-title">Входы по ключу</div>
-          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-            Только устройства, которые вошли с ключом. Онлайн — активность за последнюю минуту. «Выбить» сбросит сессию на том устройстве.
-          </p>
-          <div id="deviceSessionsList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
-          <button class="btn btn-blue" onclick="void refreshDeviceSessions()" style="margin-top:10px;">Обновить устройства</button>
-        </div>
-        <div class="card">
-          <div class="card-title">Аккаунты и недельки</div>
-          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-            Тап по человеку — его смена, твои данные не трогаются.
-          </p>
-          <div id="peekAccountsList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
-          <button class="btn btn-blue" onclick="void refreshPeekAccounts()" style="margin-top:10px;">Обновить аккаунты</button>
-        </div>
+      <!-- ЛЮДИ -->
+      <div class="rt-panel" id="crPanelPeople">
+        <div class="rt-segs"><button type="button" class="on" onclick="rtSub(this,0)">Устройства</button><button type="button" onclick="rtSub(this,1)">Аккаунты</button></div>
+        <section class="rt-sub on">
+          <p class="rt-note">Только входы по ключу. «В сети» — активность за последнюю минуту. «Выбить» сбросит сессию на устройстве.</p>
+          <div id="deviceSessionsList"><div class="rt-empty">Загрузка…</div></div>
+        </section>
+        <section class="rt-sub">
+          <p class="rt-note">Тап по человеку — его смена и недели. Твои данные не трогаются.</p>
+          <div id="peekAccountsList"><div class="rt-empty">Загрузка…</div></div>
+        </section>
       </div>
 
-      <div class="cr-panel" id="crPanelKeys">
-        <div class="card">
-          <div class="card-title">Админы</div>
-          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">У ключа-админа на главной появляется вход в админку.</p>
+      <!-- КЛЮЧИ -->
+      <div class="rt-panel" id="crPanelKeys">
+        <div class="rt-segs"><button type="button" class="on" onclick="rtSub(this,0)">Все ключи</button><button type="button" onclick="rtSub(this,1)">Админы</button></div>
+        <section class="rt-sub on">
+          <button class="btn btn-orange" onclick="openScreen('screenAdminKeys')" style="margin:0 0 10px;">+ Создать ключ</button>
+          <div class="kfbar"><input type="text" placeholder="Поиск по имени или ключу" oninput="setKeyFilter('q',this.value)"><div><button type="button" class="kf-chip on" data-s="all" onclick="setKeyFilter('s','all')">Все</button><button type="button" class="kf-chip" data-s="active" onclick="setKeyFilter('s','active')">Активные</button><button type="button" class="kf-chip" data-s="exp" onclick="setKeyFilter('s','exp')">Истекли</button><button type="button" class="kf-chip" data-s="off" onclick="setKeyFilter('s','off')">Выкл</button></div></div>
+          <div id="accessKeysList"><div class="rt-empty">Загрузка…</div></div>
+        </section>
+        <section class="rt-sub">
+          <p class="rt-note">У ключа-админа на главной появляется вход в админку.</p>
           <select id="adminAssignSel" class="employee-select" style="margin-bottom:10px;"></select>
-          <div class="cr-notice-actions">
+          <div class="rt-two">
             <button class="btn btn-green" onclick="assignAdmin(true)">Назначить</button>
             <button class="btn btn-red-soft" onclick="assignAdmin(false)">Снять</button>
           </div>
           <div id="adminAssignedList" style="margin-top:12px;"></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Все ключи</div>
-          <div class="kfbar"><input type="text" placeholder="Поиск по имени или ключу" oninput="setKeyFilter('q',this.value)"><div><button type="button" class="kf-chip on" data-s="all" onclick="setKeyFilter('s','all')">Все</button><button type="button" class="kf-chip" data-s="active" onclick="setKeyFilter('s','active')">Активные</button><button type="button" class="kf-chip" data-s="exp" onclick="setKeyFilter('s','exp')">Истекли</button><button type="button" class="kf-chip" data-s="off" onclick="setKeyFilter('s','off')">Выкл</button></div></div>
-          <div id="accessKeysList"><div style="color:var(--text-sec);font-size:13px;">Загрузка…</div></div>
-          <button class="btn btn-blue" onclick="void refreshAccessKeysList()" style="margin-top:10px;">Обновить список</button>
-        </div>
+        </section>
       </div>
 
-      <div class="cr-panel" id="crPanelAlerts">
-        <div class="card">
-          <div class="card-title">Уведомление</div>
-          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-            Один раз на экране. Можно ссылку, картинку и **жирный** в тексте.
-          </p>
-          <div class="input-group"><label>Ключ (для «одному»)</label><input type="text" id="noticeKey" placeholder="MT-XXXX-XXXX" autocapitalize="characters"></div>
-          <label style="font-size:12px;color:var(--text-sec);font-weight:600;margin:4px 0 6px;display:block;">Где показать</label>
-          <div class="notice-pos-row">
+      <!-- РОЛИ -->
+      <div class="rt-panel" id="crPanelPlay">
+        <p class="rt-note">Квадратик над «Мультитул» у этого ключа.</p>
+        <div class="input-group"><label>Ключ</label><input type="text" id="roleKey" placeholder="MT-XXXX-XXXX" autocapitalize="characters"></div>
+        <div class="input-group"><label>Название роли</label><input type="text" id="roleName" placeholder="Админ"></div>
+        <div class="rt-two">
+          <div class="input-group" style="margin:0;"><label>Цвет</label><input type="color" id="roleColor" value="#0a84ff"></div>
+          <div class="input-group" style="margin:0;"><label>Второй цвет</label><input type="color" id="roleColor2" value="#bf5af2"></div>
+        </div>
+        <div class="input-group" style="margin-top:10px;"><label>Прозрачность <span id="roleAlphaVal">80%</span></label>
+          <input type="range" id="roleAlpha" min="20" max="100" value="80" oninput="document.getElementById('roleAlphaVal').textContent=this.value+'%'"></div>
+        <div class="option-btn" id="roleShineBtn" onclick="this.classList.toggle('selected')"><span>Переливание букв</span></div>
+        <div class="rt-two" style="margin-top:4px;">
+          <button class="btn btn-blue" onclick="loadRoleForKey()">Подтянуть</button>
+          <button class="btn btn-green" onclick="saveRoleForKey()">Сохранить</button>
+        </div>
+        <button class="btn btn-red-soft" onclick="clearRoleForKey()">Снять роль</button>
+      </div>
+
+      <!-- АЛЕРТЫ -->
+      <div class="rt-panel" id="crPanelAlerts">
+        <div class="rt-segs"><button type="button" class="on" onclick="rtSub(this,0)">Написать</button><button type="button" onclick="rtSub(this,1)">Очередь</button></div>
+        <section class="rt-sub on">
+          <div class="input-group"><label>Ключ (для «Одному»)</label><input type="text" id="noticeKey" placeholder="MT-XXXX-XXXX" autocapitalize="characters"></div>
+          <div class="notice-pos-row" style="margin:0 0 10px;">
             <button type="button" class="notice-pos-chip" id="noticePosTop" onclick="setNoticePos('top')">Сверху</button>
             <button type="button" class="notice-pos-chip on" id="noticePosCenter" onclick="setNoticePos('center')">Центр</button>
             <button type="button" class="notice-pos-chip" id="noticePosBottom" onclick="setNoticePos('bottom')">Снизу</button>
           </div>
-          <label class="notice-important-toggle" onclick="toggleNoticeImportant(event)">
+          <div class="notice-important-toggle rt-imp" id="rtImp" onclick="toggleNoticeImportant(event)">
             <span class="notice-important-check" id="noticeImportantCheck"></span>
-            <span>
-              <strong style="color:#ff6961;">Важно</strong>
-              <span style="display:block;font-size:11px;color:var(--text-sec);font-weight:500;margin-top:2px;">Красный мигающий увед · danger</span>
-            </span>
-          </label>
-          <div class="tpl-row"><button type="button" class="kf-chip" onclick="applyTpl(0)">Закрой неделю</button><button type="button" class="kf-chip" onclick="applyTpl(1)">Привезли товар</button><button type="button" class="kf-chip" onclick="applyTpl(2)">Напомин. о смене</button><button type="button" class="kf-chip" onclick="applyTpl(3)">Внеси смену</button></div>
+            <span><strong style="color:#ff6961;">Важно</strong> <span class="rt-sm">красный мигающий увед</span></span>
+          </div>
+          <div class="tpl-row"><button type="button" class="kf-chip" onclick="applyTpl(0)">Закрой неделю</button><button type="button" class="kf-chip" onclick="applyTpl(1)">Привезли товар</button><button type="button" class="kf-chip" onclick="applyTpl(2)">Смена</button><button type="button" class="kf-chip" onclick="applyTpl(3)">Внеси смену</button></div>
           <div class="input-group"><label>Заголовок</label><input type="text" id="noticeTitle" placeholder="Важно" maxlength="40"></div>
-          <div class="input-group"><label>Текст</label><textarea id="noticeBody" placeholder="Текст…&#10;Можно **жирным**" maxlength="500"></textarea></div>
-          <div class="input-group"><label>Ссылка (необязательно)</label><input type="url" id="noticeLink" placeholder="https://…"></div>
-          <div class="input-group"><label>Текст кнопки ссылки</label><input type="text" id="noticeLinkText" placeholder="Открыть" maxlength="40"></div>
-          <div class="input-group"><label>Картинка URL (необязательно)</label><input type="url" id="noticeImage" placeholder="https://…/photo.jpg"></div>
-          <div class="cr-notice-actions">
+          <div class="input-group"><label>Текст · можно **жирным**</label><textarea id="noticeBody" placeholder="Текст…" maxlength="500" style="min-height:70px;"></textarea></div>
+          <details class="rt-more rt-g" style="margin-bottom:10px;">
+            <summary>Ссылка и картинка</summary>
+            <div class="input-group" style="margin-top:10px;"><label>Ссылка</label><input type="url" id="noticeLink" placeholder="https://…"></div>
+            <div class="input-group"><label>Текст кнопки ссылки</label><input type="text" id="noticeLinkText" placeholder="Открыть" maxlength="40"></div>
+            <div class="input-group" style="margin-bottom:0;"><label>Картинка URL</label><input type="url" id="noticeImage" placeholder="https://…/photo.jpg"></div>
+          </details>
+          <div class="rt-two">
             <button class="btn btn-blue" onclick="sendKeyNotice()">Одному</button>
-            <button class="btn btn-orange" onclick="sendKeyNoticeToAll()">Всем ключам</button>
+            <button class="btn btn-orange" onclick="sendKeyNoticeToAll()">Всем</button>
           </div>
-        </div>
-        <div class="card">
-          <div class="card-title">Очередь уведомлений</div>
-          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-            Ждёт / просмотрено / отменено. Отмена снимает увед у всех, кто ещё не открыл.
-          </p>
-          <button class="btn btn-blue" onclick="void refreshNoticeOutbox()">Обновить очередь</button>
-          <div id="noticeOutboxList" style="margin-top:12px;"><div style="color:var(--text-sec);font-size:13px;">—</div></div>
-        </div>
+        </section>
+        <section class="rt-sub">
+          <p class="rt-note">Ждёт / просмотрено / отменено. Отмена снимает увед у всех, кто ещё не открыл.</p>
+          <div id="noticeOutboxList"><div class="rt-empty">—</div></div>
+        </section>
       </div>
 
-      <div class="cr-panel" id="crPanelPlay">
-        <div class="card">
-          <div class="card-title">Роль по ключу</div>
-          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">
-            Квадратик над «Мультитул» у этого ключа.
-          </p>
-          <div class="input-group"><label>Ключ</label><input type="text" id="roleKey" placeholder="MT-XXXX-XXXX" autocapitalize="characters"></div>
-          <div class="input-group"><label>Название роли</label><input type="text" id="roleName" placeholder="Админ"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <div class="input-group" style="margin:0;"><label>Цвет</label><input type="color" id="roleColor" value="#0a84ff"></div>
-            <div class="input-group" style="margin:0;"><label>Второй цвет</label><input type="color" id="roleColor2" value="#bf5af2"></div>
-          </div>
-          <div class="input-group" style="margin-top:10px;"><label>Прозрачность <span id="roleAlphaVal">80%</span></label>
-            <input type="range" id="roleAlpha" min="20" max="100" value="80" oninput="document.getElementById('roleAlphaVal').textContent=this.value+'%'"></div>
-          <div class="option-btn" id="roleShineBtn" onclick="this.classList.toggle('selected')">
-            <span>Переливание букв</span>
-          </div>
-          <button class="btn btn-blue" onclick="loadRoleForKey()" style="margin-top:10px;">Подтянуть роль</button>
-          <button class="btn btn-green" onclick="saveRoleForKey()">Сохранить роль</button>
-          <button class="btn btn-red-soft" onclick="clearRoleForKey()">Снять роль</button>
+      <!-- ЛОГ -->
+      <div class="rt-panel" id="crPanelLog">
+        <div class="rt-two" style="margin-bottom:10px;">
+          <button class="btn btn-blue" style="margin:0;" onclick="refreshActivityLog()">Обновить</button>
+          <button class="btn btn-red-soft" style="margin:0;" onclick="clearActivityLog()">Очистить</button>
         </div>
-
+        <div id="activityLogList"></div>
       </div>
 
-      <div class="cr-panel" id="crPanelLog">
-        <div class="card">
-          <div class="card-title">Действия на сайте</div>
-          <p style="font-size:12px;color:var(--text-sec);margin-bottom:10px;line-height:1.4;">Кто чем тыкнул. Общее на всех.</p>
-          <button class="btn btn-blue" onclick="refreshActivityLog()">Обновить лог</button>
-          <button class="btn btn-red-soft" onclick="clearActivityLog()">Очистить</button>
-          <div id="activityLogList" style="margin-top:12px;"></div>
-        </div>
-      </div>
+    </main>
 
-    </div>
+    <nav class="rt-nav" id="rtNav">
+      <button type="button" class="on" id="crNavOverview" onclick="showCreatorTab('overview')"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Обзор</button>
+      <button type="button" id="crNavPeople" onclick="showCreatorTab('people')"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Люди</button>
+      <button type="button" id="crNavKeys" onclick="showCreatorTab('keys')"><svg viewBox="0 0 24 24"><path d="M12.65 10A5.99 5.99 0 007 6c-3.31 0-6 2.69-6 6s2.69 6 6 6a5.99 5.99 0 005.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>Ключи</button>
+      <button type="button" id="crNavPlay" onclick="showCreatorTab('play')"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1L12 16.9 5.7 20.7 8 13.6 2 9.2h7.6z"/></svg>Роли</button>
+      <button type="button" id="crNavAlerts" onclick="showCreatorTab('alerts')"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>Алерты</button>
+      <button type="button" id="crNavLog" onclick="showCreatorTab('log')"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>Лог</button>
+    </nav>
   </div>
 
   <div id="screenPeekAccount" class="screen">
     <div class="peek-page">
     <div class="back-btn" onclick="openScreen('screenCreator')">
-      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> Создатель
+      <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg> root
     </div>
     <div class="header">
       <div class="header-title">
@@ -4655,9 +4720,9 @@ body.liquid-glass .tw,body.liquid-glass .adv-prev{background:rgba(255,255,255,.0
   <!-- МОДАЛКА СОЗДАТЕЛЯ -->
   <div class="modal-overlay" id="creatorAuthModal" onclick="closeCreatorAuthModal(event)">
     <div class="modal" id="creatorAuthModalBody" onclick="event.stopPropagation()">
-      <div class="modal-title">Доступ создателя</div>
+      <div class="modal-title">root</div>
       <p style="font-size: 13px; color: var(--text-sec); text-align: center; margin-bottom: 14px;">
-        Введите пароль создателя
+        Введите пароль root
       </p>
       <div class="input-group">
         <label>Пароль</label>
@@ -5518,7 +5583,7 @@ body.liquid-glass .tw,body.liquid-glass .adv-prev{background:rgba(255,255,255,.0
         closeCreatorAuthModal();
         openScreen('screenCreator');
         renderCreatorScreen();
-        showToast('Доступ создателя', true);
+        showToast('root: доступ', true);
       } else {
         modalBody.classList.remove('modal-shake');
         void modalBody.offsetWidth;
@@ -7985,6 +8050,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       return { url: DEFAULT_SB_URL, anon: DEFAULT_SB_KEY };
     }
     function setDbStatusUI(ok, text) {
+      try { rtDbState(ok, text); } catch (e) {}
       ['sbStatus', 'adminDbStatus'].forEach(function(id) {
         const el = document.getElementById(id);
         if (!el) return;
@@ -8119,6 +8185,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       }
     }
     function updateGateModeUI() {
+      try { rtSyncPills(); } catch (e) {}
       const on = isGateEnabled();
       const a = document.getElementById('gateModeOn');
       const b = document.getElementById('gateModeOff');
@@ -8244,7 +8311,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         screenLocations: 'Графики точек', screenEmployees: 'Сотрудники',
         screenAdminKeys: 'Ключи админа', screenAdminPin: 'Смена PIN',
         screenSupply: 'Поставки', screenPayQr: 'Мой QR', screenMyShifts: 'Мои смены',
-        screenCreator: 'Создатель', screenGate: 'Вход по ключу', screenPeekAccount: 'Профиль ключа'
+        screenCreator: 'root', screenGate: 'Вход по ключу', screenPeekAccount: 'Профиль ключа'
       };
       return m[id] || id || '';
     }
@@ -8419,10 +8486,53 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       openScreen(screen);
       if (focusId) setTimeout(function() { const el = document.getElementById(focusId); if (el) el.focus(); }, 400);
     }
+    // ===== ROOT: обзор, статус, команды =====
+    function rtDbState(ok, text) {
+      window._rtDb = { ok: /Проверка/.test(String(text || '')) ? null : ok };
+      rtSyncPills();
+    }
+    function rtSyncPills() {
+      const d = window._rtDb || {};
+      const live = document.getElementById('rtLive');
+      const lt = document.getElementById('rtLiveTxt');
+      if (live) live.className = 'rt-live ' + (d.ok === true ? 'ok' : (d.ok === false ? 'bad' : ''));
+      if (lt) lt.textContent = d.ok === true ? 'база ок' : (d.ok === false ? 'нет базы' : '…');
+      const g = document.getElementById('rtGatePill');
+      if (g) g.textContent = isGateEnabled() ? 'по ключу' : 'открытый';
+      const v = document.getElementById('rtVer');
+      if (v) v.textContent = (typeof APP_VERSION !== 'undefined') ? APP_VERSION : '—';
+    }
+    function rtTick() {
+      const c = document.getElementById('rtClock'), d = document.getElementById('rtDate');
+      if (!c) return;
+      const n = new Date();
+      c.textContent = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
+      if (d) { const s = n.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); d.textContent = s.charAt(0).toUpperCase() + s.slice(1); }
+    }
+    setInterval(rtTick, 5000); rtTick();
+    async function rtLoadRecent() {
+      const box = document.getElementById('rtRecent');
+      if (!box) return;
+      try {
+        const rows = await sbFetch('app_settings?key=eq.activity_log&select=value');
+        const list = rows && rows[0] ? parseActivityLogValue(rows[0].value) : [];
+        box.innerHTML = list.length ? list.slice(0, 6).map(function(e) {
+          return '<div class="rt-ev"><b>' + escapeHtml(e.who || 'гость') + '</b><span>' + escapeHtml(e.what || '') + '</span><small>' + escapeHtml(formatActTime(e.t)) + '</small></div>';
+        }).join('') : '<div class="rt-empty">Пока пусто</div>';
+      } catch (e) { box.innerHTML = '<div class="rt-empty">Не загрузилось</div>'; }
+    }
     async function renderCreatorDash() {
       const box = document.getElementById('crDash');
       if (!box) return;
-      let online = '—', active = '—', unread = '—', queue = '—';
+      let online = '—', active = '—', queue = '—', unread = '—';
+      function paint() {
+        function st(n, l, tab, col) {
+          return '<div class="rt-st" style="--c:' + col + '" onclick="showCreatorTab(\'' + tab + '\')"><div class="n">' + n + '</div><div class="l">' + l + '</div></div>';
+        }
+        box.innerHTML = st(online, 'в сети', 'people', 'var(--accent-green)') + st(active, 'ключей', 'keys', 'var(--accent-blue)') +
+          st(queue, 'в очереди', 'alerts', 'var(--accent-orange)') + st(unread, 'чаты', 'keys', 'var(--accent-red)');
+      }
+      if (!box.innerHTML.trim()) paint();
       try {
         const r = await Promise.all([
           sbFetch('device_sessions?select=last_seen,revoked').catch(function() { return []; }),
@@ -8433,15 +8543,62 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         online = devs.filter(function(d) { return !d.revoked && isDeviceOnline(d.last_seen); }).length;
         active = keys.filter(function(k) { return k.active !== false; }).length;
         queue = ob.filter(function(it) { return it.status !== 'cancelled' && noticeStatusLabel(it) !== 'просмотрено'; }).length;
+        paint();
         const u = await Promise.all(keys.map(function(k) { return countUnreadFromUser(String(k.code).toUpperCase()); }));
         unread = u.reduce(function(a, b) { return a + b; }, 0);
       } catch (e) {}
-      function tile(l, v, tab, col) {
-        return '<div class="stat-box" onclick="showCreatorTab(\'' + tab + '\')"><div class="card-title" style="margin:0;">' + l + '</div><div class="stat-num" style="color:' + col + ';">' + v + '</div></div>';
-      }
-      box.innerHTML = tile('В сети', online, 'people', 'var(--accent-green)') + tile('Ключей активно', active, 'keys', 'var(--accent-blue)') +
-        tile('Уведов в очереди', queue, 'alerts', 'var(--accent-orange)');
+      paint();
     }
+    function rtSub(btn, i) {
+      const panel = btn.closest('.rt-panel');
+      if (!panel) return;
+      panel.querySelectorAll('.rt-segs > button').forEach(function(b, k) { b.classList.toggle('on', k === i); });
+      panel.querySelectorAll(':scope > .rt-sub').forEach(function(s, k) { s.classList.toggle('on', k === i); });
+      const body = document.getElementById('rtBody');
+      if (body) body.scrollTop = 0;
+    }
+    function rtRefresh() {
+      const b = document.getElementById('rtRefBtn');
+      if (b) { b.classList.remove('spin'); void b.offsetWidth; b.classList.add('spin'); }
+      const t = window._rtTab || 'overview';
+      if (t === 'overview') { renderCreatorDash(); testSupabaseConnection(false); rtLoadRecent(); fetchGateFromCloud(); }
+      if (t === 'people') { refreshDeviceSessions(); refreshPeekAccounts(); }
+      if (t === 'keys') { refreshAccessKeysList(); renderAdminAssign(); }
+      if (t === 'alerts') refreshNoticeOutbox();
+      if (t === 'log') refreshActivityLog();
+    }
+    (function rtCommands() {
+      const out = document.getElementById('rtOut'), inp = document.getElementById('rtCmd');
+      if (!inp) return;
+      function say(t) { out.textContent = t || ''; out.style.display = t ? 'block' : 'none'; }
+      const TABS = { 'обзор': 'overview', overview: 'overview', home: 'overview', 'люди': 'people', people: 'people', users: 'people',
+        'ключи': 'keys', keys: 'keys', 'роли': 'play', roles: 'play', 'игра': 'play', 'алерты': 'alerts', alerts: 'alerts', 'уведы': 'alerts', 'лог': 'log', log: 'log' };
+      function run(raw) {
+        const p = raw.trim().toLowerCase().split(/\s+/), c = p[0], a = p[1];
+        if (TABS[c]) { showCreatorTab(TABS[c]); return ''; }
+        switch (c) {
+          case 'help': case '?': case 'помощь':
+            return 'обзор · люди · ключи · роли · алерты · лог\npin — копия PIN · db — проверка базы · r — обновить\ngate on|off — вход по ключу\nadmin — админка · exit — выйти из root';
+          case 'pin': copyCreatorPin(); return 'PIN скопирован';
+          case 'db': testSupabaseConnection(true); return 'проверяю базу…';
+          case 'r': case 'refresh': rtRefresh(); return 'обновляю…';
+          case 'gate':
+            if (a === 'on' || a === '1') { setGateEnabled(true); return 'вход: только по ключу'; }
+            if (a === 'off' || a === '0') { setGateEnabled(false); return 'вход: открытый'; }
+            return 'gate on | gate off';
+          case 'admin': openScreen('screenAdmin'); return '';
+          case 'exit': case 'quit': creatorGoBack(); return '';
+          default: return 'неизвестная команда: ' + c + ' (help)';
+        }
+      }
+      inp.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter') return;
+        const v = inp.value.trim();
+        inp.value = '';
+        say(v ? run(v) : '');
+        inp.blur();
+      });
+    })();
     window._kf = { q: '', s: 'all' };
     function setKeyFilter(k, v) {
       window._kf[k] = v;
@@ -10828,17 +10985,23 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
 
+    var RT_NAMES = { overview: 'Обзор', people: 'Люди', keys: 'Ключи', play: 'Роли', alerts: 'Алерты', log: 'Лог' };
     function showCreatorTab(id) {
       const map = { overview: 'Overview', people: 'People', keys: 'Keys', play: 'Play', log: 'Log', alerts: 'Alerts' };
+      window._rtTab = id;
       ['overview','people','keys','play','log','alerts'].forEach(function(k) {
         const panel = document.getElementById('crPanel' + map[k]);
         const nav = document.getElementById('crNav' + map[k]);
         if (panel) panel.classList.toggle('on', k === id);
         if (nav) nav.classList.toggle('on', k === id);
       });
-      const screen = document.getElementById('screenCreator');
-      if (screen) screen.scrollTop = 0;
+      const name = document.getElementById('rtTabName');
+      if (name) name.textContent = RT_NAMES[id] || id;
+      const body = document.getElementById('rtBody');
+      if (body) body.scrollTop = 0;
       window.scrollTo(0, 0);
+      try { rtSyncPills(); } catch (e) {}
+      if (id === 'overview') { rtLoadRecent(); }
       if (id === 'people') { refreshDeviceSessions(); refreshPeekAccounts(); }
       if (id === 'keys') { refreshAccessKeysList(); renderAdminAssign(); }
       if (id === 'log') refreshActivityLog();
@@ -12168,7 +12331,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     function toggleNoticeImportant(e) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       window._noticeImportant = !window._noticeImportant;
-      const row = document.querySelector('.notice-important-toggle');
+      const row = document.getElementById('rtImp');
       if (row) row.classList.toggle('on', window._noticeImportant);
     }
 
