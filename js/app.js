@@ -1,0 +1,9042 @@
+/* Multitool app logic
+ * Sections (search markers):
+ *   ONLINE / SEASON / THEME / GATE / SUPABASE / SHIFTS / ORDERS
+ *   ADMIN / CREATOR / NOTICES / CHAT / PUSH / ACCOUNT / DEV
+ */
+    (function initRealOnlineCounter() {
+      try {
+        const socket = io("https://pie-host.com", {
+          path: "/socket.io",
+          transports: ["websocket", "polling"],
+          reconnection: true,
+          reconnectionAttempts: 10,
+          timeout: 10000
+        });
+        socket.on("connect", () => {
+          socket.emit("join", "multitool_sieeki_room");
+          console.log("[online] connected");
+        });
+        socket.on("users_count", (count) => {
+          const el = document.getElementById("onlineCount");
+          if (el) el.innerText = count + " в сети";
+        });
+        socket.on("connect_error", (err) => {
+          console.warn("[online] connect_error:", err.message);
+        });
+        socket.on("disconnect", () => {
+          console.log("[online] disconnected");
+        });
+      } catch (e) {
+        console.warn("[online] init error:", e);
+      }
+    })();
+
+    // ===== Сезонные эффекты =====
+    const SEASON_MODES = ['off', 'snow', 'leaves', 'hearts'];
+    let seasonMode = localStorage.getItem('ios_season_mode') || 'off';
+    let particleInterval = null;
+
+    const LEAF_SVG = '<svg viewBox="0 0 24 24" fill="#e07a3a"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22.13C8.68 16.11 11 12.89 17 12V8M17 3C17 3 12 4 10 9C10 9 14.5 8 17 12C17 12 22 8 17 3Z"/></svg>';
+    const HEART_SVG = '<svg viewBox="0 0 24 24" fill="#ff4d6d"><path d="M12 21s-6.7-4.35-9.33-8.1C.7 10.2 1.2 6.8 3.8 5.2 6 3.8 8.6 4.5 12 7.2 15.4 4.5 18 3.8 20.2 5.2c2.6 1.6 3.1 5 .13 7.7C18.7 16.65 12 21 12 21z"/></svg>';
+    const HEART_ICON = '<path d="M12 21s-6.7-4.35-9.33-8.1C.7 10.2 1.2 6.8 3.8 5.2 6 3.8 8.6 4.5 12 7.2 15.4 4.5 18 3.8 20.2 5.2c2.6 1.6 3.1 5 .13 7.7C18.7 16.65 12 21 12 21z"/>';
+    const SNOW_ICON = '<path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/>';
+    const LEAF_ICON = '<path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22.13C8.68 16.11 11 12.89 17 12V8M17 3C17 3 12 4 10 9C10 9 14.5 8 17 12C17 12 22 8 17 3Z"/>';
+    const OFF_ICON = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>';
+
+    function updateSeasonMenuUI() {
+      const label = document.getElementById('seasonMenuLabel');
+      const icon = document.getElementById('seasonMenuIcon');
+      if (!label || !icon) return;
+      if (seasonMode === 'snow') {
+        label.textContent = 'Эффекты: Снег';
+        icon.innerHTML = SNOW_ICON;
+        icon.style.fill = 'var(--accent-blue)';
+      } else if (seasonMode === 'leaves') {
+        label.textContent = 'Эффекты: Листья';
+        icon.innerHTML = LEAF_ICON;
+        icon.style.fill = '#e07a3a';
+      } else if (seasonMode === 'hearts') {
+        label.textContent = 'Эффекты: Сердечки';
+        icon.innerHTML = HEART_ICON;
+        icon.style.fill = '#ff4d6d';
+      } else {
+        label.textContent = 'Эффекты: Выкл';
+        icon.innerHTML = OFF_ICON;
+        icon.style.fill = 'var(--text-sec)';
+      }
+    }
+
+    function clearParticles() {
+      if (particleInterval) {
+        clearInterval(particleInterval);
+        particleInterval = null;
+      }
+      document.querySelectorAll('.particle').forEach(el => el.remove());
+    }
+
+    function createSnowflake() {
+      const el = document.createElement('div');
+      el.className = 'particle snow';
+      el.style.left = Math.random() * window.innerWidth + 'px';
+      const size = (Math.random() * 5 + 3) + 'px';
+      el.style.width = size;
+      el.style.height = size;
+      const duration = Math.random() * 3.5 + 3.5;
+      el.style.animationDuration = duration + 's';
+      el.style.opacity = Math.random() * 0.5 + 0.35;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), duration * 1000 + 100);
+    }
+
+    function createLeaf() {
+      const el = document.createElement('div');
+      el.className = 'particle leaf';
+      el.style.left = Math.random() * window.innerWidth + 'px';
+      const size = (Math.random() * 8 + 10) + 'px';
+      el.style.width = size;
+      el.style.height = size;
+      el.innerHTML = LEAF_SVG;
+      const duration = Math.random() * 4 + 5;
+      el.style.animationDuration = duration + 's';
+      const colors = ['#e07a3a', '#c45c26', '#d4a017', '#b85c38', '#a0522d'];
+      const svg = el.querySelector('svg');
+      if (svg) svg.setAttribute('fill', colors[Math.floor(Math.random() * colors.length)]);
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), duration * 1000 + 100);
+    }
+
+
+    function createHeart() {
+      const el = document.createElement('div');
+      el.className = 'particle leaf';
+      el.style.left = Math.random() * window.innerWidth + 'px';
+      const size = (Math.random() * 10 + 12) + 'px';
+      el.style.width = size;
+      el.style.height = size;
+      el.innerHTML = HEART_SVG;
+      const duration = Math.random() * 3.5 + 4;
+      el.style.animationDuration = duration + 's';
+      const colors = ['#ff4d6d', '#ff2d55', '#ff7aa2', '#ff3b5c', '#ff8fab'];
+      const svg = el.querySelector('svg');
+      if (svg) svg.setAttribute('fill', colors[Math.floor(Math.random() * colors.length)]);
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), duration * 1000 + 100);
+    }
+    function startSeasonMode(mode) {
+      clearParticles();
+      seasonMode = mode;
+      localStorage.setItem('ios_season_mode', mode);
+      try { if (typeof scheduleCloudSave === 'function') scheduleCloudSave(); } catch (e) {}
+      updateSeasonMenuUI();
+      if (mode === 'snow') {
+        particleInterval = setInterval(createSnowflake, 160);
+      } else if (mode === 'leaves') {
+        particleInterval = setInterval(createLeaf, 280);
+      } else if (mode === 'hearts') {
+        particleInterval = setInterval(createHeart, 220);
+      }
+    }
+
+    function openSeasonModal() {
+      updateSeasonModalUI();
+      document.getElementById('seasonModal').classList.add('active');
+    }
+
+    function closeSeasonModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        document.getElementById('seasonModal').classList.remove('active');
+      }
+    }
+
+    function updateSeasonModalUI() {
+      ['seasonOptOff', 'seasonOptSnow', 'seasonOptLeaves', 'seasonOptHearts'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('selected');
+      });
+      const map = { off: 'seasonOptOff', snow: 'seasonOptSnow', leaves: 'seasonOptLeaves', hearts: 'seasonOptHearts' };
+      const active = document.getElementById(map[seasonMode] || 'seasonOptOff');
+      if (active) active.classList.add('selected');
+    }
+
+    function selectSeasonMode(mode) {
+      startSeasonMode(mode);
+      updateSeasonModalUI();
+      const names = { off: 'Эффекты выключены', snow: 'Снег включён', leaves: 'Листья включены', hearts: 'Сердечки включены' };
+      showToast(names[mode] || 'Готово', mode !== 'off');
+      playAppStoreSound();
+      setTimeout(() => closeSeasonModal({ target: document.getElementById('seasonModal') }), 180);
+    }
+
+    // Восстановить режим при загрузке
+    if (seasonMode !== 'off') startSeasonMode(seasonMode);
+    else updateSeasonMenuUI();
+
+    function playAppStoreSound() {
+      /* muted */
+    }
+    function hardReloadApp() {
+      try {
+        const u = new URL(location.href);
+        u.searchParams.set('_r', String(Date.now()));
+        location.replace(u.toString());
+      } catch (e) {
+        location.reload();
+      }
+    }
+
+    function triggerSuccessFlash() {
+      const flash = document.createElement('div');
+      flash.className = 'success-flash';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 600);
+    }
+
+    function showToast(text, isSuccess) {
+      try { devLog(String(text || ''), isSuccess ? 'ok' : 'warn'); } catch (e) {}
+      const toast = document.getElementById('toast');
+      const textEl = document.getElementById('toastText');
+      if (textEl) textEl.textContent = text;
+      else toast.textContent = text;
+      toast.classList.toggle('success', !!isSuccess);
+      toast.classList.remove('show');
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      clearTimeout(toast._hideTimer);
+      toast._hideTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    let screenTransitionLock = false;
+    let screenStack = [];
+    function clearScreenAnim(el) {
+      if (!el) return;
+      el.classList.remove('trans','leaving','enter-fwd','leave-fwd','enter-back','leave-back');
+    }
+    function setOnlyScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(function(s) {
+        s.classList.remove('active');
+        clearScreenAnim(s);
+      });
+      const target = document.getElementById(screenId);
+      if (target) target.classList.add('active');
+      document.body.classList.toggle('on-gate', screenId === 'screenGate');
+      screenStack = [screenId];
+      try { updateTabBar(screenId); } catch (e) {}
+    }
+    function openScreen(screenId) {
+      try { devLog('screen ' + screenId); } catch (e) {}
+      if (screenTransitionLock) return;
+      const current = document.querySelector('.screen.active');
+      const target = document.getElementById(screenId);
+      if (!target) {
+        alert('Нет экрана: ' + screenId);
+        return;
+      }
+      if (current === target) {
+        document.body.classList.toggle('on-gate', screenId === 'screenGate');
+        return;
+      }
+      const inStack = screenStack.lastIndexOf(screenId);
+      const goingBack = inStack !== -1 && inStack < screenStack.length - 1;
+      if (goingBack) screenStack = screenStack.slice(0, inStack + 1);
+      else screenStack.push(screenId);
+
+      if (!current || screenId === 'screenGate' || (current && current.id === 'screenGate')) {
+        setOnlyScreen(screenId);
+        afterScreenOpen(screenId);
+        try { if (screenId !== 'screenCreator') logAction('открыл «' + screenLabel(screenId) + '»'); } catch (e) {}
+        return;
+      }
+
+      screenTransitionLock = true;
+      document.querySelectorAll('.screen').forEach(function(s) {
+        if (s !== current && s !== target) { s.classList.remove('active'); clearScreenAnim(s); }
+      });
+      current.classList.remove('active');
+      clearScreenAnim(current);
+      target.classList.add('active', goingBack ? 'enter-back' : 'enter-fwd');
+      document.body.classList.toggle('on-gate', screenId === 'screenGate');
+      afterScreenOpen(screenId);
+      setTimeout(function() {
+        clearScreenAnim(target);
+        screenTransitionLock = false;
+      }, 340);
+    }
+
+    function afterScreenOpen(screenId) {
+      if (screenId === 'screenAdminFines') { try { finesInit(); } catch (e) {} }
+      if (screenId === 'screenAdmin') { try { pullFines().then(renderAdminHome); pullHomeBanner(); } catch (e) {} }
+      if (screenId === 'screenMenu') { try { renderMyFines(); pullFines().then(renderMyFines); } catch (e) {} }
+      if (screenId === 'screenAdminMsgs') { try { renderMsgScreen(); } catch (e) {} }
+      if (screenId === 'screenAdminBanner') { try { refreshAdminBannerStatus(true); } catch (e) {} }
+      if (screenId === 'screenMenu') { try { renderHomeBanner(); } catch (e) {} }
+      if (screenId === 'screenAdmin') { try { renderAdminHome(); pullOrderList().then(renderAdminHome); pullAdminSharedData().then(renderAdminHome); pullFines().then(renderAdminHome); } catch (e) {} }
+      try { updateTabBar(screenId); } catch (e) {}
+      if (screenId === 'screenStats') renderStats();
+      if (screenId === 'screenMyShifts') renderCalendar();
+      if (screenId === 'screenLocations') {
+        updateAllPointsMonthTitle();
+        renderLocationsList();
+      }
+      if (screenId === 'screenPointDetail') renderPointDetail();
+      if (screenId === 'screenEmployees') renderEmployees();
+      if (screenId === 'screenSalary') renderSalary();
+      if (screenId === 'screenControl') { renderControlPoints(); }
+      if (screenId === 'screenCreator') { renderCreatorScreen(); refreshPeekAccounts(); }
+      if (screenId === 'screenAdminKeys') renderAdminKeysScreen();
+      if (screenId === 'screenAdmin') { try { refreshAccessKeysList(true); } catch (e) {} }
+      if (screenId === 'screenAI') initAiScreen();
+      if (screenId === 'screenMenu') { renderSupplyCard(); pullSupplyDates(); renderStreak(); }
+      if (screenId === 'screenPayQr') fillPayQrForm();
+      if (screenId === 'screenOrder') { fillOrderPoints(); renderOrderCats(); pullOrderList(); pullOrderArchive(); }
+      if (screenId === 'screenAdminOrders') { selectedAdminOrderPoint = null; pullOrderList(); }
+      if (screenId === 'screenAdminFines') { try { renderFinesScreen(); pullFines().then(renderFinesScreen); } catch (e) {} }
+      if (screenId === 'screenSupply') { fillSupplyForm(); pullSupplyDates().then(fillSupplyForm); }
+      if (screenId === 'screenAdmin' || screenId === 'screenControl' || screenId === 'screenLocations' || screenId === 'screenEmployees' || screenId === 'screenPointDetail' || screenId === 'screenCreator') {
+        pullAdminSharedData().then(function(changed) {
+          if (!changed) return;
+          if (screenId === 'screenControl') { renderControlPoints(); }
+          if (screenId === 'screenLocations') renderLocationsList();
+          if (screenId === 'screenEmployees') renderEmployees();
+          if (screenId === 'screenPointDetail') renderPointDetail();
+        });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleGlobalMenu(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('globalDropdown');
+      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    window.addEventListener('click', () => {
+      const menu = document.getElementById('globalDropdown');
+      if (menu) menu.style.display = 'none';
+    });
+
+    document.getElementById('shiftDate').valueAsDate = new Date();
+
+    function getData() {
+      const data = localStorage.getItem('ios_multitool_data');
+      return data ? JSON.parse(data) : { shifts: [], deductions: [] };
+    }
+    function saveData(data) {
+      localStorage.setItem('ios_multitool_data', JSON.stringify(data));
+      scheduleCloudSave();
+    }
+
+    function getArchive() {
+      const data = localStorage.getItem('ios_multitool_archive');
+      return data ? JSON.parse(data) : [];
+    }
+    function saveArchive(arc) {
+      localStorage.setItem('ios_multitool_archive', JSON.stringify(arc));
+      scheduleCloudSave();
+    }
+
+    function getPaidAmount() {
+      const val = localStorage.getItem('ios_paid_amount');
+      return val ? parseFloat(val) : 1300;
+    }
+
+    function parseNum(v) {
+      if (v === null || v === undefined) return NaN;
+      return parseFloat(String(v).replace(/\s/g, '').replace(',', '.'));
+    }
+
+    let tempSelectedPaid = getPaidAmount();
+    function openSettingsModal() {
+      tempSelectedPaid = getPaidAmount();
+      updateModalUI();
+      document.getElementById('settingsModal').classList.add('active');
+    }
+    function closeSettingsModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) document.getElementById('settingsModal').classList.remove('active');
+    }
+    function selectPaidOption(val) { tempSelectedPaid = val; updateModalUI(); }
+    function updateModalUI() {
+      ['opt1300','opt1000','optCustom'].forEach(id => document.getElementById(id).classList.remove('selected'));
+      const customGroup = document.getElementById('customInputGroup');
+      if (tempSelectedPaid === 1300) { document.getElementById('opt1300').classList.add('selected'); customGroup.style.display = 'none'; }
+      else if (tempSelectedPaid === 1000) { document.getElementById('opt1000').classList.add('selected'); customGroup.style.display = 'none'; }
+      else { document.getElementById('optCustom').classList.add('selected'); customGroup.style.display = 'flex'; }
+    }
+    function saveSettings() {
+      let finalVal = tempSelectedPaid;
+      if (tempSelectedPaid === 'custom') {
+        const val = parseNum(document.getElementById('customPaidVal').value);
+        if (isNaN(val) || val < 0) return showToast('Введите сумму');
+        finalVal = val;
+      }
+      localStorage.setItem('ios_paid_amount', finalVal);
+      scheduleCloudSave();
+      closeSettingsModal();
+      render();
+    }
+
+    let cachedAdminPin = null;
+
+    function getAdminPin() {
+      if (cachedAdminPin && String(cachedAdminPin).length) return String(cachedAdminPin);
+      const pin = localStorage.getItem('ios_admin_pin');
+      return pin && pin.length ? pin : '7272';
+    }
+
+    function setAdminPinLocal(pin) {
+      cachedAdminPin = String(pin);
+      localStorage.setItem('ios_admin_pin', String(pin));
+    }
+
+    function setAdminPin(pin) {
+      setAdminPinLocal(pin);
+      // асинхронно в облако
+      pushAdminPinToCloud(pin).catch(function(e) {
+        console.warn('pin cloud', e);
+      });
+    }
+
+    async function pushAdminPinToCloud(pin) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'admin_pin',
+          value: String(pin),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+
+    async function fetchAdminPinFromCloud() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.admin_pin&select=value');
+        if (rows && rows[0] && rows[0].value) {
+          setAdminPinLocal(rows[0].value);
+          return rows[0].value;
+        }
+      } catch (e) {
+        console.warn('fetch pin', e);
+      }
+      return getAdminPin();
+    }
+
+    let cachedCreatorPass = null;
+    function getCreatorPasswordLocal() {
+      if (cachedCreatorPass && String(cachedCreatorPass).length) return String(cachedCreatorPass);
+      const v = localStorage.getItem('ios_creator_pass');
+      return v && v.length ? v : '';
+    }
+    function setCreatorPasswordLocal(pass) {
+      cachedCreatorPass = String(pass || '');
+      if (cachedCreatorPass) localStorage.setItem('ios_creator_pass', cachedCreatorPass);
+      else localStorage.removeItem('ios_creator_pass');
+    }
+    async function pushCreatorPasswordToCloud(pass) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'creator_password',
+          value: String(pass),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+    async function fetchCreatorPasswordFromCloud() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.creator_password&select=value');
+        if (rows && rows[0] && rows[0].value != null && String(rows[0].value).length) {
+          setCreatorPasswordLocal(rows[0].value);
+          return String(rows[0].value);
+        }
+      } catch (e) {
+        console.warn('fetch creator pass', e);
+      }
+      return getCreatorPasswordLocal();
+    }
+    /** Если в облаке пусто — один раз засеять стартовый пароль (потом только смена в создателе). */
+    async function ensureCreatorPasswordInCloud() {
+      let remote = await fetchCreatorPasswordFromCloud();
+      if (remote) return remote;
+      const seed = getCreatorPasswordLocal() || 'sieeki';
+      try {
+        await pushCreatorPasswordToCloud(seed);
+        setCreatorPasswordLocal(seed);
+        return seed;
+      } catch (e) {
+        console.warn('seed creator pass', e);
+        setCreatorPasswordLocal(seed);
+        return seed;
+      }
+    }
+    async function setCreatorPassword(pass) {
+      pass = String(pass || '').trim();
+      if (pass.length < 4) throw new Error('short');
+      setCreatorPasswordLocal(pass);
+      await pushCreatorPasswordToCloud(pass);
+    }
+
+    function getAdminFaceId() { return localStorage.getItem('ios_admin_webauthn') || ''; }
+    function setAdminFaceId(v) {
+      if (v) localStorage.setItem('ios_admin_webauthn', v);
+      else localStorage.removeItem('ios_admin_webauthn');
+    }
+    function b64url(buf) {
+      const b = btoa(String.fromCharCode.apply(null, new Uint8Array(buf)));
+      return b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    }
+    function fromB64url(s) {
+      s = (s || '').replace(/-/g,'+').replace(/_/g,'/');
+      while (s.length % 4) s += '=';
+      const bin = atob(s);
+      const out = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+    function faceError(e) {
+      const n = (e && e.name) || '';
+      if (!window.isSecureContext) return 'Нужен https. На этом localhost Face ID часто не стартует — залей на GitHub Pages и привяжи там.';
+      if (n === 'NotAllowedError') return 'Телефон не показал Face ID. Safari в превью/Local часто режет биометрию. Открой сайт в обычном Safari по https.';
+      if (n === 'InvalidStateError') return 'Уже привязано на этом телефоне';
+      if (n === 'NotSupportedError') return 'Этот браузер Face ID не умеет';
+      return (e && e.message) || n || 'не вышло';
+    }
+    async function registerAdminFace() {
+      if (!window.PublicKeyCredential) return showToast('Браузер без Face ID');
+      if (!window.isSecureContext) return showToast(faceError({ name: 'insecure' }));
+      const userId = crypto.getRandomValues(new Uint8Array(16));
+      const opts = {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp: { name: 'Мультитул' },
+        user: { id: userId, name: 'admin-' + Date.now(), displayName: 'Админ' },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+        authenticatorSelection: { userVerification: 'required' },
+        timeout: 90000
+      };
+      try {
+        const cred = await navigator.credentials.create({ publicKey: opts });
+        if (!cred) return showToast('Не вышло');
+        setAdminFaceId(b64url(cred.rawId));
+        showToast('Face ID привязан', true);
+      } catch (e) {
+        showToast(faceError(e));
+      }
+    }
+    async function loginAdminFace() {
+      if (!getAdminFaceId()) return showToast('Сначала привяжи Face ID в админке');
+      if (!window.PublicKeyCredential) return showToast('Браузер без Face ID');
+      try {
+        const assertion = await navigator.credentials.get({
+          publicKey: {
+            challenge: crypto.getRandomValues(new Uint8Array(32)),
+            allowCredentials: [{ type: 'public-key', id: fromB64url(getAdminFaceId()), transports: ['internal'] }],
+            userVerification: 'required',
+            timeout: 60000
+          }
+        });
+        if (!assertion) return showToast('Не вышло');
+        playAppStoreSound();
+        closeAdminAuthModal();
+        openScreen('screenAdmin');
+        showToast('Добро пожаловать!', true);
+      } catch (e) {
+        showToast(faceError(e));
+      }
+    }
+    function openAdminAuthModal() {
+      document.getElementById('adminPasswordInput').value = '';
+      document.getElementById('adminAuthModal').classList.add('active');
+      const faceBtn = document.getElementById('adminFaceBtn');
+      if (faceBtn) faceBtn.style.display = getAdminFaceId() ? 'block' : 'none';
+      setTimeout(function() { document.getElementById('adminPasswordInput').focus(); }, 200);
+      
+      // подтянуть свежий PIN с сервера (тихо)
+      fetchAdminPinFromCloud().then(function() {
+        const el = document.getElementById('creatorPinDisplay');
+        if (el) el.textContent = getAdminPin();
+      });
+    }
+
+    function closeAdminAuthModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        document.getElementById('adminAuthModal').classList.remove('active');
+      }
+    }
+
+    async function checkAdminPassword() {
+      const input = document.getElementById('adminPasswordInput');
+      const val = input.value.trim();
+      const modalBody = document.getElementById('adminAuthModalBody');
+      // свежий PIN с сервера перед проверкой
+      showToast('Проверка…');
+      try { await fetchAdminPinFromCloud(); } catch (e) {}
+      if (val === getAdminPin()) {
+        playAppStoreSound();
+        closeAdminAuthModal();
+        openScreen('screenAdmin');
+        showToast('Добро пожаловать!', true);
+      } else {
+        modalBody.classList.remove('modal-shake');
+        void modalBody.offsetWidth;
+        modalBody.classList.add('modal-shake');
+        showToast('Неверный пароль!');
+        input.value = '';
+      }
+    }
+
+    async function changeAdminPin() {
+      const cur = (document.getElementById('pinCurrent').value || '').trim();
+      const n1 = (document.getElementById('pinNew').value || '').trim();
+      const n2 = (document.getElementById('pinNew2').value || '').trim();
+      try { await fetchAdminPinFromCloud(); } catch (e) {}
+      if (cur !== getAdminPin()) return showToast('Неверный текущий PIN');
+      if (!/^\d{4,8}$/.test(n1)) return showToast('Новый PIN: 4–8 цифр');
+      if (n1 !== n2) return showToast('PIN не совпадает');
+      setAdminPinLocal(n1);
+      try {
+        await pushAdminPinToCloud(n1);
+        showToast('PIN сохранён на сервере', true);
+      } catch (e) {
+        showToast('Локально ок, сервер: ' + (e.message || 'ошибка'));
+      }
+      document.getElementById('pinCurrent').value = '';
+      document.getElementById('pinNew').value = '';
+      document.getElementById('pinNew2').value = '';
+      playAppStoreSound();
+      if (typeof triggerSuccessFlash === 'function') triggerSuccessFlash();
+      const el = document.getElementById('creatorPinDisplay');
+      if (el) el.textContent = getAdminPin();
+    }
+
+    function openCreatorAuthModal() {
+      document.getElementById('creatorPasswordInput').value = '';
+      document.getElementById('creatorAuthModal').classList.add('active');
+      setTimeout(() => document.getElementById('creatorPasswordInput').focus(), 200);
+    }
+    function closeCreatorAuthModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        document.getElementById('creatorAuthModal').classList.remove('active');
+      }
+    }
+    async function checkCreatorPassword() {
+      const input = document.getElementById('creatorPasswordInput');
+      const val = (input.value || '').trim();
+      const modalBody = document.getElementById('creatorAuthModalBody');
+      if (!val) return showToast('Введите пароль');
+      showToast('Проверка…');
+      let expected = '';
+      try {
+        expected = await ensureCreatorPasswordInCloud();
+      } catch (e) {
+        expected = getCreatorPasswordLocal();
+      }
+      if (!expected) {
+        showToast('Нет пароля в базе — проверь Supabase');
+        return;
+      }
+      if (val === expected) {
+        playAppStoreSound();
+        closeCreatorAuthModal();
+        openScreen('screenCreator');
+        renderCreatorScreen();
+        showToast('root: доступ', true);
+      } else {
+        modalBody.classList.remove('modal-shake');
+        void modalBody.offsetWidth;
+        modalBody.classList.add('modal-shake');
+        showToast('Неверный пароль!');
+        input.value = '';
+      }
+    }
+    function changeCreatorPasswordPrompt() {
+      const cur = prompt('Текущий пароль создателя');
+      if (cur == null) return;
+      const expected = getCreatorPasswordLocal();
+      if (expected && cur.trim() !== expected) {
+        showToast('Неверный текущий пароль');
+        return;
+      }
+      const next = prompt('Новый пароль (мин. 4 символа)');
+      if (next == null) return;
+      if (String(next).trim().length < 4) return showToast('Слишком короткий');
+      setCreatorPassword(String(next).trim()).then(function() {
+        showToast('Пароль создателя обновлён', true);
+      }).catch(function() {
+        showToast('Не удалось сохранить в облако');
+      });
+    }
+    function copyCreatorPin() {
+      navigator.clipboard.writeText(getAdminPin()).then(() => {
+        playAppStoreSound();
+        showToast('PIN скопирован', true);
+      }).catch(() => showToast('Не удалось скопировать'));
+    }
+
+    // ============ ТОЧКИ ============
+    const POINTS = {
+      'efimova':     { name: 'Ефимова 1/4',                 time: '9:00 — 23:00', vk: '' },
+      'gorohovaya':  { name: 'Гороховая 42',                time: '9:00 — 23:00', vk: '' },
+      'novgorod':    { name: 'Новгородский 6 (Подвал)',     time: '9:00 — 23:00', vk: '' },
+      'pervomay':    { name: 'Первомайская 15 (Сбер)',      time: '9:00 — 22:00', vk: '' },
+      'krasnoarm':   { name: '7-я Красноармейская улица, 2', time: '9:00 — 22:00', vk: '' }
+    };
+
+    function openEmployeeVk(empId) {
+      if (!empId) {
+        showToast('На точке никого нет');
+        return;
+      }
+      const emp = getEmployeeById(empId);
+      if (!emp) {
+        showToast('Сотрудник не найден');
+        return;
+      }
+      const link = (emp.vk || '').trim();
+      if (!link) {
+        showToast('У сотрудника нет ссылки VK');
+        return;
+      }
+      let url = link;
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      window.open(url, '_blank');
+      playAppStoreSound();
+    }
+
+    function getTodayDateKey() {
+      const now = new Date();
+      const d = String(now.getDate()).padStart(2, '0');
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      return d + '.' + m + '.' + now.getFullYear();
+    }
+    function getPointOpens() {
+      try { return JSON.parse(localStorage.getItem('ios_point_opens') || '{}'); }
+      catch (e) { return {}; }
+    }
+    function setPointOpens(d) {
+      localStorage.setItem('ios_point_opens', JSON.stringify(d || {}));
+    }
+    function getPointOpenToday(key) {
+      const all = getPointOpens();
+      const day = all[getTodayDateKey()] || {};
+      return day[key] || null;
+    }
+    function markPointOpen(key, rec) {
+      const all = getPointOpens();
+      const day = getTodayDateKey();
+      if (!all[day]) all[day] = {};
+      all[day][key] = rec || {
+        at: new Date().toTimeString().slice(0,5),
+        who: (getSession() && (getSession().name || getSession().code)) || 'админ',
+        src: 'manual'
+      };
+      setPointOpens(all);
+      pushPointOpens();
+      renderControlPoints();
+    }
+    function markPointClosed(key) {
+      const all = getPointOpens();
+      const day = getTodayDateKey();
+      if (all[day]) delete all[day][key];
+      setPointOpens(all);
+      pushPointOpens();
+      renderControlPoints();
+    }
+    function togglePointOpen(key) {
+      if (getPointOpenToday(key)) markPointClosed(key);
+      else markPointOpen(key);
+    }
+    async function pullPointOpens() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.point_opens&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return;
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return; } }
+        if (v && typeof v === 'object') setPointOpens(v);
+        renderControlPoints();
+      } catch (e) {}
+    }
+    async function pushPointOpens() {
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'point_opens', value: getPointOpens(), updated_at: new Date().toISOString() })
+        });
+      } catch (e) {}
+    }
+    function matchPointFromText(text) {
+      const t = String(text || '').toLowerCase();
+      if (!/открыт/.test(t)) return null;
+      if (/ефимов/.test(t)) return 'efimova';
+      if (/горохов/.test(t)) return 'gorohovaya';
+      if (/новгород|подвал/.test(t)) return 'novgorod';
+      if (/первомай/.test(t)) return 'pervomay';
+      if (/красноармей/.test(t)) return 'krasnoarm';
+      return null;
+    }
+
+    function renderControlPoints() {
+      const list = document.getElementById('controlPointsList');
+      const summary = document.getElementById('controlSummary');
+      const todayText = document.getElementById('controlTodayText');
+      if (!list) return;
+
+      const todayKey = getTodayDateKey();
+      const now = new Date();
+      const weekdays = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+      if (todayText) {
+        todayText.textContent = weekdays[now.getDay()] + ', ' + todayKey;
+      }
+
+      let filled = 0;
+      let empty = 0;
+
+      let html = '';
+      Object.keys(POINTS).forEach(key => {
+        const p = POINTS[key];
+        const pd = getPointData(key);
+        const state = pd.days[todayKey] || '';
+        let person = 'Никого нет';
+        let personClass = 'none';
+        let dotClass = 'none';
+        let cardClass = 'control-card empty-shift';
+        let empId = '';
+
+        if (state === 'green') {
+          empId = pd.greenName || '';
+          person = getEmployeeName(empId) || 'Зелёный (не выбран)';
+          personClass = 'green';
+          dotClass = 'green';
+          cardClass = 'control-card';
+          filled++;
+        } else if (state === 'red') {
+          empId = pd.redName || '';
+          person = getEmployeeName(empId) || 'Красный (не выбран)';
+          personClass = 'red';
+          dotClass = 'red';
+          cardClass = 'control-card';
+          filled++;
+        } else {
+          empty++;
+        }
+
+        const emp = empId ? getEmployeeById(empId) : null;
+        const hasVk = !!(emp && emp.vk && String(emp.vk).trim());
+        const linkClass = 'control-link-btn' + (hasVk ? '' : ' disabled');
+        const linkClick = empId
+          ? 'openEmployeeVk(\'' + empId + '\')'
+          : 'showToast(\'На точке никого нет\')';
+
+        html +=
+          '<div class="' + cardClass + '">' +
+            '<div class="control-status-dot ' + dotClass + '"></div>' +
+            '<div class="control-info">' +
+              '<h4>' + p.name + '</h4>' +
+              '<div class="control-person ' + personClass + '">' + person + '</div>' +
+              '<div class="control-time">' + p.time + '</div>' +
+            '</div>' +
+            '<div class="' + linkClass + '" onclick="event.stopPropagation(); ' + linkClick + '" title="VK сотрудника">' +
+              '<svg viewBox="0 0 24 24"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.02-1.304.587-1.496c.597-.19 1.365 1.26 2.178 1.818.615.422 1.082.33 1.082.33l2.172-.03s1.136-.07.597-.964c-.044-.073-.312-.658-1.606-1.86-1.355-1.258-1.173-1.054.458-3.23.993-1.325 1.39-2.134 1.266-2.48-.119-.33-.85-.242-.85-.242l-2.242.014s-.166-.023-.289.052c-.12.072-.198.24-.198.24s-.354.94-.825 1.74c-.993 1.69-1.39 1.78-1.553 1.675-.38-.244-.285-.98-.285-1.503 0-1.633.248-2.313-.483-2.49-.243-.058-.421-.097-1.042-.103-.796-.008-1.47.003-1.85.19-.254.124-.45.4-.33.416.148.02.482.09.66.332.228.312.22 1.012.22 1.012s.13 1.928-.305 2.166c-.3.164-.71-.17-1.593-1.7-.45-.78-.79-1.642-.79-1.642s-.065-.16-.182-.246c-.142-.103-.34-.136-.34-.136l-2.13.014s-.32.01-.437.148c-.104.122-.008.374-.008.374s1.66 3.886 3.54 5.844c1.723 1.796 3.68 1.68 3.68 1.68h.886z"/></svg>' +
+            '</div>' +
+          '</div>';
+      });
+
+      list.innerHTML = html;
+
+      if (summary) {
+        summary.innerHTML =
+          '<div class="control-stat"><div class="lbl">На смене</div><div class="num" style="color:var(--accent-green);">' + filled + '</div></div>' +
+          '<div class="control-stat"><div class="lbl">Пусто</div><div class="num" style="color:var(--accent-red);">' + empty + '</div></div>' +
+          '<div class="control-stat"><div class="lbl">Всего</div><div class="num" style="color:var(--accent-blue);">' + Object.keys(POINTS).length + '</div></div>';
+      }
+    }
+
+    let activePointKey = null;
+    let pointCalDate = new Date();
+
+    function getPointData(key) {
+      const all = JSON.parse(localStorage.getItem('ios_point_data') || '{}');
+      if (!all[key]) all[key] = { greenName: '', redName: '', days: {} };
+      return all[key];
+    }
+
+    function savePointData(key, data) {
+      const all = JSON.parse(localStorage.getItem('ios_point_data') || '{}');
+      all[key] = data;
+      localStorage.setItem('ios_point_data', JSON.stringify(all));
+      scheduleCloudSave();
+      scheduleAdminCloudSave();
+    }
+
+    function renderLocationsList() {
+      const container = document.getElementById('locationsList');
+      container.innerHTML = '';
+      Object.keys(POINTS).forEach(key => {
+        const p = POINTS[key];
+        const pd = getPointData(key);
+        const parts = [p.time];
+        const gName = getEmployeeName(pd.greenName);
+        const rName = getEmployeeName(pd.redName);
+        if (gName) parts.push(gName);
+        if (rName) parts.push(rName);
+        const subText = parts.join(' · ');
+        container.innerHTML += '<div class="location-card" onclick="openPointDetail(\'' + key + '\')">' +
+            '<div class="location-info">' +
+              '<h4>' + p.name + '</h4>' +
+              '<p>' + subText + '</p>' +
+            '</div>' +
+            '<div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>' +
+          '</div>';
+      });
+    }
+
+    function openPointDetail(key) {
+      activePointKey = key;
+      pointCalDate = new Date();
+      renderPointDetail();
+      openScreen('screenPointDetail');
+    }
+
+    function renderPointDetail() {
+      if (!activePointKey) return;
+      const p = POINTS[activePointKey];
+      const pd = getPointData(activePointKey);
+
+      document.getElementById('pointTitle').innerText = p.name;
+      document.getElementById('pointWorkTimeText').innerText = p.time;
+
+      const employees = getEmployees();
+      const greenSel = document.getElementById('greenSelect');
+      const redSel = document.getElementById('redSelect');
+      const optionsHtml = '<option value="">— не выбран —</option>' +
+        employees.map(e => '<option value="' + e.id + '">' + e.name + '</option>').join('');
+      greenSel.innerHTML = optionsHtml;
+      redSel.innerHTML = optionsHtml;
+
+      greenSel.value = pd.greenName || '';
+      redSel.value = pd.redName || '';
+
+      renderPointCalendar();
+      renderPointCounters();
+    }
+
+    function savePointEmployees() {
+      const pd = getPointData(activePointKey);
+      pd.greenName = document.getElementById('greenSelect').value;
+      pd.redName = document.getElementById('redSelect').value;
+      savePointData(activePointKey, pd);
+      playAppStoreSound();
+      showToast('Сохранено');
+    }
+
+    function changePointMonth(dir) {
+      pointCalDate.setMonth(pointCalDate.getMonth() + dir);
+      renderPointCalendar();
+      renderPointCounters();
+    }
+
+    function togglePointDay(dateKey) {
+      const pd = getPointData(activePointKey);
+      const cur = pd.days[dateKey];
+      if (cur === 'green') pd.days[dateKey] = 'red';
+      else if (cur === 'red') delete pd.days[dateKey];
+      else pd.days[dateKey] = 'green';
+      savePointData(activePointKey, pd);
+      renderPointCalendar();
+      renderPointCounters();
+      if (cur !== 'red') playAppStoreSound();
+    }
+
+    function clearPointScheduleMonth() {
+      if (!activePointKey) return;
+      const year = pointCalDate.getFullYear();
+      const month = pointCalDate.getMonth();
+      const monthNames = ["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+      if (!confirm('Очистить график за ' + monthNames[month] + ' ' + year + '?')) return;
+      const pd = getPointData(activePointKey);
+      if (!pd.days) pd.days = {};
+      let n = 0;
+      Object.keys(pd.days).forEach(function(k) {
+        const p = k.split('.');
+        if (p.length === 3 && parseInt(p[1], 10) === (month + 1) && parseInt(p[2], 10) === year) {
+          delete pd.days[k];
+          n++;
+        }
+      });
+      savePointData(activePointKey, pd);
+      renderPointCalendar();
+      renderPointCounters();
+      showToast(n ? ('Месяц очищен · ' + n + ' дн.') : 'Месяц и так пустой', true);
+    }
+
+    function clearPointScheduleAll() {
+      if (!activePointKey) return;
+      const name = (POINTS[activePointKey] && POINTS[activePointKey].name) || 'точку';
+      if (!confirm('Стереть весь график по точке «' + name + '»?')) return;
+      const pd = getPointData(activePointKey);
+      const n = Object.keys(pd.days || {}).length;
+      pd.days = {};
+      savePointData(activePointKey, pd);
+      renderPointCalendar();
+      renderPointCounters();
+      showToast(n ? ('График стёрт · ' + n + ' дн.') : 'Уже пусто', true);
+    }
+
+
+    // ============ ИИ-хелпер графика точки ============
+    const SCHED_AI_EXAMPLES = [
+      '5/2 с 1 числа начинает зелёный',
+      '2/2 с 1 числа',
+      'через день, с 1 зелёный'
+    ];
+    function fillSchedAiExample(i) {
+      const el = document.getElementById('schedAiInput');
+      if (!el) return;
+      el.value = SCHED_AI_EXAMPLES[i] || SCHED_AI_EXAMPLES[0];
+      el.focus();
+    }
+    function normalizePersonName(s) {
+      return String(s || '').trim().toLowerCase().replace(/ё/g, 'е');
+    }
+    function findEmployeeFuzzy(name) {
+      const q = normalizePersonName(name);
+      if (!q) return null;
+      const list = (typeof getEmployees === 'function') ? getEmployees() : [];
+      let best = null;
+      list.forEach(function(e) {
+        const n = normalizePersonName(e.name);
+        if (!n) return;
+        if (n === q || n.indexOf(q) === 0 || q.indexOf(n) === 0 || n.indexOf(q) >= 0) {
+          if (!best || n.length < normalizePersonName(best.name).length) best = e;
+        }
+      });
+      return best;
+    }
+    function dateKeyFromYMD(y, m0, d) {
+      return String(d).padStart(2, '0') + '.' + String(m0 + 1).padStart(2, '0') + '.' + y;
+    }
+    /**
+     * pattern: '5/2' | '2/2' | '1/1' | { on: 5, off: 2 }
+     * С первого числа блока anchorColor идут `on` дней, потом `off` дней другого, и так по кругу.
+     */
+    function parsePatternParts(pattern) {
+      if (pattern && typeof pattern === 'object' && pattern.on && pattern.off) {
+        return { on: Math.max(1, pattern.on | 0), off: Math.max(1, pattern.off | 0) };
+      }
+      const s = String(pattern || '2/2');
+      const m = s.match(/(\d+)\s*\/\s*(\d+)/);
+      if (m) return { on: Math.max(1, parseInt(m[1], 10)), off: Math.max(1, parseInt(m[2], 10)) };
+      if (s === '1/1') return { on: 1, off: 1 };
+      return { on: 2, off: 2 };
+    }
+    function applyPatternToMonth(pd, year, month, pattern, anchorDay, anchorColor) {
+      const total = new Date(year, month + 1, 0).getDate();
+      const parts = parsePatternParts(pattern);
+      const on = parts.on;
+      const off = parts.off;
+      const cycle = on + off;
+      const a = Math.max(1, Math.min(total, Number(anchorDay) || 1));
+      const colorA = anchorColor === 'red' ? 'red' : 'green';
+      const colorB = colorA === 'green' ? 'red' : 'green';
+      if (!pd.days) pd.days = {};
+      Object.keys(pd.days).forEach(function(k) {
+        const bits = k.split('.');
+        if (bits.length === 3 && parseInt(bits[1], 10) === (month + 1) && parseInt(bits[2], 10) === year) {
+          delete pd.days[k];
+        }
+      });
+      for (let d = 1; d <= total; d++) {
+        // позиция в цикле относительно якоря (день a = offset 0 = начало блока colorA)
+        var delta = d - a;
+        var offset = ((delta % cycle) + cycle) % cycle;
+        var col = offset < on ? colorA : colorB;
+        pd.days[dateKeyFromYMD(year, month, d)] = col;
+      }
+      return pd;
+    }
+    function parseSchedCommandLocal(text) {
+      const raw = String(text || '').trim();
+      if (!raw) return null;
+      const t = raw.toLowerCase().replace(/ё/g, 'е');
+
+      let pattern = '2/2';
+      // любые N/M: 5/2, 3/3, 4/2…
+      const nm = t.match(/(\d{1,2})\s*\/\s*(\d{1,2})/);
+      const through = t.match(/(\d{1,2})\s*через\s*(\d{1,2})/);
+      if (/через\s*день|чередуй\s*каждый|по\s*одному\s*дню|1\s*через\s*1/.test(t) && !nm && !through) {
+        pattern = '1/1';
+      } else if (nm) {
+        pattern = parseInt(nm[1], 10) + '/' + parseInt(nm[2], 10);
+      } else if (through) {
+        pattern = parseInt(through[1], 10) + '/' + parseInt(through[2], 10);
+      } else if (/два\s*через\s*два/.test(t)) {
+        pattern = '2/2';
+      }
+
+      // people: look for names after 2/2 or "зелёный X красный Y"
+      const employees = (typeof getEmployees === 'function') ? getEmployees() : [];
+      const found = [];
+      employees.forEach(function(e) {
+        const n = normalizePersonName(e.name);
+        if (n.length < 2) return;
+        if (t.indexOf(n) >= 0) found.push({ emp: e, pos: t.indexOf(n) });
+      });
+      found.sort(function(a, b) { return a.pos - b.pos; });
+      // unique by id
+      const uniq = [];
+      const seen = {};
+      found.forEach(function(f) {
+        if (seen[f.emp.id]) return;
+        seen[f.emp.id] = true;
+        uniq.push(f.emp);
+      });
+
+      let green = uniq[0] || null;
+      let red = uniq[1] || null;
+
+      // explicit "зелёный X" / "красный Y"
+      const gM = t.match(/зелен\w*\s+([а-яa-z\-]+)/i);
+      const rM = t.match(/красн\w*\s+([а-яa-z\-]+)/i);
+      if (gM) {
+        const e = findEmployeeFuzzy(gM[1]);
+        if (e) green = e;
+      }
+      if (rM) {
+        const e = findEmployeeFuzzy(rM[1]);
+        if (e) red = e;
+      }
+
+      // anchor days: "25 и 26", "25-26", "25, 26"
+      let anchorDays = [];
+      const dayPairs = t.match(/(\d{1,2})\s*(?:и|,|–|-|—)\s*(\d{1,2})/g);
+      if (dayPairs) {
+        dayPairs.forEach(function(chunk) {
+          const m = chunk.match(/(\d{1,2})\s*(?:и|,|–|-|—)\s*(\d{1,2})/);
+          if (m) {
+            const a = parseInt(m[1], 10), b = parseInt(m[2], 10);
+            if (a >= 1 && a <= 31) anchorDays.push(a);
+            if (b >= 1 && b <= 31 && b !== a) anchorDays.push(b);
+          }
+        });
+      }
+      // single day anchors
+      const worked = t.match(/работа\w*\s+([а-яa-z\-]+)/i) || t.match(/начина\w*\s+([а-яa-z\-]+)/i);
+      let anchorWho = worked ? worked[1] : null;
+      // "25 и 26 работал Илья" — name after работал
+      const workedName = t.match(/работал[аи]?\s+([а-яa-z\-]+)/i);
+      if (workedName) anchorWho = workedName[1];
+      const startsName = t.match(/начина(?:ет|ют|й)?\s+([а-яa-z\-]+)/i);
+      if (startsName) anchorWho = startsName[1];
+
+      if (!anchorDays.length) {
+        // "с 1 числа"
+        const from1 = t.match(/с\s*(\d{1,2})(?:\s*числ|\s*го|\s*ого)?/);
+        if (from1) anchorDays = [parseInt(from1[1], 10)];
+        else anchorDays = [1];
+      }
+
+      let anchorColor = 'green';
+      if (anchorWho) {
+        const who = findEmployeeFuzzy(anchorWho);
+        if (who && red && who.id === red.id) anchorColor = 'red';
+        else if (who && green && who.id === green.id) anchorColor = 'green';
+        else if (who && !green) { green = who; anchorColor = 'green'; }
+        else if (who && green && !red && who.id !== green.id) { red = who; anchorColor = 'red'; }
+      }
+
+      // If only one person found, use current selects
+      if (!green || !red) {
+        return {
+          pattern: pattern,
+          green: green,
+          red: red,
+          anchorDay: Math.min.apply(null, anchorDays),
+          anchorColor: anchorColor,
+          incomplete: true,
+          raw: raw
+        };
+      }
+
+      // order of names: first mentioned is often green unless explicit
+      if (!gM && !rM && uniq.length >= 2) {
+        green = uniq[0];
+        red = uniq[1];
+        if (anchorWho) {
+          const who = findEmployeeFuzzy(anchorWho);
+          if (who && who.id === red.id) anchorColor = 'red';
+          else if (who && who.id === green.id) anchorColor = 'green';
+        }
+      }
+
+      return {
+        pattern: pattern,
+        green: green,
+        red: red,
+        anchorDay: Math.min.apply(null, anchorDays),
+        anchorColor: anchorColor,
+        incomplete: false,
+        raw: raw
+      };
+    }
+
+    async function parseSchedCommandAi(text) {
+      const key = (typeof getGroqKey === 'function') ? getGroqKey() : '';
+      if (!key) return null;
+      const employees = (typeof getEmployees === 'function') ? getEmployees() : [];
+      const names = employees.map(function(e) { return e.name + ' (id:' + e.id + ')'; }).join(', ');
+      const year = pointCalDate.getFullYear();
+      const month = pointCalDate.getMonth() + 1;
+      const system = 'Ты помощник по графику смен. Ответь ТОЛЬКО JSON без markdown: ' +
+        '{"pattern":"2/2"|"1/1","greenId":"...","redId":"...","anchorDay":number,"anchorColor":"green"|"red"}. ' +
+        'pattern вида N/M (2/2, 5/2, 3/3…): N дней один, M дней другой. 1/1 = через день. ' +
+        'anchorDay — число месяца, с которого идёт блок anchorColor. ' +
+        'Месяц: ' + month + '.' + year + '. Сотрудники: ' + names + '. ' +
+        'greenId/redId — id из списка. Если имя не найдено — null.';
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + key
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            temperature: 0.1,
+            messages: [
+              { role: 'system', content: system },
+              { role: 'user', content: text }
+            ]
+          })
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        let content = (((data.choices || [])[0] || {}).message || {}).content || '';
+        content = content.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '');
+        const m = content.match(/\{[\s\S]*\}/);
+        if (!m) return null;
+        const j = JSON.parse(m[0]);
+        const green = employees.filter(function(e) { return e.id === j.greenId; })[0] || findEmployeeFuzzy(j.greenId);
+        const red = employees.filter(function(e) { return e.id === j.redId; })[0] || findEmployeeFuzzy(j.redId);
+        return {
+          pattern: j.pattern === '1/1' ? '1/1' : '2/2',
+          green: green,
+          red: red,
+          anchorDay: parseInt(j.anchorDay, 10) || 1,
+          anchorColor: j.anchorColor === 'red' ? 'red' : 'green',
+          incomplete: !(green && red),
+          raw: text,
+          fromAi: true
+        };
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function runSchedAi() {
+      if (!activePointKey) return showToast('Сначала открой точку');
+      const input = document.getElementById('schedAiInput');
+      const text = (input && input.value || '').trim();
+      if (!text) return showToast('Напиши команду');
+      const btn = document.getElementById('schedAiBtn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Думаю…'; }
+      try {
+        let plan = parseSchedCommandLocal(text);
+        // добираем зелёный/красный из селектов, если в тексте не нашли
+        const gs = document.getElementById('greenSelect');
+        const rs = document.getElementById('redSelect');
+        const gSel = gs && gs.value ? (typeof getEmployeeById === 'function' ? getEmployeeById(gs.value) : null) : null;
+        const rSel = rs && rs.value ? (typeof getEmployeeById === 'function' ? getEmployeeById(rs.value) : null) : null;
+        if (plan) {
+          if (!plan.green && gSel) plan.green = gSel;
+          if (!plan.red && rSel) plan.red = rSel;
+          if (plan.green && plan.red) plan.incomplete = false;
+        }
+        if (!plan || plan.incomplete) {
+          const ai = await parseSchedCommandAi(text);
+          if (ai) {
+            if (!ai.green && (plan && plan.green || gSel)) ai.green = (plan && plan.green) || gSel;
+            if (!ai.red && (plan && plan.red || rSel)) ai.red = (plan && plan.red) || rSel;
+            if (ai.green && ai.red) { ai.incomplete = false; plan = ai; }
+          }
+        }
+        if (!plan || !plan.green || !plan.red) {
+          showToast('Не распознал сотрудников — выбери зелёный/красный или уточни имена');
+          return;
+        }
+        const year = pointCalDate.getFullYear();
+        const month = pointCalDate.getMonth();
+        const pd = getPointData(activePointKey);
+        pd.greenName = plan.green.id;
+        pd.redName = plan.red.id;
+        applyPatternToMonth(pd, year, month, plan.pattern, plan.anchorDay, plan.anchorColor);
+        savePointData(activePointKey, pd);
+        // sync selects (gs/rs уже объявлены выше в том же try)
+        if (gs) gs.value = plan.green.id;
+        if (rs) rs.value = plan.red.id;
+        renderPointCalendar();
+        renderPointCounters();
+        try { playAppStoreSound(); } catch (e) {}
+        const gN = plan.green.name;
+        const rN = plan.red.name;
+        showToast('График проставлен', true);
+
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Проставить'; }
+      }
+    }
+
+
+    function renderPointCalendar() {
+      const pd = getPointData(activePointKey);
+      const year = pointCalDate.getFullYear();
+      const month = pointCalDate.getMonth();
+      const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+      document.getElementById('pointCalTitle').innerText = monthNames[month] + ' ' + year;
+
+      const grid = document.getElementById('pointCalGrid');
+      grid.innerHTML = '';
+
+      const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+      weekdays.forEach(w => { grid.innerHTML += '<div class="cal-weekday">' + w + '</div>'; });
+
+      const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+      const totalDays = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDayIndex; i++) {
+        grid.innerHTML += '<div class="cal-day empty"></div>';
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dStr = String(day).padStart(2, '0');
+        const mStr = String(month + 1).padStart(2, '0');
+        const dateKey = dStr + '.' + mStr + '.' + year;
+        const state = pd.days[dateKey] || '';
+        let cls = 'cal-day';
+        if (state === 'green') cls += ' green';
+        else if (state === 'red') cls += ' red';
+        grid.innerHTML += '<div class="' + cls + '" onclick="togglePointDay(\'' + dateKey + '\')">' + day + '</div>';
+      }
+    }
+
+    function renderPointCounters() {
+      if (!activePointKey) return;
+      const pd = getPointData(activePointKey);
+      const year = pointCalDate.getFullYear();
+      const month = pointCalDate.getMonth();
+      const totalDays = new Date(year, month + 1, 0).getDate();
+
+      let greenCount = 0;
+      let redCount = 0;
+      for (let day = 1; day <= totalDays; day++) {
+        const dStr = String(day).padStart(2, '0');
+        const mStr = String(month + 1).padStart(2, '0');
+        const key = dStr + '.' + mStr + '.' + year;
+        const st = pd.days[key];
+        if (st === 'green') greenCount++;
+        else if (st === 'red') redCount++;
+      }
+
+      const greenName = getEmployeeName(pd.greenName) || 'Зелёный';
+      const redName = getEmployeeName(pd.redName) || 'Красный';
+      document.getElementById('pointGreenNameLabel').innerText = greenName;
+      document.getElementById('pointRedNameLabel').innerText = redName;
+      document.getElementById('pointGreenCount').innerText = greenCount + ' смен';
+      document.getElementById('pointRedCount').innerText = redCount + ' смен';
+    }
+
+    function groupDaysList(arr) {
+      if (!arr || arr.length === 0) return '';
+      const groups = [];
+      let start = arr[0], prev = arr[0];
+      for (let i = 1; i < arr.length; i++) {
+        if (arr[i] === prev + 1) { prev = arr[i]; }
+        else {
+          groups.push(start === prev ? String(start) : start + '–' + prev);
+          start = arr[i]; prev = arr[i];
+        }
+      }
+      groups.push(start === prev ? String(start) : start + '–' + prev);
+      return groups.join(', ');
+    }
+
+    function getPointMonthDays(key, year, month) {
+      const pd = getPointData(key);
+      const greenDays = [];
+      const redDays = [];
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      for (let day = 1; day <= totalDays; day++) {
+        const dStr = String(day).padStart(2, '0');
+        const mStr = String(month + 1).padStart(2, '0');
+        const dateKey = dStr + '.' + mStr + '.' + year;
+        const state = pd.days[dateKey];
+        if (state === 'green') greenDays.push(day);
+        else if (state === 'red') redDays.push(day);
+      }
+      return {
+        pd,
+        greenDays,
+        redDays,
+        greenLabel: getEmployeeName(pd.greenName) || 'Зелёный',
+        redLabel: getEmployeeName(pd.redName) || 'Красный'
+      };
+    }
+
+    function sharePointSchedule() {
+      if (!activePointKey) return;
+      const p = POINTS[activePointKey];
+      const year = pointCalDate.getFullYear();
+      const month = pointCalDate.getMonth();
+      const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+      const data = getPointMonthDays(activePointKey, year, month);
+
+      let text = p.name + '\n' + p.time + '\n' + monthNames[month] + ' ' + year + '\n\n';
+      if (data.greenDays.length === 0 && data.redDays.length === 0) {
+        text += 'Пока пусто';
+      } else {
+        if (data.greenDays.length > 0) text += data.greenLabel + ' (' + data.greenDays.length + '): ' + groupDaysList(data.greenDays) + '\n\n';
+        if (data.redDays.length > 0) text += data.redLabel + ' (' + data.redDays.length + '): ' + groupDaysList(data.redDays);
+      }
+
+      if (navigator.share) {
+        navigator.share({ title: p.name, text: text }).then(() => playAppStoreSound()).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(text).then(() => {
+          playAppStoreSound();
+          showToast('График скопирован', true);
+        }).catch(() => showToast('Не удалось поделиться'));
+      }
+    }
+
+    // ===== Все точки — картинка =====
+    let allPointsCalDate = new Date();
+
+    function changeAllPointsMonth(dir) {
+      allPointsCalDate.setMonth(allPointsCalDate.getMonth() + dir);
+      updateAllPointsMonthTitle();
+    }
+
+    function updateAllPointsMonthTitle() {
+      const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+      const el = document.getElementById('allPointsMonthTitle');
+      if (el) el.innerText = monthNames[allPointsCalDate.getMonth()] + ' ' + allPointsCalDate.getFullYear();
+    }
+
+    function exportAllPointsImage() {
+      const year = allPointsCalDate.getFullYear();
+      const month = allPointsCalDate.getMonth();
+      const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+      const monthTitle = monthNames[month] + ' ' + year;
+
+      const keys = Object.keys(POINTS);
+      const blocks = keys.map(key => {
+        const p = POINTS[key];
+        const data = getPointMonthDays(key, year, month);
+        return { key, p, data };
+      });
+
+      const w = 780;
+      const pad = 32;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Предварительный расчёт высоты
+      let contentH = pad + 90; // header
+      blocks.forEach(b => {
+        contentH += 28; // name
+        contentH += 22; // time
+        contentH += 8;
+        const hasG = b.data.greenDays.length > 0;
+        const hasR = b.data.redDays.length > 0;
+        if (!hasG && !hasR) contentH += 26;
+        else {
+          if (hasG) contentH += 48;
+          if (hasR) contentH += 48;
+        }
+        contentH += 20; // gap between cards
+      });
+      contentH += 50; // footer
+
+      canvas.width = w;
+      canvas.height = Math.max(contentH, 500);
+
+      // Фон — чуть теплее, чем у отчёта
+      const bg = ctx.createLinearGradient(0, 0, w, canvas.height);
+      bg.addColorStop(0, '#0c0a08');
+      bg.addColorStop(0.4, '#12100e');
+      bg.addColorStop(1, '#0e0c0a');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, canvas.height);
+
+      // Рамка
+      ctx.strokeStyle = 'rgba(255, 159, 10, 0.2)';
+      ctx.lineWidth = 2;
+      roundRectPath(ctx, 14, 14, w - 28, canvas.height - 28, 22);
+      ctx.stroke();
+
+      // Акцент — оранжевый (админка)
+      const accent = ctx.createLinearGradient(pad, 0, w - pad, 0);
+      accent.addColorStop(0, '#ff9f0a');
+      accent.addColorStop(0.55, '#ff6b00');
+      accent.addColorStop(1, '#ff453a');
+      ctx.fillStyle = accent;
+      ctx.fillRect(pad, 26, w - pad * 2, 4);
+
+      let y = pad + 24;
+      ctx.textBaseline = 'top';
+
+      // Заголовок
+      ctx.font = '700 30px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('Графики точек', pad, y);
+      y += 38;
+
+      ctx.font = '500 18px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = '#ff9f0a';
+      ctx.fillText(monthTitle, pad, y);
+      y += 36;
+
+      blocks.forEach((b, idx) => {
+        const cardTop = y;
+        const hasG = b.data.greenDays.length > 0;
+        const hasR = b.data.redDays.length > 0;
+        let cardH = 28 + 22 + 8;
+        if (!hasG && !hasR) cardH += 26;
+        else {
+          if (hasG) cardH += 48;
+          if (hasR) cardH += 48;
+        }
+        cardH += 12;
+
+        // Карточка точки
+        roundRectPath(ctx, pad - 6, cardTop - 6, w - pad * 2 + 12, cardH, 16);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Имя точки
+        ctx.font = '700 20px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(b.p.name, pad + 8, y);
+        y += 28;
+
+        // Время
+        ctx.font = '400 15px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#8e8e93';
+        ctx.fillText(b.p.time, pad + 8, y);
+        y += 26;
+
+        if (!hasG && !hasR) {
+          ctx.font = '400 15px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = 'rgba(255,255,255,0.3)';
+          ctx.fillText('График пока пуст', pad + 8, y);
+          y += 26;
+        } else {
+          if (hasG) {
+            // зелёная точка
+            ctx.beginPath();
+            ctx.arc(pad + 14, y + 10, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#30d158';
+            ctx.fill();
+            ctx.font = '600 16px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillStyle = '#30d158';
+            ctx.fillText(b.data.greenLabel + '  ·  ' + b.data.greenDays.length + ' смен', pad + 28, y);
+            y += 22;
+            ctx.font = '400 15px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillStyle = '#c7c7cc';
+            const gText = groupDaysList(b.data.greenDays);
+            const gLines = wrapText(ctx, gText, pad + 28, y, w - pad * 2 - 36, 20);
+            y += Math.max(22, gLines * 20 + 4);
+          }
+          if (hasR) {
+            ctx.beginPath();
+            ctx.arc(pad + 14, y + 10, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff453a';
+            ctx.fill();
+            ctx.font = '600 16px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillStyle = '#ff453a';
+            ctx.fillText(b.data.redLabel + '  ·  ' + b.data.redDays.length + ' смен', pad + 28, y);
+            y += 22;
+            ctx.font = '400 15px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillStyle = '#c7c7cc';
+            const rText = groupDaysList(b.data.redDays);
+            const rLines = wrapText(ctx, rText, pad + 28, y, w - pad * 2 - 36, 20);
+            y += Math.max(22, rLines * 20 + 4);
+          }
+        }
+        y += 14;
+      });
+
+      // Футер
+      y += 8;
+      ctx.font = '500 14px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      const footer = 'Мультитул · Админ';
+      const fw = ctx.measureText(footer).width;
+      ctx.fillText(footer, (w - fw) / 2, y);
+
+      function roundRectPath(c, x, yy, width, height, r) {
+        c.beginPath();
+        c.moveTo(x + r, yy);
+        c.arcTo(x + width, yy, x + width, yy + height, r);
+        c.arcTo(x + width, yy + height, x, yy + height, r);
+        c.arcTo(x, yy + height, x, yy, r);
+        c.arcTo(x, yy, x + width, yy, r);
+        c.closePath();
+      }
+
+      function wrapText(c, text, x, yy, maxWidth, lineHeight) {
+        const words = text.split(', ');
+        let line = '';
+        let lineCount = 0;
+        for (let n = 0; n < words.length; n++) {
+          const test = line ? line + ', ' + words[n] : words[n];
+          if (c.measureText(test).width > maxWidth && line) {
+            c.fillText(line, x, yy + lineCount * lineHeight);
+            line = words[n];
+            lineCount++;
+          } else {
+            line = test;
+          }
+        }
+        if (line) {
+          c.fillText(line, x, yy + lineCount * lineHeight);
+          lineCount++;
+        }
+        return Math.max(lineCount, 1);
+      }
+
+      canvas.toBlob(function(blob) {
+        if (!blob) return showToast('Не удалось создать картинку');
+        const fileName = 'grafiki_' + monthNames[month].toLowerCase() + '_' + year + '.png';
+        if (navigator.canShare) {
+          try {
+            const file = new File([blob], fileName, { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+              navigator.share({ files: [file], title: 'Графики точек · ' + monthTitle })
+                .then(() => {
+                  playAppStoreSound();
+                  showToast('Графики готовы', true);
+                })
+                .catch(() => downloadBlob(blob, fileName));
+              return;
+            }
+          } catch (e) {}
+        }
+        downloadBlob(blob, fileName);
+      }, 'image/png');
+    }
+
+    // ============ СОТРУДНИКИ ============
+    function getEmployees() {
+      try {
+        return JSON.parse(localStorage.getItem('ios_employees') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+    function saveEmployees(list) {
+      localStorage.setItem('ios_employees', JSON.stringify(list));
+      scheduleCloudSave();
+      scheduleAdminCloudSave();
+    }
+    function getEmployeeById(id) {
+      if (!id) return null;
+      return getEmployees().find(e => e.id === id) || null;
+    }
+    function getEmployeeName(id) {
+      const e = getEmployeeById(id);
+      return e ? e.name : '';
+    }
+
+    function renderEmployees() {
+      const container = document.getElementById('employeesContainer');
+      const list = getEmployees();
+      if (list.length === 0) {
+        container.innerHTML = '<div style="color:var(--text-sec); font-size:14px;">Список пуст</div>';
+        return;
+      }
+      container.innerHTML = '';
+      list.forEach((emp, idx) => {
+        const safeName = String(emp.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeVk = String(emp.vk || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        container.innerHTML +=
+          '<div class="employee-row">' +
+            '<div class="employee-row-top">' +
+              '<input type="text" class="employee-input" value="' + safeName + '" onchange="renameEmployeeByIndex(' + idx + ', this.value)" placeholder="Имя">' +
+              '<div class="del-btn" onclick="askDeleteEmployee(' + idx + ')">✕</div>' +
+            '</div>' +
+            '<div class="employee-vk-row">' +
+              '<svg viewBox="0 0 24 24"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.132-.427.132-.427s-.02-1.304.587-1.496c.597-.19 1.365 1.26 2.178 1.818.615.422 1.082.33 1.082.33l2.172-.03s1.136-.07.597-.964c-.044-.073-.312-.658-1.606-1.86-1.355-1.258-1.173-1.054.458-3.23.993-1.325 1.39-2.134 1.266-2.48-.119-.33-.85-.242-.85-.242l-2.242.014s-.166-.023-.289.052c-.12.072-.198.24-.198.24s-.354.94-.825 1.74c-.993 1.69-1.39 1.78-1.553 1.675-.38-.244-.285-.98-.285-1.503 0-1.633.248-2.313-.483-2.49-.243-.058-.421-.097-1.042-.103-.796-.008-1.47.003-1.85.19-.254.124-.45.4-.33.416.148.02.482.09.66.332.228.312.22 1.012.22 1.012s.13 1.928-.305 2.166c-.3.164-.71-.17-1.593-1.7-.45-.78-.79-1.642-.79-1.642s-.065-.16-.182-.246c-.142-.103-.34-.136-.34-.136l-2.13.014s-.32.01-.437.148c-.104.122-.008.374-.008.374s1.66 3.886 3.54 5.844c1.723 1.796 3.68 1.68 3.68 1.68h.886z"/></svg>' +
+              '<input type="url" class="employee-vk-input" value="' + safeVk + '" onchange="updateEmployeeVkByIndex(' + idx + ', this.value)" placeholder="https://vk.com/...">' +
+            '</div>' +
+          '</div>';
+      });
+    }
+
+    function addEmployee() {
+      const input = document.getElementById('newEmployeeInput');
+      const vkInput = document.getElementById('newEmployeeVk');
+      const name = input.value.trim();
+      const vk = (vkInput && vkInput.value || '').trim();
+      if (!name) return showToast('Введите имя');
+      const list = getEmployees();
+      list.push({
+        id: 'emp_' + Date.now() + '_' + Math.floor(Math.random()*10000),
+        name: name,
+        vk: vk
+      });
+      saveEmployees(list);
+      input.value = '';
+      if (vkInput) vkInput.value = '';
+      playAppStoreSound();
+      renderEmployees();
+      showToast('Сотрудник добавлен', true);
+    }
+
+    function renameEmployeeByIndex(idx, newName) {
+      const list = getEmployees();
+      if (list[idx]) {
+        list[idx].name = newName.trim();
+        saveEmployees(list);
+      }
+    }
+
+    function updateEmployeeVkByIndex(idx, vk) {
+      const list = getEmployees();
+      if (list[idx]) {
+        list[idx].vk = (vk || '').trim();
+        saveEmployees(list);
+        showToast('VK сохранён', true);
+      }
+    }
+
+    let pendingDeleteIndex = null;
+    function askDeleteEmployee(idx) {
+      const list = getEmployees();
+      const emp = list[idx];
+      if (!emp) {
+        showToast('Не найден');
+        return;
+      }
+      pendingDeleteIndex = idx;
+      document.getElementById('confirmTitle').innerText = 'Удалить?';
+      document.getElementById('confirmText').innerText = (emp.name || 'Сотрудник') + ' будет отвязан со всех точек';
+      document.getElementById('confirmOverlay').classList.add('active');
+    }
+
+    function closeConfirm() {
+      pendingDeleteIndex = null;
+      document.getElementById('confirmOverlay').classList.remove('active');
+    }
+
+    function confirmYes() {
+      if (pendingDeleteIndex === null) {
+        closeConfirm();
+        return;
+      }
+      const idx = pendingDeleteIndex;
+      let list = getEmployees();
+      const emp = list[idx];
+      if (!emp) { closeConfirm(); return; }
+
+      const deletedId = emp.id;
+      const deletedName = emp.name;
+
+      list.splice(idx, 1);
+      saveEmployees(list);
+
+      const all = JSON.parse(localStorage.getItem('ios_point_data') || '{}');
+      Object.keys(all).forEach(k => {
+        if (all[k].greenName === deletedId) all[k].greenName = '';
+        if (all[k].redName === deletedId) all[k].redName = '';
+      });
+      localStorage.setItem('ios_point_data', JSON.stringify(all));
+      scheduleCloudSave();
+      scheduleAdminCloudSave();
+
+      closeConfirm();
+      renderEmployees();
+      playAppStoreSound();
+      showToast('Удалено: ' + deletedName);
+    }
+
+    // ============ ЗАРПЛАТА ============
+    let salaryMonthDate = new Date();
+
+    function getPayouts() {
+      try {
+        return JSON.parse(localStorage.getItem('ios_payouts') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+    function savePayouts(list) {
+      localStorage.setItem('ios_payouts', JSON.stringify(list));
+      scheduleCloudSave();
+    }
+
+    function changeSalaryMonth(dir) {
+      salaryMonthDate.setMonth(salaryMonthDate.getMonth() + dir);
+      renderSalary();
+    }
+
+    function renderSalary() {
+      const year = salaryMonthDate.getFullYear();
+      const month = salaryMonthDate.getMonth();
+      const monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+      document.getElementById('salaryMonthTitle').innerText = monthNames[month] + ' ' + year;
+
+      const arc = getArchive();
+      const monthWeeks = arc.filter(w => {
+        const match = w.dateRange.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+        if (!match) return false;
+        const m = parseInt(match[2], 10) - 1;
+        const y = parseInt(match[3], 10);
+        return m === month && y === year;
+      });
+
+      let totalShifts = 0;
+      let totalRevenue = 0;
+      let totalToPay = 0;
+
+      monthWeeks.forEach(w => {
+        totalShifts += w.shiftsCount;
+        totalRevenue += w.totalRevenue;
+        const avgRevenuePerShift = w.totalRevenue / w.shiftsCount;
+        const percent = Math.round(avgRevenuePerShift * 0.03);
+        totalToPay += (2300 + percent) * w.shiftsCount;
+      });
+
+      const monthStr = String(month+1).padStart(2,'0') + '.' + year;
+      const monthPayouts = getPayouts().filter(p => p.monthKey === monthStr);
+      const totalPaid = monthPayouts.reduce((acc, p) => acc + p.amount, 0);
+      const remaining = totalToPay - totalPaid;
+
+      const summary = document.getElementById('salarySummary');
+      if (monthWeeks.length === 0) {
+        summary.innerHTML = '<div style="color:var(--text-sec); font-size:14px;">За этот месяц нет закрытых недель</div>';
+      } else {
+        summary.innerHTML = 
+          '<div class="stat-grid">' +
+            '<div class="stat-box">' +
+              '<div class="card-title" style="margin:0;">Смен</div>' +
+              '<div class="stat-num">' + totalShifts + '</div>' +
+            '</div>' +
+            '<div class="stat-box">' +
+              '<div class="card-title" style="margin:0;">Выручка</div>' +
+              '<div class="stat-num">' + totalRevenue.toLocaleString('ru-RU') + ' ₽</div>' +
+            '</div>' +
+            '<div class="stat-box">' +
+              '<div class="card-title" style="margin:0;">К выплате</div>' +
+              '<div class="stat-num" style="color:var(--accent-green);">' + totalToPay.toLocaleString('ru-RU') + ' ₽</div>' +
+            '</div>' +
+            '<div class="stat-box">' +
+              '<div class="card-title" style="margin:0;">Выплачено</div>' +
+              '<div class="stat-num" style="color:var(--accent-orange);">' + totalPaid.toLocaleString('ru-RU') + ' ₽</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="margin-top: 14px; padding: 14px; background: var(--card-inner); border-radius: 12px; text-align: center;">' +
+            '<div style="font-size: 12px; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.2px;">Остаток</div>' +
+            '<div style="font-size: 26px; font-weight: 700; color: ' + (remaining > 0 ? 'var(--accent-red)' : 'var(--accent-green)') + '; margin-top: 4px;">' +
+              remaining.toLocaleString('ru-RU') + ' ₽' +
+            '</div>' +
+          '</div>';
+      }
+
+      const weeksEl = document.getElementById('salaryWeeks');
+      if (monthWeeks.length === 0) {
+        weeksEl.innerHTML = '<div style="color:var(--text-sec); font-size:14px;">Пусто</div>';
+      } else {
+        weeksEl.innerHTML = '';
+        monthWeeks.forEach(w => {
+          weeksEl.innerHTML += 
+            '<div class="shift-item">' +
+              '<div>' +
+                '<div class="shift-date" style="font-size:14px;">' + w.dateRange + '</div>' +
+                '<div class="shift-val">' + w.shiftsCount + ' смен · ' + w.totalRevenue.toLocaleString('ru-RU') + ' ₽</div>' +
+              '</div>' +
+            '</div>';
+        });
+      }
+
+      const payoutsEl = document.getElementById('payoutsList');
+      if (monthPayouts.length === 0) {
+        payoutsEl.innerHTML = '<div style="color:var(--text-sec); font-size:13px;">Выплат пока нет</div>';
+      } else {
+        payoutsEl.innerHTML = '';
+        monthPayouts.forEach(p => {
+          payoutsEl.innerHTML += 
+            '<div class="shift-item">' +
+              '<div>' +
+                '<div class="shift-date" style="color:var(--accent-green); font-size:15px;">+ ' + p.amount.toLocaleString('ru-RU') + ' ₽</div>' +
+                '<div class="shift-val">' + (p.note || '—') + ' · ' + p.date + '</div>' +
+              '</div>' +
+              '<div class="del-btn" onclick="deletePayout(\'' + p.id + '\')">✕</div>' +
+            '</div>';
+        });
+      }
+    }
+
+    function addPayout() {
+      const amountInput = document.getElementById('payoutAmount');
+      const noteInput = document.getElementById('payoutNote');
+      const amount = parseNum(amountInput.value);
+      const note = noteInput.value.trim();
+
+      if (isNaN(amount) || amount <= 0) {
+        showToast('Введите сумму');
+        amountInput.focus();
+        return;
+      }
+
+      const year = salaryMonthDate.getFullYear();
+      const month = salaryMonthDate.getMonth();
+      const monthKey = String(month+1).padStart(2,'0') + '.' + year;
+      const now = new Date();
+      const dateStr = String(now.getDate()).padStart(2,'0') + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + now.getFullYear();
+
+      const list = getPayouts();
+      list.push({ id: 'pay_' + Date.now(), amount, note, date: dateStr, monthKey });
+      savePayouts(list);
+
+      amountInput.value = '';
+      noteInput.value = '';
+
+      playAppStoreSound();
+      renderSalary();
+      showToast('Выплата добавлена: ' + amount.toLocaleString('ru-RU') + ' ₽');
+    }
+
+    function deletePayout(id) {
+      if (!confirm('Удалить выплату?')) return;
+      let list = getPayouts();
+      list = list.filter(p => p.id !== id);
+      savePayouts(list);
+      renderSalary();
+    }
+
+    // ============ СМЕНЫ ============
+
+    function todayISO() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+    function shiftDateToIso(raw) {
+      const d = String(raw || '').trim();
+      if (!d) return '';
+      if (d.charAt(4) === '-') return d.slice(0, 10);
+      const p = d.split('.');
+      if (p.length < 3) return '';
+      const dd = p[0].padStart(2,'0');
+      const mm = p[1].padStart(2,'0');
+      const yy = p[2].length === 2 ? ('20' + p[2]) : p[2];
+      return yy + '-' + mm + '-' + dd;
+    }
+    function allShiftIsoDays() {
+      const set = {};
+      function add(raw) {
+        const iso = shiftDateToIso(raw);
+        if (iso) set[iso] = true;
+      }
+      try { (getData().shifts || []).forEach(function(s){ add(s.date); }); } catch (e) {}
+      try {
+        (getArchive() || []).forEach(function(w) {
+          (w.shifts || []).forEach(function(s){ add(s && s.date); });
+        });
+      } catch (e) {}
+      return Object.keys(set).sort();
+    }
+    function todayIsoLocal() {
+      const n = new Date();
+      const y = n.getFullYear();
+      const m = String(n.getMonth()+1).padStart(2,'0');
+      const d = String(n.getDate()).padStart(2,'0');
+      return y + '-' + m + '-' + d;
+    }
+    function addDaysIso(iso, delta) {
+      const p = iso.split('-').map(Number);
+      const dt = new Date(p[0], p[1]-1, p[2]);
+      dt.setDate(dt.getDate() + delta);
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth()+1).padStart(2,'0');
+      const d = String(dt.getDate()).padStart(2,'0');
+      return y + '-' + m + '-' + d;
+    }
+    function countWeekStreak() {
+      const days = allShiftIsoDays();
+      if (!days.length) return 0;
+      const have = {};
+      days.forEach(function(d){ have[d] = true; });
+      const today = todayIsoLocal();
+      const yest = addDaysIso(today, -1);
+      let cursor = null;
+      if (have[today]) cursor = today;
+      else if (have[yest]) cursor = yest;
+      else return 0;
+      let n = 0;
+      while (have[cursor]) {
+        n++;
+        cursor = addDaysIso(cursor, -1);
+      }
+      return n;
+    }
+    function getStreak() { return { count: countWeekStreak() }; }
+    function persistStreakToCloudLocal() {
+      const n = countWeekStreak();
+      const last = (function(){
+        try {
+          const arr = (getData().shifts || []).map(function(s){ return shiftDateToIso(s.date); }).filter(Boolean).sort();
+          return arr[arr.length-1] || '';
+        } catch (e) { return ''; }
+      })();
+      localStorage.setItem('ios_shift_streak', JSON.stringify({ count: n, last: last, at: new Date().toISOString() }));
+      renderStreak();
+      return n;
+    }
+    function rebuildStreakFromShifts() {
+      return persistStreakToCloudLocal();
+    }
+    function bumpShiftStreak() { return rebuildStreakFromShifts(); }
+    function renderStreak() {
+      return;
+      const n = countWeekStreak();
+      const btn = document.getElementById('streakBtn');
+      if (!btn) return;
+      btn.style.display = 'inline-flex';
+      btn.innerHTML = '<svg class="tiktok-flame" viewBox="25 0 290 533.333" width="18" height="22"><path fill="currentColor" d="M165.494,533.333c-35.545-73.962-16.616-116.343,10.703-156.272c29.917-43.728,37.627-87.013,37.627-87.013s23.518,30.573,14.11,78.39c41.548-46.25,49.389-119.938,43.115-148.159c93.914,65.63,134.051,207.737,79.96,313.054c287.695-162.776,71.562-406.339,33.934-433.775c12.543,27.435,14.922,73.88-10.416,96.42C331.635,33.333,225.583,0,225.583,0c12.543,83.877-45.466,175.596-101.404,244.13c-1.965-33.446-4.053-56.525-21.641-88.531C98.59,216.357,52.157,265.884,39.583,326.76C22.551,409.2,52.341,469.562,165.494,533.333z"/></svg><span id="streakBadge">' + n + '</span>';
+      btn.style.color = n ? '#ff7a18' : '#8e8e93';
+      btn.classList.toggle('streak-on', n > 0);
+    }
+    function showStreakToast() {
+      const n = countWeekStreak();
+      if (!n) return showToast('Поставь смену сегодня — огонёк зажжётся');
+      showToast(n + ' дней подряд', true);
+    }
+
+    function addShift() {
+      try { logAction('добавил смену'); } catch (e) {}
+      const dateInput = document.getElementById('shiftDate').value;
+      const total = parseNum(document.getElementById('shiftTotal').value);
+      if (!dateInput || isNaN(total)) return showToast('Заполните поле!');
+      const parts = dateInput.split('-');
+      const year = parts[0], month = parts[1], day = parts[2];
+      let store = getData();
+      if (store.shifts.length >= 5) {
+        if (confirm('В отчете уже 5 смен. Отправить текущую неделю в архив?')) {
+          archiveWeek();
+          store = getData();
+        } else return;
+      }
+      store.shifts.push({ date: day + '.' + month + '.' + year, total: total });
+      saveData(store);
+      document.getElementById('shiftTotal').value = '';
+      render();
+      playAppStoreSound();
+      triggerSuccessFlash();
+      showToast('Смена добавлена', true);
+      const n = rebuildStreakFromShifts();
+      if (n) showToast(n + ' дней подряд', true);
+      const btn = document.querySelector('#screenShifts .btn-blue');
+      if (btn) { btn.classList.remove('success-pulse'); void btn.offsetWidth; btn.classList.add('success-pulse'); }
+    }
+
+    function addDeduction() {
+      try { logAction('добавил вычет'); } catch (e) {}
+      const reason = document.getElementById('deductionReason').value.trim();
+      const amount = parseNum(document.getElementById('deductionAmount').value);
+      if (!reason || isNaN(amount)) return showToast('Заполните поле!');
+      let store = getData();
+      store.deductions.push({ reason: reason, amount: amount });
+      saveData(store);
+      document.getElementById('deductionReason').value = '';
+      document.getElementById('deductionAmount').value = '';
+      render();
+      playAppStoreSound();
+      showToast('Вычет добавлен', true);
+    }
+
+    function deleteShift(idx) { let store = getData(); store.shifts.splice(idx, 1); saveData(store); render(); }
+    function deleteDeduction(idx) { let store = getData(); store.deductions.splice(idx, 1); saveData(store); render(); }
+
+    function render() {
+      try { rebuildStreakFromShifts(); } catch (e) {}
+      const store = getData();
+      const listCard = document.getElementById('shiftsListCard');
+      const reportCard = document.getElementById('reportCard');
+      const container = document.getElementById('shiftsContainer');
+      const currentPaid = getPaidAmount();
+
+      if (store.shifts.length === 0 && store.deductions.length === 0) {
+        listCard.style.display = 'none';
+        reportCard.style.display = 'none';
+        return;
+      }
+
+      listCard.style.display = 'block';
+      reportCard.style.display = 'block';
+      document.getElementById('counterBadge').innerText = store.shifts.length + '/5';
+      container.innerHTML = '';
+
+      store.shifts.forEach((s, idx) => {
+        container.innerHTML += '<div class="shift-item"><div><div class="shift-date">' + s.date + '</div><div class="shift-val">Итог: ' + s.total.toLocaleString('ru-RU') + ' ₽</div></div><div class="del-btn" onclick="deleteShift(' + idx + ')">✕</div></div>';
+      });
+      store.deductions.forEach((d, idx) => {
+        container.innerHTML += '<div class="shift-item"><div><div class="shift-date" style="color:var(--accent-red);">- ' + d.amount.toLocaleString('ru-RU') + ' ₽</div><div class="shift-val">' + d.reason + '</div></div><div class="del-btn" onclick="deleteDeduction(' + idx + ')">✕</div></div>';
+      });
+
+      let text = store.shifts.length > 0 ? 'Недельная с ' + store.shifts[0].date + ' по ' + store.shifts[store.shifts.length - 1].date + '\n\n' : 'Недельный отчет\n\n';
+      let totalRemaining = 0;
+      store.shifts.forEach(s => {
+        const percent = Math.round(s.total * 0.03);
+        const toPay = 2300 + percent;
+        const remain = toPay - currentPaid;
+        totalRemaining += remain;
+        text += 'Смена: ' + s.date + '\nИтог: ' + s.total + '\nК выплате: 2300 + ' + percent + ' = ' + toPay + '\nВыплачено: ' + currentPaid + '\nОстаток: ' + remain + '\n\n';
+      });
+      store.deductions.forEach(d => { text += '-' + d.amount + ' (' + d.reason + ')\n'; totalRemaining -= d.amount; });
+      text += '\nОстаток к выплате: ' + totalRemaining;
+      document.getElementById('reportText').innerText = text;
+    }
+
+    function copyReport() {
+      playAppStoreSound();
+      navigator.clipboard.writeText(document.getElementById('reportText').innerText);
+      showToast('Отчёт скопирован', true);
+      const btn = document.querySelector('#screenShifts .btn-green');
+      if (btn) { btn.classList.remove('success-pulse'); void btn.offsetWidth; btn.classList.add('success-pulse'); }
+    }
+
+    function exportReportImage() {
+      const store = getData();
+      if (!store.shifts.length) return showToast('Нет смен для отчёта');
+
+      const currentPaid = getPaidAmount();
+      const canvas = document.createElement('canvas');
+      const w = 720;
+      const pad = 36;
+      const lineH = 28;
+      const titleH = 52;
+      const metaH = 36;
+
+      // Считаем строки
+      const lines = [];
+      lines.push({ type: 'title', text: 'Недельный отчёт' });
+      const range = store.shifts[0].date + ' — ' + store.shifts[store.shifts.length - 1].date;
+      lines.push({ type: 'meta', text: range });
+      lines.push({ type: 'spacer' });
+
+      let totalRemaining = 0;
+      store.shifts.forEach((s, i) => {
+        const percent = Math.round(s.total * 0.03);
+        const toPay = 2300 + percent;
+        const remain = toPay - currentPaid;
+        totalRemaining += remain;
+        lines.push({ type: 'shift', text: 'Смена ' + (i + 1) + ' · ' + s.date });
+        lines.push({ type: 'row', label: 'Итог', value: s.total.toLocaleString('ru-RU') + ' ₽' });
+        lines.push({ type: 'row', label: 'К выплате', value: '2300 + ' + percent + ' = ' + toPay.toLocaleString('ru-RU') + ' ₽' });
+        lines.push({ type: 'row', label: 'Выплачено', value: currentPaid.toLocaleString('ru-RU') + ' ₽' });
+        lines.push({ type: 'row', label: 'Остаток', value: remain.toLocaleString('ru-RU') + ' ₽', accent: true });
+        lines.push({ type: 'spacer' });
+      });
+
+      store.deductions.forEach(d => {
+        totalRemaining -= d.amount;
+        lines.push({ type: 'deduct', text: '− ' + d.amount.toLocaleString('ru-RU') + ' ₽  ·  ' + d.reason });
+      });
+      if (store.deductions.length) lines.push({ type: 'spacer' });
+
+      lines.push({ type: 'total', label: 'Остаток к выплате', value: totalRemaining.toLocaleString('ru-RU') + ' ₽' });
+      lines.push({ type: 'footer', text: 'Мультитул' });
+
+      // Высота
+      let contentH = pad * 2 + 20;
+      lines.forEach(l => {
+        if (l.type === 'title') contentH += titleH;
+        else if (l.type === 'meta') contentH += metaH;
+        else if (l.type === 'spacer') contentH += 14;
+        else if (l.type === 'shift') contentH += 34;
+        else if (l.type === 'total') contentH += 48;
+        else if (l.type === 'footer') contentH += 40;
+        else contentH += lineH;
+      });
+
+      canvas.width = w;
+      canvas.height = Math.max(contentH, 400);
+      const ctx = canvas.getContext('2d');
+
+      // Фон
+      const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      bg.addColorStop(0, '#0a0a0c');
+      bg.addColorStop(1, '#141418');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, canvas.height);
+
+      // Тонкая рамка
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 2;
+      roundRect(ctx, 16, 16, w - 32, canvas.height - 32, 24);
+      ctx.stroke();
+
+      // Акцентная полоска сверху
+      const accent = ctx.createLinearGradient(pad, 0, w - pad, 0);
+      accent.addColorStop(0, '#0a84ff');
+      accent.addColorStop(0.5, '#bf5af2');
+      accent.addColorStop(1, '#30d158');
+      ctx.fillStyle = accent;
+      ctx.fillRect(pad, 28, w - pad * 2, 4);
+
+      let y = pad + 28;
+      ctx.textBaseline = 'top';
+
+      lines.forEach(l => {
+        if (l.type === 'title') {
+          ctx.font = '700 32px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(l.text, pad, y);
+          y += titleH;
+        } else if (l.type === 'meta') {
+          ctx.font = '500 18px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#8e8e93';
+          ctx.fillText(l.text, pad, y);
+          y += metaH;
+        } else if (l.type === 'spacer') {
+          y += 14;
+        } else if (l.type === 'shift') {
+          ctx.font = '600 20px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#0a84ff';
+          ctx.fillText(l.text, pad, y);
+          y += 34;
+        } else if (l.type === 'row') {
+          ctx.font = '400 17px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#8e8e93';
+          ctx.fillText(l.label, pad, y);
+          ctx.font = '600 17px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = l.accent ? '#30d158' : '#ffffff';
+          const vw = ctx.measureText(l.value).width;
+          ctx.fillText(l.value, w - pad - vw, y);
+          y += lineH;
+        } else if (l.type === 'deduct') {
+          ctx.font = '500 17px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#ff453a';
+          ctx.fillText(l.text, pad, y);
+          y += lineH;
+        } else if (l.type === 'total') {
+          y += 8;
+          // блок итога
+          roundRect(ctx, pad - 4, y - 8, w - pad * 2 + 8, 52, 14);
+          ctx.fillStyle = 'rgba(48, 209, 88, 0.12)';
+          ctx.fill();
+          ctx.font = '500 15px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#8e8e93';
+          ctx.fillText(l.label, pad + 12, y + 6);
+          ctx.font = '700 24px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = '#30d158';
+          const tw = ctx.measureText(l.value).width;
+          ctx.fillText(l.value, w - pad - 12 - tw, y + 4);
+          y += 48;
+        } else if (l.type === 'footer') {
+          y += 16;
+          ctx.font = '500 14px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillStyle = 'rgba(255,255,255,0.25)';
+          const fw = ctx.measureText(l.text).width;
+          ctx.fillText(l.text, (w - fw) / 2, y);
+        }
+      });
+
+      function roundRect(c, x, y, width, height, r) {
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.arcTo(x + width, y, x + width, y + height, r);
+        c.arcTo(x + width, y + height, x, y + height, r);
+        c.arcTo(x, y + height, x, y, r);
+        c.arcTo(x, y, x + width, y, r);
+        c.closePath();
+      }
+
+      canvas.toBlob(function(blob) {
+        if (!blob) return showToast('Не удалось создать картинку');
+        const fileName = 'otchet_' + new Date().toISOString().slice(0, 10) + '.png';
+        if (navigator.canShare) {
+          try {
+            const file = new File([blob], fileName, { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+              navigator.share({ files: [file], title: 'Недельный отчёт' })
+                .then(() => {
+                  playAppStoreSound();
+                  showToast('Отчёт готов', true);
+                })
+                .catch(() => downloadBlob(blob, fileName));
+              return;
+            }
+          } catch (e) {}
+        }
+        downloadBlob(blob, fileName);
+      }, 'image/png');
+    }
+
+    function downloadBlob(blob, fileName) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      playAppStoreSound();
+      triggerSuccessFlash();
+      showToast('Картинка сохранена', true);
+    }
+
+    function archiveWeek() {
+      try { logAction('закрыл неделю в архив'); } catch (e) {}
+      const store = getData();
+      if (store.shifts.length === 0) return showToast('Нечего сохранять');
+      const reportEl = document.getElementById('reportText');
+      const arc = getArchive();
+      arc.unshift({
+        id: Date.now(),
+        dateRange: store.shifts[0].date + ' — ' + store.shifts[store.shifts.length - 1].date,
+        shiftsCount: store.shifts.length,
+        totalRevenue: store.shifts.reduce(function(acc, s) { return acc + (Number(s.total) || 0); }, 0),
+        reportText: reportEl ? reportEl.innerText : '',
+        shifts: store.shifts.slice(),
+        deductions: (store.deductions || []).slice(),
+        paidAmount: getPaidAmount(),
+        closedAt: new Date().toISOString()
+      });
+      saveArchive(arc);
+      localStorage.removeItem('ios_multitool_data');
+      render();
+      playAppStoreSound();
+      triggerSuccessFlash();
+      persistStreakToCloudLocal();
+      showToast('Неделя сохранена в архив', true);
+    }
+
+    let _openedArchiveId = null;
+
+    function openArchiveWeek(id) {
+      const arc = getArchive();
+      const item = arc.find(function(x) { return String(x.id) === String(id); });
+      if (!item) return showToast('Неделя не найдена');
+      _openedArchiveId = item.id;
+      const title = document.getElementById('arcWeekTitle');
+      const sub = document.getElementById('arcWeekSub');
+      const shiftsN = document.getElementById('arcWeekShifts');
+      const rev = document.getElementById('arcWeekRev');
+      const list = document.getElementById('arcWeekShiftsList');
+      const dedCard = document.getElementById('arcWeekDedCard');
+      const dedList = document.getElementById('arcWeekDedList');
+      const report = document.getElementById('arcWeekReport');
+      if (title) title.textContent = item.dateRange || 'Неделя';
+      if (sub) {
+        let s = 'из архива';
+        if (item.closedAt) {
+          try {
+            const d = new Date(item.closedAt);
+            if (!isNaN(d.getTime())) s = 'закрыта ' + d.toLocaleString('ru-RU');
+          } catch (e) {}
+        }
+        sub.textContent = s;
+      }
+      if (shiftsN) shiftsN.textContent = String(item.shiftsCount || (item.shifts && item.shifts.length) || 0);
+      if (rev) rev.textContent = (Number(item.totalRevenue) || 0).toLocaleString('ru-RU') + ' ₽';
+      if (list) {
+        const shifts = item.shifts || [];
+        if (!shifts.length) {
+          list.innerHTML = '<div style="color:var(--text-sec);font-size:13px;line-height:1.4;">Старый архив без детализации смен — ниже полный текст отчёта.</div>';
+        } else {
+          const paid = item.paidAmount != null ? item.paidAmount : getPaidAmount();
+          list.innerHTML = shifts.map(function(s) {
+            const total = Number(s.total) || 0;
+            const percent = Math.round(total * 0.03);
+            const toPay = 2300 + percent;
+            const remain = toPay - paid;
+            return '<div class="shift-item"><div><div class="shift-date">' + escapeHtml(s.date || '') +
+              '</div><div class="shift-val">Итог: ' + total.toLocaleString('ru-RU') + ' ₽ · к выплате ' +
+              toPay.toLocaleString('ru-RU') + ' · ост. ' + remain.toLocaleString('ru-RU') +
+              '</div></div></div>';
+          }).join('');
+        }
+      }
+      const deds = item.deductions || [];
+      if (dedCard && dedList) {
+        if (!deds.length) {
+          dedCard.style.display = 'none';
+          dedList.innerHTML = '';
+        } else {
+          dedCard.style.display = 'block';
+          dedList.innerHTML = deds.map(function(d) {
+            return '<div class="shift-item"><div><div class="shift-date" style="color:var(--accent-red);">− ' +
+              (Number(d.amount) || 0).toLocaleString('ru-RU') + ' ₽</div><div class="shift-val">' +
+              escapeHtml(d.reason || '') + '</div></div></div>';
+          }).join('');
+        }
+      }
+      if (report) report.textContent = item.reportText || 'Нет текста отчёта';
+      openScreen('screenArchiveWeek');
+      try { renderArcWeekChart(item); } catch (e) {}
+    }
+
+    function copyArchiveWeekReport() {
+      const el = document.getElementById('arcWeekReport');
+      const t = el ? el.innerText : '';
+      if (!t) return showToast('Пусто');
+      navigator.clipboard.writeText(t).then(function() {
+        playAppStoreSound();
+        showToast('Скопировано', true);
+      }).catch(function() { showToast('Не удалось скопировать'); });
+    }
+
+    function deleteOpenedArchiveWeek() {
+      if (_openedArchiveId == null) return;
+      deleteArchiveItem(_openedArchiveId);
+      _openedArchiveId = null;
+      openScreen('screenStats');
+    }
+
+    function deleteArchiveItem(id) {
+      if (!confirm('Удалить эту неделю из архива?')) return;
+      let arc = getArchive();
+      arc = arc.filter(function(item) { return String(item.id) !== String(id); });
+      saveArchive(arc);
+      renderStats();
+      showToast('Удалено из архива');
+    }
+
+    function resetWeek() {
+      if (confirm('Сбросить текущий отчет без сохранения?')) { 
+        localStorage.removeItem('ios_multitool_data'); 
+        render(); 
+      }
+    }
+
+    let currentCalDate = new Date();
+    function getMonthShifts() {
+      const data = localStorage.getItem('ios_month_shifts');
+      return data ? JSON.parse(data) : {};
+    }
+    function saveMonthShifts(shifts) {
+      localStorage.setItem('ios_month_shifts', JSON.stringify(shifts));
+      scheduleCloudSave();
+    }
+
+    function changeMonth(dir) {
+      currentCalDate.setMonth(currentCalDate.getMonth() + dir);
+      renderCalendar();
+    }
+
+    function toggleCalendarDay(dateStr) {
+      let shifts = getMonthShifts();
+      if (shifts[dateStr]) {
+        delete shifts[dateStr];
+        showToast('Смена удалена');
+      } else {
+        shifts[dateStr] = true;
+        showToast('Смена проставлена');
+        playAppStoreSound();
+      }
+      saveMonthShifts(shifts);
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const year = currentCalDate.getFullYear();
+      const month = currentCalDate.getMonth();
+      const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+      document.getElementById('calMonthTitle').innerText = monthNames[month] + ' ' + year;
+
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = '';
+
+      const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+      weekdays.forEach(w => { grid.innerHTML += '<div class="cal-weekday">' + w + '</div>'; });
+
+      const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      const shifts = getMonthShifts();
+
+      for (let i = 0; i < firstDayIndex; i++) {
+        grid.innerHTML += '<div class="cal-day empty"></div>';
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dStr = String(day).padStart(2, '0');
+        const mStr = String(month + 1).padStart(2, '0');
+        const dateKey = dStr + '.' + mStr + '.' + year;
+        const isActive = shifts[dateKey] ? 'active-shift' : '';
+        grid.innerHTML += '<div class="cal-day ' + isActive + '" onclick="toggleCalendarDay(\'' + dateKey + '\')">' + day + '</div>';
+      }
+    }
+
+    function getNotes() { return JSON.parse(localStorage.getItem('ios_notes') || '[]'); }
+    function saveNotes(notes) {
+      localStorage.setItem('ios_notes', JSON.stringify(notes));
+      scheduleCloudSave();
+    }
+    function addNote() {
+      try { logAction('сохранил заметку'); } catch (e) {}
+      const val = document.getElementById('noteInput').value.trim();
+      if (!val) return;
+      const notes = getNotes();
+      notes.push({ text: val, done: false });
+      saveNotes(notes);
+      playAppStoreSound();
+      showToast('Заметка сохранена', true);
+      document.getElementById('noteInput').value = '';
+      renderNotes();
+    }
+    function toggleNote(idx) {
+      const notes = getNotes();
+      notes[idx].done = !notes[idx].done;
+      saveNotes(notes);
+      renderNotes();
+    }
+    function deleteNote(idx) {
+      const notes = getNotes();
+      notes.splice(idx, 1);
+      saveNotes(notes);
+      renderNotes();
+    }
+    function renderNotes() {
+      const container = document.getElementById('notesContainer');
+      const notes = getNotes();
+      if(notes.length === 0) return container.innerHTML = '<div style="color:var(--text-sec); font-size:14px;">Заметок пока нет</div>';
+      container.innerHTML = '';
+      notes.forEach((n, idx) => {
+        container.innerHTML += 
+          '<div class="note-item">' +
+            '<div class="note-left" onclick="toggleNote(' + idx + ')">' +
+              '<div class="checkbox ' + (n.done ? 'checked' : '') + '"></div>' +
+              '<span class="note-text ' + (n.done ? 'done' : '') + '">' + n.text + '</span>' +
+            '</div>' +
+            '<div class="del-btn" onclick="deleteNote(' + idx + ')">✕</div>' +
+          '</div>';
+      });
+    }
+
+    function setCash(val) {
+      document.getElementById('calcPaid').value = val;
+      calculateChange();
+    }
+    function calculateChange() {
+      const bill = parseNum(document.getElementById('calcBill').value) || 0;
+      const paid = parseNum(document.getElementById('calcPaid').value) || 0;
+      const resEl = document.getElementById('changeResult');
+      if (paid >= bill && bill > 0) {
+        resEl.innerText = (paid - bill).toLocaleString('ru-RU') + ' ₽';
+        resEl.style.color = "var(--accent-green)";
+      } else if (bill > paid) {
+        resEl.innerText = 'Нехватает ' + (bill - paid).toLocaleString('ru-RU') + ' ₽';
+        resEl.style.color = "var(--accent-red)";
+      } else {
+        resEl.innerText = '0 ₽';
+        resEl.style.color = "var(--accent-green)";
+      }
+    }
+
+    function renderStats() {
+      try { renderWeeksTrend(); } catch (e) {}
+      const store = getData();
+      document.getElementById('statShiftsCount').innerText = store.shifts.length;
+      if (store.shifts.length > 0) {
+        const sum = store.shifts.reduce((acc, s) => acc + s.total, 0);
+        const avg = Math.round(sum / store.shifts.length);
+        document.getElementById('statAvgRevenue').innerText = avg.toLocaleString('ru-RU') + ' ₽';
+      } else {
+        document.getElementById('statAvgRevenue').innerText = '0 ₽';
+      }
+
+      const arc = getArchive();
+      const container = document.getElementById('archiveContainer');
+      if (arc.length === 0) {
+        container.innerHTML = '<div style="color:var(--text-sec); font-size:14px;">Архив пуст</div>';
+        return;
+      }
+      container.innerHTML = '';
+      arc.forEach(function(item) {
+        const id = item.id;
+        const rev = (Number(item.totalRevenue) || 0).toLocaleString('ru-RU');
+        container.innerHTML +=
+          '<div class="archive-item" onclick="openArchiveWeek(' + id + ')" style="display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;">' +
+            '<div style="min-width:0;flex:1;padding-right:10px;">' +
+              '<div style="font-weight:700; font-size:15px; color:#fff;">' + escapeHtml(item.dateRange || '') + '</div>' +
+              '<div style="font-size:13px; color:var(--text-sec); margin-top:3px;">' +
+                'Смен: ' + (item.shiftsCount || 0) + ' · Выручка: ' + rev + ' ₽ · открыть' +
+              '</div>' +
+            '</div>' +
+            '<div style="color:var(--text-sec);font-size:18px;flex-shrink:0;">›</div>' +
+          '</div>';
+      });
+    }
+
+
+    // ============ GROQ AI ============
+    const GROQ_MODELS = ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile', 'openai/gpt-oss-20b'];
+    let GROQ_MODEL = GROQ_MODELS[0];
+    let aiMessages = [];
+    let aiBusy = false;
+
+    function getGroqKey() {
+      return (localStorage.getItem('ios_groq_key') || '').trim();
+    }
+    function setGroqKey(key) {
+      localStorage.setItem('ios_groq_key', (key || '').trim());
+    }
+
+    function saveGroqKey() {
+      const el = document.getElementById('groqApiKeyInput');
+      const key = (el && el.value || '').trim();
+      if (!key) return showToast('Вставьте ключ');
+      if (!/^gsk_/i.test(key)) {
+        showToast('Обычно ключ начинается с gsk_');
+      }
+      setGroqKey(key);
+      playAppStoreSound();
+      if (typeof triggerSuccessFlash === 'function') triggerSuccessFlash();
+      showToast('Ключ сохранён', true);
+      initAiScreen();
+      // после сохранения прячем туториал через мгновение
+      setTimeout(function() {
+        const keyCard = document.getElementById('aiKeyCard');
+        if (keyCard && getGroqKey()) keyCard.style.display = 'none';
+      }, 600);
+    }
+
+    function saveGroqKeyFromAccount() {
+      const el = document.getElementById('accountGroqKey');
+      const key = (el && el.value || '').trim();
+      if (!key) return showToast('Вставьте ключ');
+      setGroqKey(key);
+      playAppStoreSound();
+      showToast('Ключ AI сохранён', true);
+    }
+
+    function initAiScreen() {
+      const hasKey = !!getGroqKey();
+      const keyCard = document.getElementById('aiKeyCard');
+      if (keyCard) keyCard.style.display = hasKey ? 'none' : 'block';
+      const keyInput = document.getElementById('groqApiKeyInput');
+      if (keyInput) keyInput.value = hasKey ? getGroqKey() : '';
+      const st = document.getElementById('aiKeyStatus');
+      if (st) {
+        if (hasKey) {
+          st.className = 'ai-key-status';
+          st.textContent = 'Ключ сохранён на этом устройстве';
+        } else {
+          st.className = 'ai-key-status off';
+          st.textContent = 'Ключ пока не сохранён';
+        }
+      }
+      renderAiMessages();
+    }
+
+    function toggleAiTutorial() {
+      const keyCard = document.getElementById('aiKeyCard');
+      if (!keyCard) return;
+      const open = keyCard.style.display === 'none' || !keyCard.style.display;
+      keyCard.style.display = open ? 'block' : 'none';
+      if (open) {
+        const keyInput = document.getElementById('groqApiKeyInput');
+        if (keyInput) {
+          keyInput.value = getGroqKey() || '';
+          setTimeout(function() { keyInput.focus(); }, 200);
+        }
+        keyCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function clearAiChat() {
+      aiMessages = [];
+      renderAiMessages();
+      showToast('Чат очищен');
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatAiMarkdown(text) {
+      let s = escapeHtml(String(text || ''));
+      // code `inline`
+      s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // bold **text** or __text__
+      s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+      // italic *text* or _text_ (after bold)
+      s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+      // headers ### ## #
+      s = s.replace(/^###\s+(.+)$/gm, '<strong>$1</strong>');
+      s = s.replace(/^##\s+(.+)$/gm, '<strong>$1</strong>');
+      s = s.replace(/^#\s+(.+)$/gm, '<strong>$1</strong>');
+      // strip table pipes noise like | **5. ...** |
+      s = s.replace(/^\|\s*/gm, '');
+      s = s.replace(/\s*\|$/gm, '');
+      s = s.replace(/\|/g, ' · ');
+      // unordered lists - line starts with - or *
+      s = s.replace(/^(?:- |\* )(.+)$/gm, '• $1');
+      // numbered lists keep as is visually
+      // line breaks
+      s = s.replace(/\n\n+/g, '</p><p>');
+      s = s.replace(/\n/g, '<br>');
+      return '<p>' + s + '</p>';
+    }
+
+    function renderAiMessages() {
+      const box = document.getElementById('aiChatMessages');
+      if (!box) return;
+      if (aiMessages.length === 0) {
+        box.innerHTML = '<div class="ai-msg ai" style="opacity:0.7;">Привет! Я на Groq (Llama). Вижу твои смены, зарплату и графики из Мультитула. Спроси что угодно.</div>';
+        return;
+      }
+      let html = '';
+      aiMessages.forEach(m => {
+        if (m.role === 'user') {
+          html += '<div class="ai-msg user">' + escapeHtml(m.content) + '</div>';
+        } else if (m.role === 'assistant') {
+          html += '<div class="ai-msg ai">' + formatAiMarkdown(m.content) + '</div>';
+        } else if (m.role === 'error') {
+          html += '<div class="ai-msg error">' + escapeHtml(m.content) + '</div>';
+        }
+      });
+      if (aiBusy) html += '<div class="ai-typing">Думаю</div>';
+      box.innerHTML = html;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function aiQuickAsk(text) {
+      const input = document.getElementById('aiInput');
+      if (input) input.value = text;
+      sendAiMessage();
+    }
+
+    function buildAiSystemPrompt() {
+      let ctx = '';
+      try {
+        const store = (typeof getData === 'function') ? getData() : { shifts: [], deductions: [] };
+        const paid = (typeof getPaidAmount === 'function') ? getPaidAmount() : 0;
+        const shifts = store.shifts || [];
+        const deductions = store.deductions || [];
+
+        ctx += '=== ТЕКУЩАЯ НЕДЕЛЯ ===\n';
+        if (!shifts.length) {
+          ctx += 'Смен пока нет.\n';
+        } else {
+          ctx += 'Период: ' + shifts[0].date + ' — ' + shifts[shifts.length - 1].date + '\n';
+          ctx += 'Смен: ' + shifts.length + '/5\n';
+          let totalRev = 0;
+          let totalToPay = 0;
+          let totalRemain = 0;
+          shifts.forEach(function(s, i) {
+            const percent = Math.round(s.total * 0.03);
+            const toPay = 2300 + percent;
+            const remain = toPay - paid;
+            totalRev += s.total;
+            totalToPay += toPay;
+            totalRemain += remain;
+            ctx += (i + 1) + ') ' + s.date + ' · выручка ' + s.total + ' ₽ · к выплате ' + toPay + ' ₽ · остаток ' + remain + ' ₽\n';
+          });
+          if (deductions.length) {
+            deductions.forEach(function(d) {
+              totalRemain -= d.amount;
+              ctx += 'Вычет: −' + d.amount + ' ₽ (' + d.reason + ')\n';
+            });
+          }
+          ctx += 'Выручка недели: ' + totalRev + ' ₽\n';
+          ctx += 'К выплате всего: ' + totalToPay + ' ₽\n';
+          ctx += 'Выплачено за смену (ставка в настройках): ' + paid + ' ₽\n';
+          ctx += 'ОСТАТОК К ВЫПЛАТЕ ПО НЕДЕЛЕ: ' + totalRemain + ' ₽\n';
+        }
+
+        // Мои смены (календарь)
+        try {
+          const ms = (typeof getMonthShifts === 'function') ? getMonthShifts() : {};
+          const keys = Object.keys(ms || {}).sort(function(a, b) {
+            const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+            return (pa[2]-pb[2]) || (pa[1]-pb[1]) || (pa[0]-pb[0]);
+          });
+          const now = new Date();
+          ctx += '\n=== МОИ СМЕНЫ (КАЛЕНДАРЬ) ===\n';
+          ctx += 'Сегодня: ' + String(now.getDate()).padStart(2,'0') + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + now.getFullYear() + '\n';
+          ctx += 'Отмечено дней: ' + keys.length + '\n';
+          if (keys.length) {
+            const upcoming = keys.filter(function(k) {
+              const p = k.split('.').map(Number);
+              const d = new Date(p[2], p[1]-1, p[0]);
+              const t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              return d >= t0;
+            });
+            ctx += 'Ближайшие: ' + (upcoming.slice(0, 20).join(', ') || 'нет') + '\n';
+            ctx += 'Все даты: ' + keys.join(', ') + '\n';
+            // хвост прошлого и текущего месяца для продолжения графика
+            try {
+              const now2 = new Date();
+              const y = now2.getFullYear(), m = now2.getMonth() + 1;
+              const prevLast = new Date(y, m - 1, 0);
+              const tail = [];
+              for (let d = Math.max(1, prevLast.getDate() - 5); d <= prevLast.getDate(); d++) {
+                const k = String(d).padStart(2,'0') + '.' + String(prevLast.getMonth()+1).padStart(2,'0') + '.' + prevLast.getFullYear();
+                tail.push(k + (ms[k] ? '=раб' : '=вых'));
+              }
+              ctx += 'Хвост прошлого месяца: ' + tail.join(', ') + '\n';
+            } catch (e2) {}
+          }
+        } catch (e) {}
+
+        // Архив
+        try {
+          const arc = (typeof getArchive === 'function') ? getArchive() : [];
+          ctx += '\n=== АРХИВ НЕДЕЛЬ ===\n';
+          if (!arc.length) ctx += 'Пусто\n';
+          else {
+            arc.slice(0, 6).forEach(function(w) {
+              ctx += w.dateRange + ' · ' + w.shiftsCount + ' смен · выручка ' + w.totalRevenue + ' ₽\n';
+            });
+          }
+        } catch (e) {}
+
+        // Зарплата текущего месяца
+        try {
+          const now = (typeof salaryMonthDate !== 'undefined') ? salaryMonthDate : new Date();
+          const year = now.getFullYear();
+          const month = now.getMonth();
+          const arc = (typeof getArchive === 'function') ? getArchive() : [];
+          const monthWeeks = arc.filter(function(w) {
+            const match = (w.dateRange || '').match(/(\d{2})\.(\d{2})\.(\d{4})/);
+            if (!match) return false;
+            return (parseInt(match[2], 10) - 1) === month && parseInt(match[3], 10) === year;
+          });
+          let totalShifts = 0, totalRevenue = 0, totalToPay = 0;
+          monthWeeks.forEach(function(w) {
+            totalShifts += w.shiftsCount;
+            totalRevenue += w.totalRevenue;
+            const avg = w.shiftsCount ? (w.totalRevenue / w.shiftsCount) : 0;
+            const percent = Math.round(avg * 0.03);
+            totalToPay += (2300 + percent) * w.shiftsCount;
+          });
+          const monthKey = String(month + 1).padStart(2, '0') + '.' + year;
+          const payouts = (typeof getPayouts === 'function') ? getPayouts().filter(function(p) { return p.monthKey === monthKey; }) : [];
+          const totalPaid = payouts.reduce(function(a, p) { return a + p.amount; }, 0);
+          const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+          ctx += '\n=== ЗАРПЛАТА ' + monthNames[month] + ' ' + year + ' ===\n';
+          ctx += 'Закрытых недель: ' + monthWeeks.length + '\n';
+          ctx += 'Смен: ' + totalShifts + '\n';
+          ctx += 'Выручка: ' + totalRevenue + ' ₽\n';
+          ctx += 'К выплате: ' + totalToPay + ' ₽\n';
+          ctx += 'Уже выплачено: ' + totalPaid + ' ₽\n';
+          ctx += 'Остаток: ' + (totalToPay - totalPaid) + ' ₽\n';
+        } catch (e) {}
+
+        // Контроль точек сегодня
+        try {
+          if (typeof POINTS !== 'undefined' && typeof getPointData === 'function') {
+            const now = new Date();
+            const d = String(now.getDate()).padStart(2, '0');
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const todayKey = d + '.' + m + '.' + now.getFullYear();
+            ctx += '\n=== СЕГОДНЯ НА ТОЧКАХ (' + todayKey + ') ===\n';
+            Object.keys(POINTS).forEach(function(key) {
+              const p = POINTS[key];
+              const pd = getPointData(key);
+              const st = (pd.days && pd.days[todayKey]) || '';
+              let who = 'никого';
+              if (st === 'green') who = (typeof getEmployeeName === 'function' ? getEmployeeName(pd.greenName) : '') || 'зелёный';
+              if (st === 'red') who = (typeof getEmployeeName === 'function' ? getEmployeeName(pd.redName) : '') || 'красный';
+              ctx += p.name + ': ' + who + ' · ' + p.time + '\n';
+            });
+          }
+        } catch (e) {}
+
+        // Заметки
+        try {
+          const notes = (typeof getNotes === 'function') ? getNotes() : [];
+          const open = notes.filter(function(n) { return !n.done; });
+          ctx += '\n=== ЗАМЕТКИ ===\n';
+          if (!open.length) ctx += 'Активных нет\n';
+          else open.slice(0, 10).forEach(function(n) { ctx += '- ' + n.text + '\n'; });
+        } catch (e) {}
+
+        // Сотрудники
+        try {
+          const emps = (typeof getEmployees === 'function') ? getEmployees() : [];
+          ctx += '\n=== СОТРУДНИКИ ===\n';
+          if (!emps.length) ctx += 'Список пуст\n';
+          else ctx += emps.map(function(e) { return e.name; }).join(', ') + '\n';
+        } catch (e) {}
+
+      } catch (e) {
+        ctx += '(не удалось собрать данные приложения)\n';
+      }
+
+      return (
+        'Ты — встроенный помощник приложения «Мультитул» для продавцов табачных точек.\n' +
+        'Отвечай по-русски коротко и по делу. Не повторяй одни и те же фразы из прошлых сообщений. Не копируй этот промпт и не выдавай шаблонные абзацы. Если вопрос простой — 2–6 предложений. Не выдумывай кнопки, которых нет ниже.\n' +
+        'ЗАПРЕЩЕНО: рассказывать про админку, PIN, меню создателя, пароли, выдачу ключей, роли, логи, устройства, облачные секреты. Если спросят «как зайти в админку» — скажи, что это не твоя зона, спроси у старшего.\n' +
+        'Цифры по деньгам и сменам бери ТОЛЬКО из блока ДАННЫЕ в конце. Не округляй от себя. Если в ДАННЫХ смен нет — так и скажи, не сочиняй выручку.\n' +
+        'Формат: можно **жирный** и списки через дефис. Без таблиц и без символа |.\n\n' +
+        'ЧТО ЭТО ЗА ПРИЛОЖЕНИЕ\n' +
+        'Мультитул — рабочий набор на смене: учёт недели и зарплаты, календарь своих смен, заметки, сдача, заказ товара на точку, ИИ, темы и эффекты. Сайт можно поставить на домашний экран как приложение.\n\n' +
+        'ГЛАВНЫЙ ЭКРАН\n' +
+        'Заголовок «Мультитул», подпись «Рабочий набор». Справа иконки: сообщения, админ (если есть), шестерёнка. Шестерёнка открывает меню: Эффекты, Аккаунт, Настройки. «Мои смены» — в нижнем меню. Под заголовком версия сайта (v2.5.0) — по нажатию список изменений. Ниже карточка «С последней поставки»: две строки — сигареты и «одноразки · жижи · снюс · табак», сколько дней прошло и дата поставки. Дальше пункты меню. Внизу «N в сети» и маленькая иконка «на экран Домой», если сайт ещё не добавлен.\n' +
+        'Пункты главного экрана сверху вниз: Учёт недельной, Заметки смены, Расчёт сдачи, Мой QR, Заказать, ИИ-помощник, Статистика.\n\n' +
+        'ВХОД\n' +
+        'Если включён вход по ключу — сначала экран с полем ключа вида MT-XXXX-XXXX. Ключ сохраняется на телефоне. Выйти из ключа можно в Аккаунте. Без ключа (если режим открытый) сайт сразу на главной.\n\n' +
+        'УЧЁТ НЕДЕЛЬНОЙ\n' +
+        'Сюда пишут смены текущей недели: дата и выручка за день. Формула одной смены: к выплате = 2300 + 3% от выручки. «Выплачено за смену» — ставка наличными за день (часто 1300, бывает 1000 или своя). Ставка меняется шестерёнкой ВНУТРИ учёта недельной, не той что на главной. Выплачено всего = ставка × число смен. Остаток = сумма «к выплате» по сменам − выплачено − удержания. Можно добавить удержание с причиной. Кнопка выгрузки делает картинку-отчёт недели. «Завершить неделю и в архив» закрывает неделю: итог в архив, текущий список смен очищается.\n\n' +
+        'МОИ СМЕНЫ\n' +
+        'Из меню шестерёнки на главной. Календарь своих смен по месяцу. Это не то же самое, что учёт текущей недели.\n\n' +
+        'ЗАМЕТКИ СМЕНЫ\n' +
+        'Короткие напоминания и дела. Добавил текст — сохранилось. К деньгам не относится.\n\n' +
+        'РАСЧЁТ СДАЧИ\n' +
+        'Калькулятор кассы: сколько дали и какую сдачу отдать. Со сменами не связан.\n\n' +
+        'МОЙ QR\n' +
+        'Раздел пока в разработке. Генерации QR нет. Не обещай, что он заработает по кнопке.\n\n' +
+        'ЗАКАЗАТЬ\n' +
+        'Сотрудник выбирает категорию (сигареты, одноразки, жижи, поды, снюсы, табаки, картриджи, табак для кальяна, газ, бензин, напитки, другое), выбирает СВОЮ точку и пишет что нужно. Кнопка «Добавить» кидает позицию в список точки. В списке можно копировать весь заказ. Галочка отмечает позицию, крестик удаляет. Кнопки «Собран» у сотрудника нет — заказ собирает старший.\n\n' +
+        'ИИ-ПОМОЩНИК\n' +
+        'Этот чат. Нужен ключ Groq (gsk_…) — поле и туториал на этой же вкладке или в Аккаунте. Ключ хранится на устройстве.\n\n' +
+        'СТАТИСТИКА И АРХИВ\n' +
+        'Итоги закрытых недель после «завершить неделю»: период, число смен, выручка.\n\n' +
+        'ЭФФЕКТЫ\n' +
+        'Из шестерёнки. Сезонные частицы на экране (в том числе сердечки). Включается и выключается там же.\n\n' +
+        'НАСТРОЙКИ\n' +
+        'Темы оформления — в настройках, много готовых палитр. Там же ключ Groq для ИИ и уведомления. Жидкое стекло всегда включено.\n\n' +
+        'АККАУНТ\n' +
+        'Имя/ключ с которым вошёл, выход из ключа, поле ключа Groq.\n\n' +
+                'ПОСТАВКИ\n' +
+        'Карточка на главной. Показывает, сколько дней прошло с поставки сигарет и с поставки одноразок/жиж/снюса/табака. Даты на карточке уже стоят, сотрудник их отсюда не меняет.\n\n' +
+        'НА ЭКРАН ДОМОЙ\n' +
+        'Иконка слева внизу, если сайт ещё не на домашнем экране. iPhone: Поделиться → На экран «Домой». Android: меню браузера → на главный экран.\n\n' +
+        'ОБЛАКО\n' +
+        'Смены, архив, заметки и заказы привязаны к ключу и подтягиваются на телефон. Если в ДАННЫХ пусто — человек ещё ничего не внёс или сеть не подтянула.\n\n' +
+        'ДЕЙСТВИЯ (ВАЖНО)\n' +
+        'Ты умеешь МЕНЯТЬ данные приложения. Когда пользователь просит добавить/удалить смену, поставить график, отметить дни в календаре или добавить заметку — выполни действие.\n' +
+        'В конце ответа (после короткого текста человеку) добавь блок строго в формате:\n' +
+        '<<<ACTIONS\n' +
+        '[{\"action\":\"...\", ...}]\n' +
+        'ACTIONS>>>\n' +
+        'Доступные action:\n' +
+        '1) add_shift — смена в учёт недели (выручка). Поля: date (ДД.ММ.ГГГГ), total (число рублей).\n' +
+        '2) remove_shift — удалить смену недели по дате. Поля: date.\n' +
+        '3) add_calendar — отметить рабочие дни в «Мои смены». Поля: dates (массив ДД.ММ.ГГГГ).\n' +
+        '4) remove_calendar — снять отметки. Поля: dates.\n' +
+        '5) set_schedule — график на месяц. Поля: pattern (\"2/2\"|\"5/2\"), month, year, skipWeekends, continueFromPrev (true = продолжить цикл с хвоста прошлого месяца: если 30–31 выхи, то 1–2 рабочие). По умолчанию continueFromPrev=true.\n' +
+        '6) add_note — заметка. Поля: text.\n' +
+        '7) add_deduction — вычет. Поля: reason, amount.\n' +
+        'Правила: год подставляй текущий, если не указан. \"13.10\" = 13.10 текущего года. \"следующий месяц\" = month/year следующего. Не выдумывай даты. Если данных не хватает — спроси, не пиши ACTIONS.\n' +
+        'Можно несколько действий в массиве. Текст человеку — без JSON, человеческим языком.\n\n' +
+        'ТИПОВЫЕ ВОПРОСЫ\n' +
+        'сколько за неделю / остаток / сколько смен — только цифры из ДАННЫХ.\n' +
+        'как поменять 1300 — шестерёнка внутри учёта недельной.\n' +
+        'как закрыть неделю — кнопка в учёте недельной.\n' +
+                'куда писать заказ — раздел Заказать, точка + категория + текст.\n' +
+        'что с QR — пока выключен.\n\n' +
+        'Ниже живые цифры ЭТОГО человека. Пустой блок ≠ пустое приложение.\nДАННЫЕ:\n' + ctx
+      );
+    }
+    function aiPad2(n) { return String(n).padStart(2, '0'); }
+    function aiTodayParts() {
+      const n = new Date();
+      return { y: n.getFullYear(), m: n.getMonth() + 1, d: n.getDate() };
+    }
+    function aiParseDateFlex(raw, defaultYear) {
+      if (!raw) return null;
+      const s = String(raw).trim().toLowerCase().replace(/[^\d./\-]/g, ' ').replace(/\s+/g, ' ').trim();
+      let m;
+      m = s.match(/^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})$/);
+      if (m) {
+        let y = parseInt(m[3], 10);
+        if (y < 100) y += 2000;
+        return aiPad2(m[1]) + '.' + aiPad2(m[2]) + '.' + y;
+      }
+      m = s.match(/^(\d{1,2})[./\-](\d{1,2})$/);
+      if (m) {
+        const y = defaultYear || aiTodayParts().y;
+        return aiPad2(m[1]) + '.' + aiPad2(m[2]) + '.' + y;
+      }
+      m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if (m) return aiPad2(m[3]) + '.' + aiPad2(m[2]) + '.' + m[1];
+      if (/^сегодня$/.test(String(raw).trim().toLowerCase())) {
+        const t = aiTodayParts();
+        return aiPad2(t.d) + '.' + aiPad2(t.m) + '.' + t.y;
+      }
+      if (/^завтра$/.test(String(raw).trim().toLowerCase())) {
+        const n = new Date(); n.setDate(n.getDate() + 1);
+        return aiPad2(n.getDate()) + '.' + aiPad2(n.getMonth() + 1) + '.' + n.getFullYear();
+      }
+      return null;
+    }
+    function aiParseMoney(raw) {
+      if (raw == null) return NaN;
+      const n = parseFloat(String(raw).replace(/\s/g, '').replace(',', '.').replace(/[^\d.]/g, ''));
+      return isNaN(n) ? NaN : n;
+    }
+    function aiDoAddShift(dateStr, total) {
+      total = aiParseMoney(total);
+      if (!dateStr || isNaN(total)) return 'Не понял дату или сумму';
+      let store = getData();
+      if (store.shifts.length >= 5) {
+        return 'В неделе уже 5 смен. Закрой неделю в учёте, потом добавим.';
+      }
+      const exists = store.shifts.some(function(s) { return s.date === dateStr; });
+      if (exists) {
+        store.shifts = store.shifts.map(function(s) {
+          if (s.date === dateStr) return { date: dateStr, total: total };
+          return s;
+        });
+        saveData(store);
+        try { render(); } catch (e) {}
+        try { rebuildStreakFromShifts(); } catch (e) {}
+        return 'Обновил смену ' + dateStr + ' → ' + total.toLocaleString('ru-RU') + ' ₽';
+      }
+      store.shifts.push({ date: dateStr, total: total });
+      saveData(store);
+      try { render(); } catch (e) {}
+      try { rebuildStreakFromShifts(); } catch (e) {}
+      return 'Добавил смену ' + dateStr + ' · ' + total.toLocaleString('ru-RU') + ' ₽';
+    }
+    function aiDoRemoveShift(dateStr) {
+      let store = getData();
+      const before = store.shifts.length;
+      store.shifts = store.shifts.filter(function(s) { return s.date !== dateStr; });
+      if (store.shifts.length === before) return 'Смены ' + dateStr + ' в неделе нет';
+      saveData(store);
+      try { render(); } catch (e) {}
+      return 'Удалил смену ' + dateStr + ' из недели';
+    }
+    function aiDoCalendar(dates, add) {
+      if (!dates || !dates.length) return 'Нет дат';
+      let shifts = getMonthShifts();
+      let n = 0;
+      dates.forEach(function(d) {
+        const key = aiParseDateFlex(d) || d;
+        if (!/^\d{2}\.\d{2}\.\d{4}$/.test(key)) return;
+        if (add) {
+          if (!shifts[key]) { shifts[key] = true; n++; }
+        } else {
+          if (shifts[key]) { delete shifts[key]; n++; }
+        }
+      });
+      saveMonthShifts(shifts);
+      try { renderCalendar(); } catch (e) {}
+      return (add ? 'Отметил дней: ' : 'Снял отметок: ') + n;
+    }
+    function aiMonthFromText(low) {
+      const map = [
+        [/январ/, 1], [/феврал/, 2], [/март/, 3], [/апрел/, 4], [/ма[йя]/, 5], [/июн/, 6],
+        [/июл/, 7], [/август/, 8], [/сентябр/, 9], [/октябр/, 10], [/ноябр/, 11], [/декабр/, 12]
+      ];
+      for (let i = 0; i < map.length; i++) {
+        if (map[i][0].test(low)) return map[i][1];
+      }
+      return null;
+    }
+    /** Состояние цикла 2/2 по хвосту предыдущего месяца */
+    function aiInferContinueState(on, off, month, year) {
+      const prevLast = new Date(year, month - 1, 0); // последний день пред. месяца
+      const py = prevLast.getFullYear();
+      const pm = prevLast.getMonth() + 1;
+      const daysPrev = prevLast.getDate();
+      const shifts = getMonthShifts();
+      let any = false;
+      let lastWasWork = null;
+      let streak = 0;
+      for (let day = 1; day <= daysPrev; day++) {
+        const key = aiPad2(day) + '.' + aiPad2(pm) + '.' + py;
+        const isWork = !!shifts[key];
+        if (isWork) any = true;
+        if (lastWasWork === null) {
+          lastWasWork = isWork;
+          streak = 1;
+        } else if (isWork === lastWasWork) {
+          streak++;
+        } else {
+          lastWasWork = isWork;
+          streak = 1;
+        }
+      }
+      if (!any || lastWasWork === null) return null;
+      // что должно быть 1-го числа целевого месяца
+      if (lastWasWork) {
+        if (streak >= on) return { work: false, streak: 0 };
+        return { work: true, streak: streak };
+      }
+      if (streak >= off) return { work: true, streak: 0 };
+      return { work: false, streak: streak };
+    }
+    function aiDoSetSchedule(pattern, month, year, start, opts) {
+      opts = opts || {};
+      const skipWeekends = !!(opts.skipWeekends || opts.noWeekends || opts.weekendsOff);
+      const continueFromPrev = !!(opts.continueFromPrev || opts.fromPrev || opts.alignPrev);
+      pattern = String(pattern || '2/2').replace(/\s+/g, '').replace(/[–—-]/g, '/');
+      if (!/\//.test(pattern)) {
+        const m2 = String(pattern).match(/(\d)\D*(\d)/);
+        if (m2) pattern = m2[1] + '/' + m2[2];
+      }
+      const parts = pattern.split('/');
+      let on = parseInt(parts[0], 10), off = parseInt(parts[1], 10);
+      if (!on || on < 1) on = 2;
+      if (isNaN(off) || off < 0) off = 2;
+      const now = new Date();
+      year = parseInt(year, 10) || now.getFullYear();
+      month = parseInt(month, 10);
+      if (!month || month < 1 || month > 12) {
+        if (opts.nextMonth) {
+          const nm = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+          month = nm.getMonth() + 1;
+          year = nm.getFullYear();
+        } else {
+          month = now.getMonth() + 1;
+          year = now.getFullYear();
+        }
+      }
+      const daysInMonth = new Date(year, month, 0).getDate();
+      let shifts = getMonthShifts();
+      Object.keys(shifts).forEach(function(k) {
+        const p = k.split('.').map(Number);
+        if (p[1] === month && p[2] === year) delete shifts[k];
+      });
+      let work = !(String(start || 'work').toLowerCase() === 'off');
+      let streak = 0;
+      let continued = false;
+      // по умолчанию продолжаем с прошлого месяца, если там есть отметки
+      const inferred = aiInferContinueState(on, off, month, year);
+      if ((continueFromPrev || inferred) && inferred && start == null) {
+        work = inferred.work;
+        streak = inferred.streak;
+        continued = true;
+      } else if (continueFromPrev && inferred) {
+        work = inferred.work;
+        streak = inferred.streak;
+        continued = true;
+      }
+      const added = [];
+      const weekdayOnly = skipWeekends && on === 5 && off === 2;
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dow = new Date(year, month - 1, day).getDay();
+        const isWeekend = (dow === 0 || dow === 6);
+        if (weekdayOnly) {
+          if (!isWeekend) {
+            const key = aiPad2(day) + '.' + aiPad2(month) + '.' + year;
+            shifts[key] = true;
+            added.push(key);
+          }
+          continue;
+        }
+        if (skipWeekends && isWeekend) continue;
+        if (work) {
+          const key = aiPad2(day) + '.' + aiPad2(month) + '.' + year;
+          shifts[key] = true;
+          added.push(key);
+          streak++;
+          if (streak >= on) { work = false; streak = 0; }
+        } else {
+          streak++;
+          if (streak >= off) { work = true; streak = 0; }
+        }
+      }
+      saveMonthShifts(shifts);
+      try {
+        currentCalDate = new Date(year, month - 1, 1);
+        renderCalendar();
+      } catch (e) {}
+      let msg = 'График ' + on + '/' + off + ' на ' + aiPad2(month) + '.' + year + ': ' + added.length + ' смен';
+      if (continued) msg += ' · продолжение с прошлого месяца';
+      if (skipWeekends) msg += ' (сб/вс выходные)';
+      return msg;
+    }
+    function aiDoAddNote(t) {
+      t = String(t || '').trim();
+      if (!t) return 'Пустая заметка';
+      const notes = getNotes();
+      notes.push({ text: t.slice(0, 500), done: false });
+      saveNotes(notes);
+      try { renderNotes(); } catch (e) {}
+      return 'Заметка добавлена';
+    }
+    function aiDoAddDeduction(reason, amount) {
+      amount = aiParseMoney(amount);
+      reason = String(reason || '').trim();
+      if (!reason || isNaN(amount)) return 'Нужны причина и сумма вычета';
+      let store = getData();
+      store.deductions.push({ reason: reason, amount: amount });
+      saveData(store);
+      try { render(); } catch (e) {}
+      return 'Вычет −' + amount.toLocaleString('ru-RU') + ' ₽ (' + reason + ')';
+    }
+    function executeAiActions(actions) {
+      if (!Array.isArray(actions) || !actions.length) return [];
+      const results = [];
+      actions.forEach(function(a) {
+        if (!a || !a.action) return;
+        try {
+          const act = String(a.action).toLowerCase();
+          if (act === 'add_shift') {
+            const d = aiParseDateFlex(a.date);
+            results.push(aiDoAddShift(d, a.total != null ? a.total : a.amount));
+          } else if (act === 'remove_shift') {
+            results.push(aiDoRemoveShift(aiParseDateFlex(a.date) || a.date));
+          } else if (act === 'add_calendar') {
+            results.push(aiDoCalendar(a.dates || (a.date ? [a.date] : []), true));
+          } else if (act === 'remove_calendar') {
+            results.push(aiDoCalendar(a.dates || (a.date ? [a.date] : []), false));
+          } else if (act === 'set_schedule') {
+            results.push(aiDoSetSchedule(a.pattern || a.graph, a.month, a.year, a.start, {
+              skipWeekends: !!(a.skipWeekends || a.noWeekends || a.weekendsOff || a.offWeekends),
+              nextMonth: !!a.nextMonth,
+              continueFromPrev: a.continueFromPrev !== false
+            }));
+          } else if (act === 'add_note') {
+            results.push(aiDoAddNote(a.text || a.note));
+          } else if (act === 'add_deduction') {
+            results.push(aiDoAddDeduction(a.reason || a.text, a.amount || a.total));
+          } else {
+            results.push('Неизвестное действие: ' + act);
+          }
+        } catch (e) {
+          results.push('Ошибка: ' + (e.message || 'не вышло'));
+        }
+      });
+      return results;
+    }
+    function extractAiActions(reply) {
+      if (!reply) return { text: reply || '', actions: [] };
+      let text = reply;
+      let actions = [];
+      const re = /<<<ACTIONS\s*([\s\S]*?)\s*ACTIONS>>>/i;
+      const m = text.match(re);
+      if (m) {
+        text = (text.slice(0, m.index) + text.slice(m.index + m[0].length)).trim();
+        try {
+          let raw = m[1].trim();
+          // иногда модель оборачивает в ```json
+          raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+          const parsed = JSON.parse(raw);
+          actions = Array.isArray(parsed) ? parsed : (parsed ? [parsed] : []);
+        } catch (e) { actions = []; }
+      }
+      // запасной вариант: чистый JSON-массив в конце
+      if (!actions.length) {
+        const m2 = text.match(/(\[[\s\S]*"action"[\s\S]*\])\s*$/);
+        if (m2) {
+          try {
+            const parsed = JSON.parse(m2[1]);
+            if (Array.isArray(parsed) && parsed[0] && parsed[0].action) {
+              actions = parsed;
+              text = text.slice(0, m2.index).trim();
+            }
+          } catch (e) {}
+        }
+      }
+      return { text: text, actions: actions };
+    }
+    function tryLocalAiCommand(text) {
+      const t = String(text || '').trim();
+      const low = t.toLowerCase().replace(/ё/g, 'е');
+      // добавить смену 13.10 21000
+      let m = low.match(/(?:добавь|добавить|запиши|поставь)\s+(?:смену\s+)?(?:на\s+)?(\d{1,2}[./\-]\d{1,2}(?:[./\-]\d{2,4})?|сегодня|завтра)(?:\s*[^\d]{0,24}?)(\d[\d\s]{2,})/i);
+      if (!m) m = low.match(/смена\s+(\d{1,2}[./\-]\d{1,2}(?:[./\-]\d{2,4})?)\s+(\d[\d\s]{2,})/i);
+      if (m) {
+        const d = aiParseDateFlex(m[1]);
+        const sum = aiParseMoney(m[2]);
+        if (d && !isNaN(sum)) {
+          return { reply: aiDoAddShift(d, sum), actions: true };
+        }
+      }
+      // график 2/2 | 2 2 | 2 на 2
+      m = low.match(/график\s*(\d)\s*[\/\sна]+\s*(\d)/i);
+      if (!m) m = low.match(/(?:поставь|проставь|сделай)\s+(?:мне\s+)?(?:график\s+)?(\d)\s*[\/\sна]+\s*(\d)/i);
+      if (m) {
+        const now = new Date();
+        let month = aiMonthFromText(low);
+        let year = now.getFullYear();
+        let nextMonth = false;
+        if (month == null) {
+          if (/следующ/i.test(low)) {
+            nextMonth = true;
+            const n = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            month = n.getMonth() + 1; year = n.getFullYear();
+          } else {
+            month = now.getMonth() + 1;
+          }
+        }
+        const skipWeekends = /(сб|суббот|вс\b|воскрес|выходн|без\s*выход)/i.test(low);
+        // продолжить с прошлого месяца (по умолчанию да, если есть хвост)
+        const forceContinue = /(соответств|продолж|от\s+прошл|как\s+прошл|по\s+прошл|учитывая\s+прошл)/i.test(low);
+        const msg = aiDoSetSchedule(m[1] + '/' + m[2], month, year, null, {
+          skipWeekends: skipWeekends,
+          nextMonth: nextMonth,
+          continueFromPrev: forceContinue || true
+        });
+        return { reply: msg, actions: true };
+      }
+      // отметь в календаре 15.10, 16.10
+      m = low.match(/(?:отметь|поставь|добавь)\s+(?:в\s+календар\w+\s+)?((?:\d{1,2}[./\-]\d{1,2}(?:[./\-]\d{2,4})?[,\s]*)+)/i);
+      if (m && /календар|мои смены/i.test(low)) {
+        const dates = m[1].match(/\d{1,2}[./\-]\d{1,2}(?:[./\-]\d{2,4})?/g) || [];
+        if (dates.length) return { reply: aiDoCalendar(dates, true), actions: true };
+      }
+      return null;
+    }
+    async function sendAiMessage() {
+      if (aiBusy) return;
+      const input = document.getElementById('aiInput');
+      const text = (input && input.value || '').trim();
+      if (!text) return;
+
+      aiMessages.push({ role: 'user', content: text });
+      if (input) input.value = '';
+      aiBusy = true;
+      const sendBtn = document.getElementById('aiSendBtn');
+      if (sendBtn) sendBtn.disabled = true;
+      renderAiMessages();
+
+      // быстрые локальные команды без API
+      try {
+        const local = tryLocalAiCommand(text);
+        if (local && local.reply) {
+          aiMessages.push({ role: 'assistant', content: local.reply });
+          try { playAppStoreSound(); } catch (e) {}
+          showToast('Сделано', true);
+          aiBusy = false;
+          if (sendBtn) sendBtn.disabled = false;
+          renderAiMessages();
+          return;
+        }
+      } catch (e) {}
+
+      const key = getGroqKey();
+      if (!key) {
+        const keyCard = document.getElementById('aiKeyCard');
+        if (keyCard) keyCard.style.display = 'block';
+        // убрать неотправлённое? уже в истории — ок
+        aiMessages.push({ role: 'error', content: 'Нужен ключ Groq API — сохрани в настройках' });
+        showToast('Нужен ключ Groq API');
+        aiBusy = false;
+        if (sendBtn) sendBtn.disabled = false;
+        renderAiMessages();
+        return;
+      }
+
+      const systemPrompt = buildAiSystemPrompt();
+
+      const apiMessages = [
+        { role: 'system', content: systemPrompt }
+      ];
+      aiMessages.filter(function(m){ return m.role === 'user' || m.role === 'assistant'; }).slice(-8).forEach(function(m) {
+        apiMessages.push({ role: m.role, content: m.content });
+      });
+
+      try {
+        let lastErr = null;
+        let reply = null;
+        for (const model of GROQ_MODELS) {
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + key
+            },
+            body: JSON.stringify({
+              model: model,
+              messages: apiMessages,
+              temperature: 0.2,
+              max_tokens: 1100
+            })
+          });
+          const data = await res.json().catch(function() { return {}; });
+          if (!res.ok) {
+            lastErr = (data && data.error && data.error.message) ? data.error.message : ('Ошибка ' + res.status);
+            if (/model|access|does not exist/i.test(lastErr)) continue;
+            throw new Error(lastErr);
+          }
+          GROQ_MODEL = model;
+          reply = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+            ? data.choices[0].message.content.trim()
+            : 'Пустой ответ';
+          break;
+        }
+        if (reply == null) throw new Error(lastErr || 'Нет доступных моделей');
+
+        const parsed = extractAiActions(reply);
+        let finalText = parsed.text || '';
+        if (parsed.actions && parsed.actions.length) {
+          const results = executeAiActions(parsed.actions);
+          if (results.length) {
+            finalText = (finalText ? finalText + '\n\n' : '') + results.join('\n');
+            showToast('Сделано', true);
+          }
+        }
+        if (!finalText) finalText = 'Готово';
+        aiMessages.push({ role: 'assistant', content: finalText });
+        try {
+          const sub = document.querySelector('#screenAI .header-title p');
+          if (sub) sub.textContent = 'Groq · ' + GROQ_MODEL;
+        } catch (e) {}
+        playAppStoreSound();
+      } catch (e) {
+        aiMessages.push({ role: 'error', content: 'Ошибка: ' + (e.message || 'сеть / ключ') });
+        showToast('AI ошибка');
+      }
+
+      aiBusy = false;
+      if (sendBtn) sendBtn.disabled = false;
+      renderAiMessages();
+    }
+
+
+
+    // ============ ACCESS KEYS + SUPABASE ============
+    const USER_DATA_KEYS = [
+      'ios_multitool_data',
+      'ios_multitool_archive',
+      'ios_paid_amount',
+      'ios_month_shifts',
+      'ios_notes',
+      'ios_payouts',
+      'ios_season_mode',
+      'ios_groq_key',
+                                                      'ios_pay_qr',
+      'ios_theme',
+      'ios_shift_streak',
+      'ios_my_role',
+      'ios_liquid'
+    ];
+
+    const SUPABASE_SQL = `-- Выполни в Supabase → SQL Editor\ncreate table if not exists access_keys (\n  code text primary key,\n  name text not null,\n  expires_at timestamptz,\n  active boolean default true,\n  created_at timestamptz default now()\n);\ncreate table if not exists key_data (\n  code text primary key references access_keys(code) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz default now()\n);\nalter table access_keys enable row level security;\nalter table key_data enable row level security;\ncreate policy "anon_all_keys" on access_keys for all using (true) with check (true);\ncreate policy "anon_all_data" on key_data for all using (true) with check (true);
+create table if not exists device_sessions (
+  id text primary key,
+  access_code text,
+  access_name text,
+  device_name text,
+  last_seen timestamptz default now(),
+  revoked boolean default false,
+  created_at timestamptz default now()
+);
+alter table device_sessions enable row level security;
+create policy "anon_all_devices" on device_sessions for all using (true) with check (true);`;
+
+    // Вшито в код — одна база на всех, кто открыл этот HTML
+    const DEFAULT_SB_URL = 'https://slbjwfdgoptqdchethch.supabase.co';
+    const DEFAULT_SB_KEY = 'sb_publishable_12H4vxr-VXYcoUhxYsOsuQ_TVfAkWEf';
+    // Web Push (public only — private только в Edge Function secrets)
+    const VAPID_PUBLIC_KEY = 'BCYWTWaP_1ArHUrZqe0ShpEblcvb-GC472KcQ6BZB3RvKNXJX9WWopyd82gA8Eym5TYsNAKmE8P8RIrqRuofjBw';
+
+
+    function getSbConfig() {
+      try {
+        const raw = localStorage.getItem('ios_supabase_cfg');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.url && parsed.anon) return parsed;
+        }
+      } catch (e) {}
+      return { url: DEFAULT_SB_URL, anon: DEFAULT_SB_KEY };
+    }
+    function setDbStatusUI(ok, text) {
+      try { rtDbState(ok, text); } catch (e) {}
+      ['sbStatus', 'adminDbStatus'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = text;
+        el.style.color = ok ? 'var(--accent-green)' : 'var(--accent-red)';
+      });
+    }
+
+    async function testSupabaseConnection(showToastResult) {
+      setDbStatusUI(false, 'Проверка…');
+      const cfg = getSbConfig();
+      if (!cfg || !cfg.url || !cfg.anon) {
+        setDbStatusUI(false, 'Нет конфига базы в коде');
+        if (showToastResult) showToast('Нет конфига');
+        return false;
+      }
+      try {
+        // 1) ping REST
+        const res = await fetch(cfg.url + '/rest/v1/access_keys?select=code&limit=1', {
+          headers: {
+            'apikey': cfg.anon,
+            'Authorization': 'Bearer ' + cfg.anon
+          }
+        });
+        const text = await res.text();
+        if (!res.ok) {
+          let msg = 'HTTP ' + res.status;
+          try {
+            const j = JSON.parse(text);
+            msg = j.message || j.error || j.hint || msg;
+          } catch (e) {}
+          if (res.status === 404 || /relation|does not exist|schema cache/i.test(msg)) {
+            setDbStatusUI(false, 'База отвечает, но таблиц нет — выполни SQL в SQL Editor');
+          } else if (res.status === 401 || res.status === 403) {
+            setDbStatusUI(false, 'Ключ отклонён (401/403). Проверь publishable key');
+          } else {
+            setDbStatusUI(false, 'Ошибка: ' + msg);
+          }
+          if (showToastResult) showToast('База: ошибка');
+          return false;
+        }
+        let rows = [];
+        try { rows = JSON.parse(text) || []; } catch (e) {}
+        const n = Array.isArray(rows) ? rows.length : 0;
+        setDbStatusUI(true, 'OK · ' + cfg.url.replace('https://','') + ' · таблицы на месте · ключей в выборке: ' + n + '+');
+        if (showToastResult) showToast('База работает', true);
+        return true;
+      } catch (e) {
+        setDbStatusUI(false, 'Нет сети или CORS: ' + (e.message || 'ошибка'));
+        if (showToastResult) showToast('Нет связи с базой');
+        return false;
+      }
+    }
+    async function sbFetch(path, options) {
+      const cfg = getSbConfig();
+      if (!cfg) throw new Error('Нет Supabase');
+      const opts = options || {};
+      const headers = Object.assign({
+        'apikey': cfg.anon,
+        'Authorization': 'Bearer ' + cfg.anon,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }, opts.headers || {});
+      const ctrl = new AbortController();
+      const timer = setTimeout(function() { ctrl.abort(); }, 6000);
+      try {
+        const res = await fetch(cfg.url + '/rest/v1/' + path, Object.assign({}, opts, {
+          headers: headers,
+          signal: ctrl.signal
+        }));
+        const text = await res.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
+        if (!res.ok) {
+          const msg = (data && data.message) ? data.message
+            : (data && data.error) ? data.error
+            : (data && data.msg) ? data.msg
+            : ('HTTP ' + res.status);
+          throw new Error(msg);
+        }
+        return data;
+      } catch (e) {
+        if (e && e.name === 'AbortError') throw new Error('Таймаут — база не ответила');
+        throw e;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function isGateEnabled() {
+      return localStorage.getItem('ios_gate_enabled') !== '0';
+    }
+    function cacheGateEnabled(on) {
+      localStorage.setItem('ios_gate_enabled', on ? '1' : '0');
+    }
+    async function fetchGateFromCloud() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.gate_enabled&select=value');
+        if (rows && rows[0] && rows[0].value != null) {
+          let raw = rows[0].value;
+          if (typeof raw === 'object') raw = raw.value != null ? raw.value : JSON.stringify(raw);
+          raw = String(raw).replace(/"/g,'').trim().toLowerCase();
+          const on = raw === '1' || raw === 'true' || raw === 'on';
+          cacheGateEnabled(on);
+          updateGateModeUI();
+          enforceGateScreen();
+          return on;
+        }
+      } catch (e) {
+        console.warn('gate fetch', e);
+      }
+      return isGateEnabled();
+    }
+    async function setGateEnabled(on) {
+      cacheGateEnabled(on);
+      updateGateModeUI();
+      playAppStoreSound();
+      showToast('Сохраняю режим на сервер…');
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({
+            key: 'gate_enabled',
+            value: on ? '1' : '0',
+            updated_at: new Date().toISOString()
+          })
+        });
+        showToast(on ? 'У всех вход только по ключу' : 'У всех открытый режим', true);
+      } catch (e) {
+        showToast('Не записалось в базу: ' + (e.message || 'ошибка'));
+      }
+    }
+    function updateGateModeUI() {
+      try { rtSyncPills(); } catch (e) {}
+      const on = isGateEnabled();
+      const a = document.getElementById('gateModeOn');
+      const b = document.getElementById('gateModeOff');
+      if (a) a.classList.toggle('selected', on);
+      if (b) b.classList.toggle('selected', !on);
+    }
+
+    function getSession() {
+      try { return JSON.parse(localStorage.getItem('ios_access_session') || 'null'); }
+      catch (e) { return null; }
+    }
+    function setSession(s) {
+      setTimeout(function() { try { applyAdminEntry(); pullAdminKeys(); } catch (e) {} }, 0);
+      if (s) localStorage.setItem('ios_access_session', JSON.stringify(s));
+      else localStorage.removeItem('ios_access_session');
+    }
+    function clearSession() { setSession(null); }
+
+    function getLocalKeys() {
+      try { return JSON.parse(localStorage.getItem('ios_access_keys') || '[]'); }
+      catch (e) { return []; }
+    }
+    function saveLocalKeys(list) {
+      localStorage.setItem('ios_access_keys', JSON.stringify(list));
+    }
+
+    function genAccessCode() {
+      const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let a = '', b = '';
+      for (let i = 0; i < 4; i++) a += abc[Math.floor(Math.random() * abc.length)];
+      for (let i = 0; i < 4; i++) b += abc[Math.floor(Math.random() * abc.length)];
+      return 'MT-' + a + '-' + b;
+    }
+
+    function collectUserPayload() {
+      const payload = {};
+      USER_DATA_KEYS.forEach(function(k) {
+        payload[k] = localStorage.getItem(k);
+      });
+      payload._savedAt = new Date().toISOString();
+      return payload;
+    }
+
+    function applyUserPayload(payload) {
+      if (!payload || typeof payload !== 'object') return;
+      USER_DATA_KEYS.forEach(function(k) {
+        if (!Object.prototype.hasOwnProperty.call(payload, k)) return;
+        if (payload[k] === null || payload[k] === undefined) return;
+        var val = payload[k];
+        if (typeof val !== 'string') {
+          try { val = JSON.stringify(val); } catch (e) { val = String(val); }
+        }
+        localStorage.setItem(k, val);
+      });
+      try { persistStreakToCloudLocal(); } catch (e) {}
+    }
+    function refreshAfterCloud() {
+      try { applyLiquid(); } catch (e) {}
+      try { applyTheme(getTheme()); } catch (e) {}
+      try { startSeasonMode(localStorage.getItem('ios_season_mode') || 'off'); } catch (e) {}
+      try { render(); } catch (e) {}
+      try { renderNotes(); } catch (e) {}
+      try { renderSupplyCard(); } catch (e) {}
+      try { applyRoleBadge(JSON.parse(localStorage.getItem('ios_my_role')||'null')); } catch (e) {}
+      try { persistStreakToCloudLocal(); } catch (e) {}
+    }
+    async function syncUserFromCloud() {
+      const sess = getSession();
+      if (!sess || !sess.code || !getSbConfig()) return;
+      try {
+        const remote = await pullKeyDataFromCloud(sess.code);
+        if (!remote) return;
+        applyUserPayload(remote);
+        refreshAfterCloud();
+      } catch (e) {}
+    }
+
+    function hasLocalUserData() {
+      try {
+        const d = JSON.parse(localStorage.getItem('ios_multitool_data') || '{}');
+        if (d.shifts && d.shifts.length) return true;
+      } catch (e) {}
+      try {
+        const a = JSON.parse(localStorage.getItem('ios_multitool_archive') || '[]');
+        if (a.length) return true;
+      } catch (e) {}
+      try {
+        const n = JSON.parse(localStorage.getItem('ios_notes') || '[]');
+        if (n.length) return true;
+      } catch (e) {}
+      return false;
+    }
+
+    let cloudSaveTimer = null;
+    function scheduleCloudSave() {
+      if (!getSession()) return;
+      if (!getSbConfig()) return;
+      clearTimeout(cloudSaveTimer);
+      cloudSaveTimer = setTimeout(function() { pushKeyDataToCloud(); }, 800);
+    }
+
+    let adminSaveTimer = null;
+    function scheduleAdminCloudSave() {
+      clearTimeout(adminSaveTimer);
+      adminSaveTimer = setTimeout(function() { pushAdminSharedData(); }, 400);
+    }
+
+
+
+
+    function actorLabel() {
+      try {
+        const s = (typeof getSession === 'function') ? getSession() : null;
+        if (s && (s.name || s.code)) return (s.name || 'без имени') + (s.code ? ' · ' + s.code : '');
+      } catch (e) {}
+      return 'гость';
+    }
+    function screenLabel(id) {
+      const m = {
+        screenMenu: 'Главная', screenShifts: 'Учёт недели', screenNotes: 'Заметки',
+        screenChange: 'Сдача', screenStats: 'Архив', screenSalary: 'Зарплата',
+        screenAI: 'AI', screenAdmin: 'Админка', screenControl: 'Контроль точек',
+        screenLocations: 'Графики точек', screenEmployees: 'Сотрудники',
+        screenAdminKeys: 'Ключи админа', screenAdminPin: 'Смена PIN',
+        screenSupply: 'Поставки', screenAdminFines: 'Штрафы', screenPayQr: 'Мой QR', screenMyShifts: 'Мои смены',
+        screenCreator: 'root', screenAdminFines: 'Штрафы', screenGate: 'Вход по ключу', screenPeekAccount: 'Профиль ключа'
+      };
+      return m[id] || id || '';
+    }
+    function formatActTime(iso) {
+      try {
+        const d = new Date(iso);
+        const p = function(n){ return String(n).padStart(2,'0'); };
+        return p(d.getDate()) + '.' + p(d.getMonth()+1) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+      } catch (e) { return iso; }
+    }
+    let actPushTimer = null;
+    let actCache = null;
+    let actClearLockUntil = 0;
+    function logAction(what, extra) {
+      if (!what) return;
+      if (Date.now() < actClearLockUntil) return;
+      const ev = {
+        t: new Date().toISOString(),
+        who: actorLabel(),
+        what: String(what),
+        extra: extra ? String(extra) : '',
+        screen: (document.querySelector('.screen.active') || {}).id || ''
+      };
+      try {
+        const q = JSON.parse(localStorage.getItem('ios_act_queue') || '[]');
+        q.unshift(ev);
+        localStorage.setItem('ios_act_queue', JSON.stringify(q.slice(0, 40)));
+      } catch (e) {}
+      if (actCache && actCache.length) {
+        actCache.unshift(ev);
+        actCache = actCache.slice(0, 300);
+      }
+      clearTimeout(actPushTimer);
+      actPushTimer = setTimeout(flushActivityLog, 700);
+    }
+    function parseActivityLogValue(raw) {
+      if (raw == null) return [];
+      let v = raw;
+      if (typeof v === 'string') {
+        try { v = JSON.parse(v); } catch (e) { return []; }
+      }
+      if (Array.isArray(v)) return v;
+      if (v && Array.isArray(v.items)) return v.items;
+      return [];
+    }
+    async function writeActivityLogCloud(list) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'activity_log',
+          value: JSON.stringify(list || []),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+    async function flushActivityLog() {
+      if (Date.now() < actClearLockUntil) {
+        localStorage.setItem('ios_act_queue', '[]');
+        return;
+      }
+      let local = [];
+      try { local = JSON.parse(localStorage.getItem('ios_act_queue') || '[]'); } catch (e) { local = []; }
+      if (!local.length) return;
+      try {
+        const rows = await sbFetch('app_settings?key=eq.activity_log&select=value');
+        let list = [];
+        if (rows && rows[0]) list = parseActivityLogValue(rows[0].value);
+        const seen = {};
+        const merged = local.concat(list).filter(function(e) {
+          const k = (e && e.t || '') + '|' + (e && e.what || '') + '|' + (e && e.who || '');
+          if (seen[k]) return false;
+          seen[k] = 1;
+          return !!(e && e.t);
+        });
+        merged.sort(function(a,b){ return String(b.t).localeCompare(String(a.t)); });
+        actCache = merged.slice(0, 300);
+        await writeActivityLogCloud(actCache);
+        localStorage.setItem('ios_act_queue', '[]');
+      } catch (e) {}
+    }
+    async function refreshActivityLog() {
+      const box = document.getElementById('activityLogList');
+      if (box) box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Гружу…</div>';
+      if (Date.now() >= actClearLockUntil) {
+        try { await flushActivityLog(); } catch (e) {}
+      }
+      try {
+        const rows = await sbFetch('app_settings?key=eq.activity_log&select=value');
+        let list = [];
+        if (rows && rows[0]) list = parseActivityLogValue(rows[0].value);
+        actCache = list;
+        if (!box) return;
+        if (!list.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Пока пусто. Как кто-то тыкнет — появится.</div>';
+          return;
+        }
+        box.innerHTML = list.slice(0, 200).map(function(e) {
+          return '<div class="act-row"><div class="act-who">' + escapeHtml(e.who || 'гость') +
+            '</div><div class="act-what">' + escapeHtml(e.what || '') +
+            (e.extra ? ' · ' + escapeHtml(e.extra) : '') +
+            '</div><div class="act-when">' + escapeHtml(formatActTime(e.t)) +
+            (e.screen ? ' · ' + escapeHtml(screenLabel(e.screen)) : '') +
+            '</div></div>';
+        }).join('');
+      } catch (e) {
+        if (box) box.innerHTML = '<div style="color:#ff453a;font-size:13px;">Не смог прочитать лог</div>';
+      }
+    }
+    async function clearActivityLog() {
+      if (!confirm('Стереть весь лог?')) return;
+      try { clearTimeout(actPushTimer); } catch (e) {}
+      actPushTimer = null;
+      actClearLockUntil = Date.now() + 10000;
+      actCache = [];
+      localStorage.setItem('ios_act_queue', '[]');
+      const box = document.getElementById('activityLogList');
+      if (box) box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Очищаю…</div>';
+      try {
+        try {
+          await sbFetch('app_settings?key=eq.activity_log', {
+            method: 'DELETE',
+            headers: { 'Prefer': 'return=minimal' }
+          });
+        } catch (e) {}
+        await writeActivityLogCloud([]);
+        actCache = [];
+        localStorage.setItem('ios_act_queue', '[]');
+        if (box) box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Лог пуст</div>';
+        showToast('Лог очищен', true);
+      } catch (e) {
+        showToast(e.message || 'Не удалось очистить в облаке');
+      }
+    }
+
+
+    const THEMES = [
+      { id: 'classic', name: 'Классика', bar: 'linear-gradient(90deg,#0a84ff,#30d158)' },
+      { id: 'midnight', name: 'Полночь', bar: 'linear-gradient(90deg,#5b8cff,#9b7dff)' },
+      { id: 'graphite', name: 'Графит', bar: 'linear-gradient(90deg,#9e9e9e,#64b5f6)' },
+      { id: 'forest', name: 'Лес', bar: 'linear-gradient(90deg,#3ddc84,#6ec8ff)' },
+      { id: 'wine', name: 'Вино', bar: 'linear-gradient(90deg,#ff4d6d,#e0aaff)' },
+      { id: 'sand', name: 'Песок', bar: 'linear-gradient(90deg,#ffb347,#e6b35a)' },
+      { id: 'neon', name: 'Неон', bar: 'linear-gradient(90deg,#00e5ff,#ff2bd6)' },
+      { id: 'ice', name: 'Лёд', bar: 'linear-gradient(90deg,#7ad7ff,#7dffc5)' },
+      { id: 'sunset', name: 'Закат', bar: 'linear-gradient(90deg,#ff7a18,#ff8ad4)' },
+      { id: 'lavender', name: 'Лаванда', bar: 'linear-gradient(90deg,#c77dff,#8ab4ff)' },
+      { id: 'matcha', name: 'Матча', bar: 'linear-gradient(90deg,#9be15d,#7ecbff)' },
+      { id: 'crimson', name: 'Кримсон', bar: 'linear-gradient(90deg,#ff3b3b,#ff8a3d)' },
+      { id: 'ocean', name: 'Океан', bar: 'linear-gradient(90deg,#2f9bff,#3ddeb5)' },
+      { id: 'amber', name: 'Янтарь', bar: 'linear-gradient(90deg,#ffb000,#e6c35c)' },
+      { id: 'slate', name: 'Сланец', bar: 'linear-gradient(90deg,#6aa8ff,#b08cff)' },
+      { id: 'rose', name: 'Роза', bar: 'linear-gradient(90deg,#ff5d8f,#ff8cc8)' }
+    ];
+
+    function getTheme() { return localStorage.getItem('ios_theme') || 'classic'; }
+        // ===== UI v3 =====
+    const TAB_MAP = { screenMenu:'home', screenShifts:'week', screenOrder:'order', screenAI:'ai', screenMyShifts:'shifts', screenNotes:'home', screenChange:'home', screenPayQr:'home', screenStats:'home', screenArchiveWeek:'home', screenSalary:'home' };
+    function updateTabBar(id) {
+      const t = TAB_MAP[id];
+      document.body.classList.toggle('has-tabs', !!t);
+      document.querySelectorAll('#tabBar .tab').forEach(function(b) { b.classList.toggle('on', b.dataset.tab === t); });
+      positionBubble();
+    }
+    function tabGo(t) {
+      openScreen({ home:'screenMenu', week:'screenShifts', shifts:'screenMyShifts', order:'screenOrder', ai:'screenAI' }[t]);
+    }
+    function closeSheet(id) { const m = document.getElementById(id); if (m) m.classList.remove('active'); try { positionBubble(); } catch (e) {} }
+    function openQuickAdd() {
+      const m = document.getElementById('quickAddModal');
+      if (m) {
+        m.classList.add('active');
+        const box = m.querySelector('.qa-modal');
+        if (box) {
+          box.classList.remove('qa-pop');
+          void box.offsetWidth;
+          box.classList.add('qa-pop');
+        }
+      }
+      qaShowStep('menu');
+    }
+    function sheetGo(sheet, screen, focusId) {
+      if (sheet) closeSheet(sheet);
+      openScreen(screen);
+      if (focusId) setTimeout(function() { const el = document.getElementById(focusId); if (el) el.focus(); }, 400);
+    }
+
+    function qaShowStep(step) {
+      const map = {
+        menu: document.getElementById('qaStepMenu'),
+        shift: document.getElementById('qaStepShift'),
+        note: document.getElementById('qaStepNote'),
+        order: document.getElementById('qaStepOrder')
+      };
+      Object.keys(map).forEach(function(k) {
+        const el = map[k];
+        if (!el) return;
+        if (k === step) {
+          el.style.display = '';
+          el.classList.remove('qa-leave');
+          el.classList.add('qa-enter');
+        } else {
+          el.style.display = 'none';
+          el.classList.remove('qa-enter');
+        }
+      });
+    }
+    function qaBack() { qaShowStep('menu'); }
+    function qaOpen(kind) {
+      if (kind === 'shift') {
+        const d = document.getElementById('qaShiftDate');
+        const t = document.getElementById('qaShiftTotal');
+        if (d) {
+          try { d.valueAsDate = new Date(); } catch (e) {
+            const n = new Date();
+            d.value = n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0');
+          }
+        }
+        if (t) t.value = '';
+        qaShowStep('shift');
+        setTimeout(function(){ if (t) t.focus(); }, 200);
+        return;
+      }
+      if (kind === 'note') {
+        const n = document.getElementById('qaNoteText');
+        if (n) n.value = '';
+        qaShowStep('note');
+        setTimeout(function(){ if (n) n.focus(); }, 200);
+        return;
+      }
+      if (kind === 'order') {
+        const pt = document.getElementById('qaOrdPoint');
+        const cat = document.getElementById('qaOrdCat');
+        const tx = document.getElementById('qaOrdText');
+        if (pt && typeof POINTS !== 'undefined') {
+          const prev = localStorage.getItem('ios_order_point') || '';
+          pt.innerHTML = Object.keys(POINTS).map(function(k) {
+            return '<option value="' + k + '">' + POINTS[k].name + '</option>';
+          }).join('');
+          if (prev && POINTS[prev]) pt.value = prev;
+        }
+        if (cat && typeof ORDER_CATS !== 'undefined') {
+          cat.innerHTML = ORDER_CATS.map(function(c) {
+            return '<option value="' + c.id + '">' + c.name + '</option>';
+          }).join('');
+          try { if (typeof orderCat !== 'undefined') cat.value = orderCat; } catch (e) {}
+        }
+        if (tx) tx.value = '';
+        qaShowStep('order');
+        setTimeout(function(){ if (tx) tx.focus(); }, 200);
+      }
+    }
+    function qaSaveShift() {
+      const dateInput = (document.getElementById('qaShiftDate') || {}).value;
+      const total = parseNum((document.getElementById('qaShiftTotal') || {}).value);
+      if (!dateInput || isNaN(total)) return showToast('Укажи дату и сумму');
+      const parts = dateInput.split('-');
+      const year = parts[0], month = parts[1], day = parts[2];
+      let store = getData();
+      if (store.shifts.length >= 5) {
+        if (confirm('В отчёте уже 5 смен. Отправить неделю в архив?')) {
+          archiveWeek();
+          store = getData();
+        } else return;
+      }
+      store.shifts.push({ date: day + '.' + month + '.' + year, total: total });
+      saveData(store);
+      try { render(); } catch (e) {}
+      try { playAppStoreSound(); } catch (e) {}
+      try { triggerSuccessFlash(); } catch (e) {}
+      try { logAction('добавил смену (быстро)'); } catch (e) {}
+      try { rebuildStreakFromShifts(); } catch (e) {}
+      closeSheet('quickAddModal');
+      showToast('Смена добавлена', true);
+    }
+    function qaSaveNote() {
+      const val = ((document.getElementById('qaNoteText') || {}).value || '').trim();
+      if (!val) return showToast('Напиши заметку');
+      const notes = getNotes();
+      notes.push({ text: val, done: false });
+      saveNotes(notes);
+      try { renderNotes(); } catch (e) {}
+      try { playAppStoreSound(); } catch (e) {}
+      try { logAction('сохранил заметку (быстро)'); } catch (e) {}
+      closeSheet('quickAddModal');
+      showToast('Заметка сохранена', true);
+    }
+    function qaSaveOrder() {
+      const text = ((document.getElementById('qaOrdText') || {}).value || '').trim();
+      if (!text) return showToast('Напиши что заказать');
+      const pointEl = document.getElementById('qaOrdPoint');
+      const catEl = document.getElementById('qaOrdCat');
+      const point = (pointEl && pointEl.value) || '';
+      if (!point) return showToast('Выбери точку');
+      localStorage.setItem('ios_order_point', point);
+      const cat = (catEl && catEl.value) || 'other';
+      let who = 'сотрудник';
+      try { const s = getSession(); if (s) who = s.name || s.code || who; } catch (e) {}
+      const nowIso = new Date().toISOString();
+      const list = getOrderList();
+      list.unshift({
+        id: 'o' + Date.now(),
+        cat: cat,
+        text: text,
+        who: who,
+        point: point,
+        pointName: pointName(point),
+        t: nowIso,
+        edited: nowIso,
+        done: false
+      });
+      setOrderList(list);
+      pushOrderList();
+      try { logAction('заказал (быстро)', text); } catch (e) {}
+      closeSheet('quickAddModal');
+      showToast('Добавлено в заказ', true);
+    }
+
+    // ===== ROOT: обзор, статус, команды =====
+    function rtDbState(ok, text) {
+      window._rtDb = { ok: /Проверка/.test(String(text || '')) ? null : ok };
+      rtSyncPills();
+    }
+    function rtSyncPills() {
+      const d = window._rtDb || {};
+      const live = document.getElementById('rtLive');
+      const lt = document.getElementById('rtLiveTxt');
+      if (live) live.className = 'rt-live ' + (d.ok === true ? 'ok' : (d.ok === false ? 'bad' : ''));
+      if (lt) lt.textContent = d.ok === true ? 'база ок' : (d.ok === false ? 'нет базы' : '…');
+      const g = document.getElementById('rtGatePill');
+      if (g) g.textContent = isGateEnabled() ? 'по ключу' : 'открытый';
+      const v = document.getElementById('rtVer');
+      if (v) v.textContent = (typeof APP_VERSION !== 'undefined') ? APP_VERSION : '—';
+    }
+    function rtTick() {
+      const c = document.getElementById('rtClock'), d = document.getElementById('rtDate');
+      if (!c) return;
+      const n = new Date();
+      c.textContent = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
+      if (d) { const s = n.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }); d.textContent = s.charAt(0).toUpperCase() + s.slice(1); }
+    }
+    setInterval(rtTick, 5000); rtTick();
+    async function rtLoadRecent() {
+      const box = document.getElementById('rtRecent');
+      if (!box) return;
+      try {
+        const rows = await sbFetch('app_settings?key=eq.activity_log&select=value');
+        const list = rows && rows[0] ? parseActivityLogValue(rows[0].value) : [];
+        box.innerHTML = list.length ? list.slice(0, 6).map(function(e) {
+          return '<div class="rt-ev"><b>' + escapeHtml(e.who || 'гость') + '</b><span>' + escapeHtml(e.what || '') + '</span><small>' + escapeHtml(formatActTime(e.t)) + '</small></div>';
+        }).join('') : '<div class="rt-empty">Пока пусто</div>';
+      } catch (e) { box.innerHTML = '<div class="rt-empty">Не загрузилось</div>'; }
+    }
+    async function renderCreatorDash() {
+      const box = document.getElementById('crDash');
+      if (!box) return;
+      let online = '—', active = '—', queue = '—', unread = '—';
+      function paint() {
+        function st(n, l, tab, col) {
+          return '<div class="rt-st" style="--c:' + col + '" onclick="showCreatorTab(\'' + tab + '\')"><div class="n">' + n + '</div><div class="l">' + l + '</div></div>';
+        }
+        box.innerHTML = st(online, 'в сети', 'people', 'var(--accent-green)') + st(active, 'ключей', 'keys', 'var(--accent-blue)') +
+          st(queue, 'в очереди', 'alerts', 'var(--accent-orange)') + st(unread, 'чаты', 'keys', 'var(--accent-red)');
+      }
+      if (!box.innerHTML.trim()) paint();
+      try {
+        const r = await Promise.all([
+          sbFetch('device_sessions?select=last_seen,revoked').catch(function() { return []; }),
+          sbFetch('access_keys?select=code,active').catch(function() { return []; }),
+          loadNoticeOutbox()
+        ]);
+        const devs = r[0] || [], keys = r[1] || [], ob = r[2] || [];
+        online = devs.filter(function(d) { return !d.revoked && isDeviceOnline(d.last_seen); }).length;
+        active = keys.filter(function(k) { return k.active !== false; }).length;
+        queue = ob.filter(function(it) { return it.status !== 'cancelled' && noticeStatusLabel(it) !== 'просмотрено'; }).length;
+        paint();
+        const u = await Promise.all(keys.map(function(k) { return countUnreadFromUser(String(k.code).toUpperCase()); }));
+        unread = u.reduce(function(a, b) { return a + b; }, 0);
+      } catch (e) {}
+      paint();
+    }
+    function rtSub(btn, i) {
+      const panel = btn.closest('.rt-panel');
+      if (!panel) return;
+      panel.querySelectorAll('.rt-segs > button').forEach(function(b, k) { b.classList.toggle('on', k === i); });
+      panel.querySelectorAll(':scope > .rt-sub').forEach(function(s, k) { s.classList.toggle('on', k === i); });
+      const body = document.getElementById('rtBody');
+      if (body) body.scrollTop = 0;
+    }
+    function rtRefresh() {
+      const b = document.getElementById('rtRefBtn');
+      if (b) { b.classList.remove('spin'); void b.offsetWidth; b.classList.add('spin'); }
+      const t = window._rtTab || 'overview';
+      if (t === 'overview') { renderCreatorDash(); testSupabaseConnection(false); rtLoadRecent(); fetchGateFromCloud(); }
+      if (t === 'people') { refreshDeviceSessions(); refreshPeekAccounts(); }
+      if (t === 'keys') { refreshAccessKeysList(); renderAdminAssign(); }
+      if (t === 'alerts') refreshNoticeOutbox();
+      if (t === 'log') refreshActivityLog();
+    }
+    (function rtCommands() {
+      const out = document.getElementById('rtOut'), inp = document.getElementById('rtCmd');
+      if (!inp) return;
+      function say(t) { out.textContent = t || ''; out.style.display = t ? 'block' : 'none'; }
+      const TABS = { 'обзор': 'overview', overview: 'overview', home: 'overview', 'люди': 'people', people: 'people', users: 'people',
+        'ключи': 'keys', keys: 'keys', 'роли': 'play', roles: 'play', 'игра': 'play', 'алерты': 'alerts', alerts: 'alerts', 'уведы': 'alerts', 'лог': 'log', log: 'log' };
+      function run(raw) {
+        const p = raw.trim().toLowerCase().split(/\s+/), c = p[0], a = p[1];
+        if (TABS[c]) { showCreatorTab(TABS[c]); return ''; }
+        switch (c) {
+          case 'help': case '?': case 'помощь':
+            return 'обзор · люди · ключи · роли · алерты · лог\npin — копия PIN · db — проверка базы · r — обновить\ngate on|off — вход по ключу\nadmin — админка · exit — выйти из root';
+          case 'pin': copyCreatorPin(); return 'PIN скопирован';
+          case 'db': testSupabaseConnection(true); return 'проверяю базу…';
+          case 'r': case 'refresh': rtRefresh(); return 'обновляю…';
+          case 'gate':
+            if (a === 'on' || a === '1') { setGateEnabled(true); return 'вход: только по ключу'; }
+            if (a === 'off' || a === '0') { setGateEnabled(false); return 'вход: открытый'; }
+            return 'gate on | gate off';
+          case 'admin': openScreen('screenAdmin'); return '';
+          case 'exit': case 'quit': creatorGoBack(); return '';
+          default: return 'неизвестная команда: ' + c + ' (help)';
+        }
+      }
+      inp.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter') return;
+        const v = inp.value.trim();
+        inp.value = '';
+        say(v ? run(v) : '');
+        inp.blur();
+      });
+    })();
+    window._kf = { q: '', s: 'all' };
+    function setKeyFilter(k, v) {
+      window._kf[k] = v;
+      if (k === 's') document.querySelectorAll('.kf-chip[data-s]').forEach(function(c) { c.classList.toggle('on', c.dataset.s === v); });
+      refreshAccessKeysList(true);
+    }
+    function keyMatchesFilter(k) {
+      const f = window._kf, q = f.q.trim().toLowerCase();
+      if (q && ((k.name || '') + ' ' + (k.code || '')).toLowerCase().indexOf(q) < 0) return false;
+      const c = keyIsValid(k);
+      if (f.s === 'active') return c.ok;
+      if (f.s === 'off') return k.active === false;
+      if (f.s === 'exp') return !c.ok && k.active !== false;
+      return true;
+    }
+    const NOTICE_TPL = [
+      ['Закрой неделю', 'Не забудь завершить неделю и отправить отчёт.'],
+      ['Привезли товар', 'Поставка приехала. Проверь остатки на точке.'],
+      ['Смена', 'Напоминаю: завтра у тебя смена.'],
+      ['Внеси смену', 'Ты ещё не внёс смену за сегодня.']
+    ];
+    function applyTpl(i) {
+      document.getElementById('noticeTitle').value = NOTICE_TPL[i][0];
+      document.getElementById('noticeBody').value = NOTICE_TPL[i][1];
+    }
+    document.addEventListener('click', function(e) {
+      if (e.target.closest && e.target.closest('.btn, .menu-item, .tab, .qtile, .option-btn, .fab-plus') && navigator.vibrate) navigator.vibrate(8);
+    }, true);
+    (function() {
+      let sx = 0, sy = 0;
+      document.addEventListener('touchstart', function(e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+      document.addEventListener('touchend', function(e) {
+        const t = e.changedTouches[0];
+        if (sx < 28 && t.clientX - sx > 80 && Math.abs(t.clientY - sy) < 60 && screenStack.length > 1) {
+          const prev = screenStack[screenStack.length - 2];
+          if (prev && prev !== 'screenGate') openScreen(prev);
+        }
+      }, { passive: true });
+      const n = document.querySelector('.cr-nav'), sc = document.getElementById('screenCreator');
+      if (n && sc) sc.appendChild(n);
+    })();
+        const PH = { x: 0, v: 0, target: 0, w: 0, px: 0, press: 1, sx: 1, drag: false, raf: 0, last: 0, init: false };
+    function paintBubble() {
+      const bub = document.getElementById('tabBubble');
+      if (!bub) return;
+      const sc = PH.press;
+      bub.style.transform = 'translate3d(' + PH.x.toFixed(2) + 'px,0,0) scale(' + (PH.sx * sc).toFixed(3) + ',' + (sc / PH.sx).toFixed(3) + ')';
+    }
+    function bubbleLoop(now) {
+      const dt = Math.min(0.032, (now - PH.last) / 1000 || 0.016);
+      PH.last = now;
+      const prev = PH.x;
+      if (PH.drag) {
+        PH.x += (PH.px - PH.x) * Math.min(1, dt * 14);
+        PH.v = (PH.x - prev) / dt;
+      } else {
+        const k = 90, c = 14;
+        PH.v += (-k * (PH.x - PH.target) - c * PH.v) * dt;
+        PH.x += PH.v * dt;
+      }
+      const wantPress = PH.drag ? 1.12 : 1;
+      PH.press += (wantPress - PH.press) * Math.min(1, dt * 10);
+      const stretch = 1 + Math.min(0.22, Math.abs(PH.v) / 2200);
+      PH.sx += (stretch - PH.sx) * Math.min(1, dt * 12);
+      paintBubble();
+      const calm = !PH.drag && Math.abs(PH.x - PH.target) < 0.2 && Math.abs(PH.v) < 0.5 && Math.abs(PH.press - 1) < 0.004 && Math.abs(PH.sx - 1) < 0.004;
+      if (calm) { PH.x = PH.target; PH.v = 0; PH.press = 1; PH.sx = 1; paintBubble(); PH.raf = 0; return; }
+      PH.raf = requestAnimationFrame(bubbleLoop);
+    }
+    function kickBubble() {
+      if (PH.raf) return;
+      PH.last = performance.now();
+      PH.raf = requestAnimationFrame(bubbleLoop);
+    }
+    function positionBubble() {
+      const bub = document.getElementById('tabBubble'), t = document.querySelector('#tabBar .tab.on');
+      if (!bub || !t || !t.offsetWidth) return;
+      bub.style.width = t.offsetWidth + 'px';
+      PH.w = t.offsetWidth;
+      PH.target = t.offsetLeft;
+      if (!PH.init) { PH.init = true; PH.x = PH.target; paintBubble(); return; }
+      kickBubble();
+    }
+    window.addEventListener('resize', positionBubble);
+    (function() {
+      const bar = document.getElementById('tabBar');
+      if (!bar) return;
+      let moved = false, cancelled = false, sx0 = 0, sy0 = 0;
+      function tabs() { return Array.prototype.slice.call(bar.querySelectorAll('.tab')); }
+      bar.addEventListener('pointerdown', function(e) {
+        if (!PH.w) return;
+        PH.drag = true; moved = false; cancelled = false; sx0 = e.clientX; sy0 = e.clientY;
+        bar.classList.add('drag');
+        const r = bar.getBoundingClientRect();
+        PH.px = Math.max(0, Math.min(r.width - PH.w, e.clientX - r.left - PH.w / 2));
+        kickBubble();
+      });
+      window.addEventListener('pointermove', function(e) {
+        if (!PH.drag || cancelled) return;
+        const dx = Math.abs(e.clientX - sx0);
+        const dy = Math.abs(e.clientY - sy0);
+        // вертикальный свайп (клавиатура / скролл) — не трогаем вкладки
+        if (dy > 12 && dy > dx * 1.15) {
+          cancelled = true;
+          PH.drag = false;
+          bar.classList.remove('drag');
+          PH.target = (document.querySelector('#tabBar .tab.on') || {}).offsetLeft || PH.target;
+          kickBubble();
+          return;
+        }
+        if (dx > 14) moved = true;
+        if (!moved) return;
+        const r = bar.getBoundingClientRect();
+        let px = Math.max(0, Math.min(r.width - PH.w, e.clientX - r.left - PH.w / 2));
+        // лёгкое «залипание» возле вкладок
+        let best = null, bd = 1e9;
+        tabs().forEach(function(t) { const d = Math.abs(t.offsetLeft - px); if (d < bd) { bd = d; best = t; } });
+        if (best && bd < PH.w * 0.35) px += (best.offsetLeft - px) * 0.28;
+        PH.px = px;
+        kickBubble();
+      });
+      function end() {
+        if (!PH.drag && !cancelled) return;
+        const wasDrag = PH.drag;
+        PH.drag = false;
+        bar.classList.remove('drag');
+        if (cancelled || !moved || !wasDrag) {
+          cancelled = false;
+          const on = document.querySelector('#tabBar .tab.on');
+          if (on) PH.target = on.offsetLeft;
+          kickBubble();
+          return;
+        }
+        const proj = PH.x + PH.v * 0.12;
+        let best = null, bd = 1e9;
+        tabs().forEach(function(t) { const d = Math.abs(t.offsetLeft - proj); if (d < bd) { bd = d; best = t; } });
+        if (best) {
+          PH.target = best.offsetLeft;
+          if (!best.classList.contains('on')) tabGo(best.dataset.tab);
+        }
+        kickBubble();
+      }
+      window.addEventListener('pointerup', end);
+      window.addEventListener('pointercancel', end);
+      bar.addEventListener('click', function(e) { if (moved || cancelled) { e.stopPropagation(); e.preventDefault(); moved = false; cancelled = false; } }, true);
+    })();
+    // ===== АДМИНКА v4: дашборд =====
+    function admDays(iso) {
+      if (!iso) return '—';
+      return supplyAgo(iso);
+    }
+    // ===== ADMIN HUB + ШТРАФЫ =====
+    function getFines() { try { return JSON.parse(localStorage.getItem('ios_fines') || '[]'); } catch (e) { return []; } }
+    function parseFinesValue(v) {
+      if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return null; } }
+      return Array.isArray(v) ? v : null;
+    }
+    async function fetchFines() {
+      const rows = await sbFetch('app_settings?key=eq.fines&select=value');
+      return (rows && rows[0] ? parseFinesValue(rows[0].value) : []) || [];
+    }
+    async function pullFines() {
+      try { localStorage.setItem('ios_fines', JSON.stringify(await fetchFines())); return true; } catch (e) { return false; }
+    }
+    async function saveFines(list) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({ key: 'fines', value: JSON.stringify(list.slice(0, 500)), updated_at: new Date().toISOString() })
+      });
+      localStorage.setItem('ios_fines', JSON.stringify(list));
+    }
+    function fnSameMonth(iso) {
+      const d = new Date(iso), n = new Date();
+      return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth();
+    }
+    function monthFines() { return getFines().filter(function(f) { return f.status === 'active' && fnSameMonth(f.at); }); }
+    function rub(n) { return (Number(n) || 0).toLocaleString('ru-RU') + ' ₽'; }
+
+    function renderAdminHome() {
+      const dEl = document.getElementById('ahDate');
+      if (dEl) {
+        const s = new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+        dEl.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+      }
+      let ord = [];
+      try { ord = getOrderList().filter(function(i) { return !i.done; }); } catch (e) {}
+      const ordPts = {};
+      ord.forEach(function(i) { ordPts[i.point || i.pointName || 'none'] = 1; });
+      const un = window._admUnread || 0;
+      const ob = document.getElementById('admOrdBadge');
+      if (ob) { ob.textContent = ord.length > 99 ? '99+' : String(ord.length); ob.classList.toggle('on', ord.length > 0); }
+      const kb = document.getElementById('adminKeysChatBadge');
+      if (kb) { kb.textContent = un > 99 ? '99+' : String(un); kb.classList.toggle('on', un > 0); }
+
+      const today = getTodayDateKey();
+      const empty = [];
+      let staffed = 0;
+      const keys = Object.keys(POINTS);
+      keys.forEach(function(k) {
+        const st = getPointData(k).days[today] || '';
+        if (st === 'green' || st === 'red') { staffed++; }
+        else empty.push(POINTS[k].name);
+      });
+      const att = [];
+      if (ord.length) att.push({ c: 'var(--accent-orange)', t: 'Заказы ждут сборки: ' + ord.length + ' поз.', s: Object.keys(ordPts).length + ' точ.', go: 'screenAdminOrders' });
+      if (empty.length) att.push({ c: 'var(--accent-red)', t: 'Сегодня без сотрудника: ' + empty.length, s: empty.join(', '), go: 'screenControl' });
+      if (un > 0) att.push({ c: 'var(--accent-blue)', t: 'Новые сообщения: ' + un, s: 'открой чат у нужного ключа', go: 'screenAdminKeys' });
+      const soon = (window._admKeys || []).filter(function(k) {
+        return k.active !== false && k.expires_at && (new Date(k.expires_at).getTime() - Date.now()) < 3 * 86400000;
+      });
+      if (soon.length) att.push({ c: 'var(--accent-red)', t: 'Ключи истекают или истекли: ' + soon.length, s: soon.map(function(k) { return k.name || k.code; }).join(', '), go: 'screenAdminKeys' });
+      const box = document.getElementById('ahAtt');
+      if (box) {
+        box.innerHTML = att.length ? att.map(function(a) {
+          return '<div class="ah-ai ah-g" style="--c:' + a.c + '" onclick="openScreen(\'' + a.go + '\')"><span class="ah-ad"></span>' +
+            '<div class="ah-at">' + escapeHtml(a.t) + (a.s ? '<small>' + escapeHtml(a.s) + '</small>' : '') + '</div><i>›</i></div>';
+        }).join('') : '<div class="ah-ai ah-g ah-ok"><span class="ah-ad"></span><div class="ah-at">Всё спокойно<small>срочных дел нет</small></div></div>';
+      }
+      const fsum = monthFines().reduce(function(a, f) { return a + (Number(f.amount) || 0); }, 0);
+      const stBox = document.getElementById('ahStats');
+      if (stBox) {
+        function st(n, l, go, col) { return '<div class="ah-s" style="--c:' + col + '" onclick="openScreen(\'' + go + '\')"><div class="n">' + n + '</div><div class="l">' + l + '</div></div>'; }
+        stBox.innerHTML = st(ord.length, 'заказов', 'screenAdminOrders', 'var(--accent-orange)') +
+          st(staffed + '/' + keys.length, 'на смене', 'screenControl', 'var(--accent-green)') +
+          st(empty.length, 'без людей', 'screenControl', empty.length ? 'var(--accent-red)' : 'var(--accent-green)') +
+          st(fsum ? fsum.toLocaleString('ru-RU') : '0', 'штрафы ₽', 'screenAdminFines', 'var(--accent-red)');
+      }
+      if (!window._admKeysAt || Date.now() - window._admKeysAt > 60000) {
+        window._admKeysAt = Date.now();
+        sbFetch('access_keys?select=code,name,active,expires_at').then(function(l) { window._admKeys = l || []; renderAdminHome(); }).catch(function() {});
+      }
+    }
+    function adminRefresh() {
+      const b = document.getElementById('ahRef');
+      if (b) { b.classList.remove('spin'); void b.offsetWidth; b.classList.add('spin'); }
+      window._admKeysAt = 0;
+      renderAdminHome();
+      try {
+        pullOrderList().then(renderAdminHome);
+        pullAdminSharedData().then(renderAdminHome);
+        pullFines().then(renderAdminHome);
+        refreshAccessKeysList(true);
+      } catch (e) {}
+    }
+
+    // ----- штрафы -----
+    window._fnFilter = 'active';
+    function fnFilter(btn, f) {
+      window._fnFilter = f;
+      document.querySelectorAll('#fnSegs button').forEach(function(b) { b.classList.toggle('on', b === btn); });
+      renderFinesScreen();
+    }
+    async function renderFinesScreen() {
+      const sel = document.getElementById('fnKey');
+      if (sel && !window._fnKeys) {
+        try { window._fnKeys = await sbFetch('access_keys?select=code,name,active&order=created_at.desc') || []; }
+        catch (e) { window._fnKeys = getLocalKeys(); }
+      }
+      if (sel && window._fnKeys) {
+        const prev = sel.value;
+        sel.innerHTML = window._fnKeys.filter(function(k) { return k.active !== false; }).map(function(k) {
+          return '<option value="' + escapeHtml(k.code) + '">' + escapeHtml((k.name || 'Без имени') + ' · ' + k.code) + '</option>';
+        }).join('');
+        if (prev) sel.value = prev;
+      }
+      const all = getFines(), mon = monthFines();
+      const monSum = mon.reduce(function(a, f) { return a + (Number(f.amount) || 0); }, 0);
+      const people = {};
+      mon.forEach(function(f) { const k = f.code; if (!people[k]) people[k] = { name: f.name || f.code, sum: 0, n: 0 }; people[k].sum += Number(f.amount) || 0; people[k].n++; });
+      const peopleArr = Object.keys(people).map(function(k) { return people[k]; }).sort(function(a, b) { return b.sum - a.sum; });
+      const sum = document.getElementById('fnSum');
+      if (sum) {
+        function st(n, l, col) { return '<div class="ah-s" style="--c:' + col + ';cursor:default"><div class="n">' + n + '</div><div class="l">' + l + '</div></div>'; }
+        sum.style.gridTemplateColumns = 'repeat(3,1fr)';
+        sum.innerHTML = st(rub(monSum), 'за месяц', 'var(--accent-red)') + st(mon.length, 'штрафов', 'var(--accent-orange)') + st(peopleArr.length, 'людей', 'var(--accent-purple)');
+      }
+      const topCard = document.getElementById('fnTopCard'), top = document.getElementById('fnTop');
+      if (topCard && top) {
+        topCard.style.display = peopleArr.length ? '' : 'none';
+        top.innerHTML = peopleArr.map(function(p) {
+          return '<div class="shift-item"><div><div class="shift-date" style="font-size:15px;">' + escapeHtml(p.name) + '</div><div class="shift-val">' + p.n + ' шт.</div></div><div style="font-weight:800;color:var(--accent-red);">−' + rub(p.sum) + '</div></div>';
+        }).join('');
+      }
+      const list = document.getElementById('fnList');
+      if (list) {
+        const flt = window._fnFilter;
+        const rows = all.filter(function(f) { return flt === 'all' || f.status === flt; });
+        list.innerHTML = rows.length ? rows.map(function(f) {
+          const act = f.status === 'active';
+          return '<div class="key-item"><div class="key-item-top"><div class="key-item-name">' + escapeHtml(f.name || f.code) + '</div>' +
+            '<span class="key-badge ' + (act ? 'off' : 'exp') + '">' + (act ? '−' + rub(f.amount) : 'отменён') + '</span></div>' +
+            '<div class="key-item-meta" style="color:#fff;">' + escapeHtml(f.reason || '') + '</div>' +
+            '<div class="key-item-meta">' + escapeHtml(formatActTime(f.at)) + (f.by ? ' · ' + escapeHtml(f.by) : '') + (act && f.deduct === false ? ' · без вычета' : '') + '</div>' +
+            (act ? '<div class="key-actions"><button type="button" class="key-act danger" onclick="cancelFine(\'' + String(f.id).replace(/'/g, '') + '\')">Отменить штраф</button></div>' : '') +
+            '</div>';
+        }).join('') : '<div class="rt-empty">Пока пусто</div>';
+      }
+    }
+    async function issueFine() {
+      const sel = document.getElementById('fnKey');
+      const code = sel && sel.value ? String(sel.value).toUpperCase() : '';
+      const reason = (document.getElementById('fnReason').value || '').trim();
+      const amount = parseNum(document.getElementById('fnAmount').value);
+      const notify = document.getElementById('fnNotify').classList.contains('selected');
+      if (!code) return showToast('Выбери сотрудника');
+      if (!reason) return showToast('Укажи причину');
+      if (isNaN(amount) || amount <= 0) return showToast('Укажи сумму');
+      const rec = (window._fnKeys || []).find(function(k) { return String(k.code).toUpperCase() === code; });
+      const s = getSession();
+      const iso = new Date().toISOString();
+      const fine = {
+        id: 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+        code: code, name: (rec && rec.name) || code, reason: reason.slice(0, 120), amount: amount,
+        at: iso, by: (s && (s.name || s.code)) || 'админ', status: 'active', deduct: notify
+      };
+      try {
+        let list = [];
+        try { list = await fetchFines(); } catch (e) { list = getFines(); }
+        list.unshift(fine);
+        await saveFines(list);
+      } catch (e) { return showToast(e.message || 'не записалось'); }
+      if (notify) {
+        try {
+          const notice = { id: 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title: 'Штраф', body: (reason + '\n**−' + amount.toLocaleString('ru-RU') + ' ₽**').slice(0, 500), link: '', linkText: 'Открыть', image: '', pos: 'center', important: false, fine: { amount: amount, reason: reason, deduct: notify }, at: iso };
+          await deliverNoticeToCode(code, notice);
+          await pushNoticeToOutbox({ id: notice.id, title: notice.title, body: notice.body, link: '', image: '', pos: 'center', important: false, fine: notice.fine, all: false, targetCodes: [code], seen: {}, status: 'pending', at: iso });
+          try { await sendPushToCodes([code], 'Штраф', reason); } catch (e) {}
+        } catch (e) {}
+      }
+      document.getElementById('fnReason').value = '';
+      document.getElementById('fnAmount').value = '';
+      try { logAction('выписал штраф', fine.name + ' −' + amount); } catch (e) {}
+      showToast('Штраф выписан', true);
+      renderFinesScreen();
+    }
+    async function cancelFine(id) {
+      if (!confirm('Отменить штраф? У сотрудника он уберётся из вычетов.')) return;
+      try {
+        let list = [];
+        try { list = await fetchFines(); } catch (e) { list = getFines(); }
+        list.forEach(function(f) { if (String(f.id) === String(id)) { f.status = 'cancelled'; f.cancelledAt = new Date().toISOString(); } });
+        await saveFines(list);
+        showToast('Штраф отменён', true);
+        renderFinesScreen();
+      } catch (e) { showToast(e.message || 'не вышло'); }
+    }
+    // у сотрудника: подтянуть свои штрафы в вычеты недели (один раз на штраф)
+    async function applyMyFines() {
+      const s = getSession();
+      if (!s || !s.code || !getSbConfig()) return;
+      let list;
+      try { list = await fetchFines(); } catch (e) { return; }
+      const code = String(s.code).toUpperCase();
+      let applied = {};
+      try { applied = JSON.parse(localStorage.getItem('ios_fines_applied') || '{}'); } catch (e) {}
+      const store = getData();
+      if (!store.deductions) store.deductions = [];
+      let changed = false;
+      list.filter(function(f) { return String(f.code).toUpperCase() === code; }).forEach(function(f) {
+        if (f.status === 'active' && f.deduct !== false && !applied[f.id]) {
+          store.deductions.push({ reason: 'Штраф: ' + f.reason, amount: Number(f.amount) || 0, fineId: f.id });
+          applied[f.id] = 1;
+          changed = true;
+        }
+        if (f.status === 'cancelled') {
+          const n = store.deductions.length;
+          store.deductions = store.deductions.filter(function(d) { return d.fineId !== f.id; });
+          if (store.deductions.length !== n) changed = true;
+        }
+      });
+      localStorage.setItem('ios_fines_applied', JSON.stringify(applied));
+      if (changed) { saveData(store); try { render(); } catch (e) {} showToast('Штраф добавлен в вычеты'); }
+    }
+
+    // ===== баннер на главной =====
+    let _homeBanner = null;
+    let _hbTick = null, _hbStartT = null, _hbEndT = null;
+    let _hbShownId = null, _hbSnap = null, _hbSnapBusy = false, _hbBusy = false, _hbPending = false;
+
+    function formatBannerLeft(ms) {
+      if (ms <= 0) return 'истекло';
+      const s = Math.floor(ms / 1000);
+      const d = Math.floor(s / 86400);
+      const h = Math.floor((s % 86400) / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      if (d > 0) return d + 'д ' + h + 'ч';
+      if (h > 0) return h + 'ч ' + m + 'м';
+      if (m > 0) return m + 'м ' + sec + 'с';
+      return sec + 'с';
+    }
+    function bannerId(b) { return b ? String(b.id || ((b.createdAt || '') + '|' + (b.endsAt || ''))) : ''; }
+    function bannerWindow(b) {
+      return {
+        start: b && b.startsAt ? new Date(b.startsAt).getTime() : 0,
+        end: b && b.endsAt ? new Date(b.endsAt).getTime() : 0
+      };
+    }
+    function isElVisible(el) { return !!(el && el.offsetParent !== null); }
+
+    // null — баннера нет, undefined — не смогли спросить (сеть), объект — баннер
+    async function fetchHomeBanner() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.home_banner&select=value');
+        let v = rows && rows[0] ? rows[0].value : null;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+        if (!v || typeof v !== 'object') return null;
+        if (!v.endsAt || !v.title) return null;
+        if (new Date(v.endsAt).getTime() <= Date.now()) return null;
+        return v;
+      } catch (e) { return undefined; }
+    }
+    async function pullHomeBanner() {
+      const nb = await fetchHomeBanner();
+      if (nb === undefined) return;
+      _homeBanner = nb;
+      renderHomeBanner();
+      try { refreshAdminBannerStatus(false); } catch (e) {}
+    }
+
+    let _h2cP = null;
+    function loadHtml2Canvas() {
+      if (window.html2canvas) return Promise.resolve();
+      if (_h2cP) return _h2cP;
+      _h2cP = new Promise(function(res, rej) {
+        const sc = document.createElement('script');
+        sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        sc.onload = function() { res(); };
+        sc.onerror = function() { _h2cP = null; rej(new Error('html2canvas')); };
+        document.head.appendChild(sc);
+      });
+      return _h2cP;
+    }
+    function snapBannerEl(el) {
+      const scale = Math.min(2, window.devicePixelRatio || 1);
+      return window.html2canvas(el, { backgroundColor: null, scale: scale, logging: false, useCORS: true });
+    }
+    async function captureBannerSnap() {
+      if (_hbSnapBusy) return;
+      _hbSnapBusy = true;
+      try {
+        const el = document.getElementById('homeBanner');
+        const id = _hbShownId;
+        await loadHtml2Canvas();
+        const cv = await snapBannerEl(el);
+        _hbSnap = { canvas: cv, id: id, t: Date.now() };
+      } catch (e) { _hbSnap = null; }
+      _hbSnapBusy = false;
+    }
+
+    function playBannerAppear(el) {
+      el.classList.remove('appear');
+      void el.offsetWidth;
+      el.classList.add('appear');
+      setTimeout(function() { el.classList.remove('appear'); }, 950);
+      if (navigator.vibrate) navigator.vibrate(10);
+    }
+    function hideBannerNow(el) {
+      el.classList.remove('on', 'appear', 'poof');
+      el.removeAttribute('style');
+      _hbShownId = null;
+    }
+    function finishBannerHide(el) {
+      hideBannerNow(el);
+      const ov = document.getElementById('hbDustCanvas');
+      if (ov) ov.remove();
+      _hbBusy = false;
+      if (_hbPending) { _hbPending = false; renderHomeBanner(); }
+    }
+    function collapseBanner(el, delayMs) {
+      return new Promise(function(res) {
+        setTimeout(function() {
+          const h = el.offsetHeight;
+          el.style.maxHeight = h + 'px';
+          el.style.transition = 'max-height .45s cubic-bezier(.4,0,.2,1), margin-bottom .45s cubic-bezier(.4,0,.2,1), padding .45s cubic-bezier(.4,0,.2,1), border-width .45s';
+          void el.offsetWidth;
+          el.style.maxHeight = '0px';
+          el.style.marginBottom = '0px';
+          el.style.paddingTop = '0px';
+          el.style.paddingBottom = '0px';
+          el.style.borderWidth = '0px';
+          setTimeout(res, 480);
+        }, delayMs);
+      });
+    }
+
+    // «распад на пиксели», как удаление сообщения в Telegram
+    function runBannerDust(el, snap, rect) {
+      return new Promise(function(resolve) {
+        const PAD = 150;
+        const s = ((snap.width / rect.width) + (snap.height / rect.height)) / 2;
+        const ox = Math.round(PAD * s), oy = Math.round(PAD * s);
+        const W = snap.width + ox * 2, H = snap.height + oy * 2;
+        const cv = document.createElement('canvas');
+        cv.id = 'hbDustCanvas';
+        cv.width = W; cv.height = H;
+        cv.style.cssText = 'position:fixed;pointer-events:none;z-index:1900;left:' + (rect.left - PAD) + 'px;top:' + (rect.top - PAD) +
+          'px;width:' + (rect.width + PAD * 2) + 'px;height:' + (rect.height + PAD * 2) + 'px;';
+        const base = document.createElement('canvas');
+        base.width = W; base.height = H;
+        const bctx = base.getContext('2d');
+        bctx.drawImage(snap, ox, oy);
+        const img = bctx.getImageData(0, 0, W, H).data;
+        const cell = Math.max(2, Math.round(3 * s));
+        const P = [];
+        for (let y = oy; y < oy + snap.height; y += cell) {
+          for (let x = ox; x < ox + snap.width; x += cell) {
+            const cy = Math.min(y + (cell >> 1), oy + snap.height - 1);
+            const cx = Math.min(x + (cell >> 1), ox + snap.width - 1);
+            const i = (cy * W + cx) * 4;
+            const a = img[i + 3];
+            const nx = (x - ox) / snap.width;
+            P.push({
+              x: x, y: y,
+              c: 'rgb(' + img[i] + ',' + img[i + 1] + ',' + img[i + 2] + ')',
+              a: a / 255,
+              d: nx * 0.5 + Math.random() * 0.14,
+              du: 0.5 + Math.random() * 0.5,
+              vx: (40 + Math.random() * 110) * s,
+              vy: -(15 + Math.random() * 95) * s,
+              w: Math.random() * 6.28
+            });
+          }
+        }
+        P.sort(function(a, b) { return a.d - b.d; });
+        const ctx = cv.getContext('2d');
+        document.body.appendChild(cv);
+        ctx.drawImage(base, 0, 0);
+        el.style.visibility = 'hidden';
+        if (navigator.vibrate) navigator.vibrate([6, 30, 6]);
+        let t0 = 0, next = 0;
+        const live = [];
+        function frame(now) {
+          if (!t0) t0 = now;
+          const t = (now - t0) / 1000;
+          while (next < P.length && P[next].d <= t) {
+            const p = P[next++];
+            bctx.clearRect(p.x, p.y, cell, cell);
+            live.push(p);
+          }
+          ctx.clearRect(0, 0, W, H);
+          ctx.drawImage(base, 0, 0);
+          for (let i = live.length - 1; i >= 0; i--) {
+            const p = live[i];
+            const age = t - p.d;
+            if (age >= p.du) { live[i] = live[live.length - 1]; live.pop(); continue; }
+            const k = age / p.du;
+            const x = p.x + p.vx * age + Math.sin(p.w + age * 9) * 2 * s;
+            const y = p.y + p.vy * age - 30 * s * age * age;
+            if (p.a < 0.06) continue;
+            const sz = cell * (1 - 0.5 * k);
+            ctx.globalAlpha = p.a * (1 - k);
+            ctx.fillStyle = p.c;
+            ctx.fillRect(x, y, sz, sz);
+          }
+          ctx.globalAlpha = 1;
+          if (next >= P.length && !live.length) { cv.remove(); resolve(); return; }
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+    async function disintegrateHomeBanner(el) {
+      _hbBusy = true;
+      const id = _hbShownId;
+      _hbShownId = null;
+      let snap = null;
+      if (_hbSnap && _hbSnap.id === id && Date.now() - _hbSnap.t < 20000) snap = _hbSnap.canvas;
+      _hbSnap = null;
+      try {
+        if (!snap) { await loadHtml2Canvas(); snap = await snapBannerEl(el); }
+      } catch (e) { snap = null; }
+      const rect = el.getBoundingClientRect();
+      try {
+        if (snap && rect.width > 0 && rect.height > 0) {
+          await Promise.all([runBannerDust(el, snap, rect), collapseBanner(el, 520)]);
+        } else {
+          el.classList.add('poof');
+          await collapseBanner(el, 300);
+        }
+      } catch (e) {}
+      finishBannerHide(el);
+    }
+
+    function renderHomeBanner() {
+      const el = document.getElementById('homeBanner');
+      if (!el) return;
+      if (_hbBusy) { _hbPending = true; return; }
+      clearTimeout(_hbStartT); clearTimeout(_hbEndT);
+      if (_hbTick) { clearInterval(_hbTick); _hbTick = null; }
+      const b = _homeBanner, now = Date.now(), w = bannerWindow(b);
+      const active = !!(b && w.end > now && now >= w.start);
+      if (!active) {
+        if (b && w.start > now && w.end > now) {
+          _hbStartT = setTimeout(renderHomeBanner, Math.min(w.start - now + 30, 2147000000));
+        }
+        if (el.classList.contains('on')) {
+          if (_hbShownId && isElVisible(el)) disintegrateHomeBanner(el);
+          else hideBannerNow(el);
+        }
+        return;
+      }
+      const acc = ['blue', 'orange', 'green', 'purple'].indexOf(b.accent) >= 0 ? b.accent : 'blue';
+      ['blue', 'orange', 'green', 'purple'].forEach(function(a) { el.classList.remove('acc-' + a); });
+      el.classList.add('acc-' + acc);
+      const t = document.getElementById('homeBannerTitle');
+      const body = document.getElementById('homeBannerBody');
+      if (t) t.textContent = b.title || '';
+      if (body) {
+        body.textContent = b.body || '';
+        body.style.display = (b.body && String(b.body).trim()) ? '' : 'none';
+      }
+      const id = bannerId(b);
+      el.classList.add('on');
+      if (_hbShownId !== id && isElVisible(el)) {
+        _hbShownId = id;
+        _hbSnap = null;
+        playBannerAppear(el);
+        loadHtml2Canvas().catch(function() {});
+      }
+      function tick() {
+        const left = w.end - Date.now();
+        const tt = document.getElementById('homeBannerTimerText');
+        if (tt) tt.textContent = formatBannerLeft(left);
+        if (left <= 2500 && !_hbSnap && !_hbSnapBusy && isElVisible(el) && !el.classList.contains('appear')) captureBannerSnap();
+      }
+      tick();
+      _hbTick = setInterval(tick, 1000);
+      _hbEndT = setTimeout(function() { _homeBanner = null; renderHomeBanner(); }, Math.max(0, w.end - now));
+    }
+
+    // ----- админка баннера -----
+    async function refreshAdminBannerStatus(fetchNow) {
+      const box = document.getElementById('adminBannerStatus');
+      if (!box) return;
+      let b = _homeBanner;
+      if (fetchNow) {
+        const f = await fetchHomeBanner();
+        if (f !== undefined) { _homeBanner = f; b = f; }
+      }
+      if (!b) {
+        box.innerHTML = 'Сейчас баннер <b style="color:var(--text);">не висит</b>.';
+        return;
+      }
+      const now = Date.now(), w = bannerWindow(b);
+      let head = '<div style="font-weight:800;color:var(--text);margin-bottom:4px;">' + escapeHtml(b.title || '') + '</div>' +
+        (b.body ? ('<div style="margin-bottom:6px;">' + escapeHtml(b.body) + '</div>') : '');
+      if (w.start > now) {
+        box.innerHTML = head +
+          '<div>Появится через <b style="color:var(--accent-blue);">' + formatBannerLeft(w.start - now) + '</b> · в ' + fmtClock(w.start) + '</div>' +
+          '<div>Исчезнет в ' + fmtClock(w.end) + '</div>';
+      } else {
+        box.innerHTML = head +
+          '<div>Осталось: <b style="color:var(--accent-orange);">' + formatBannerLeft(w.end - now) + '</b>' +
+          ' · до ' + fmtClock(w.end) + '</div>';
+      }
+    }
+    function fmtClock(ts) {
+      const d = new Date(ts), p = function(n) { return String(n).padStart(2, '0'); };
+      const t = p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+      if (d.toDateString() === new Date().toDateString()) return t;
+      return p(d.getDate()) + '.' + p(d.getMonth() + 1) + ' ' + t;
+    }
+    function fmtDurFull(sec) {
+      const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+      const parts = [];
+      if (h) parts.push(h + ' ч');
+      if (m) parts.push(m + ' мин');
+      if (s || !parts.length) parts.push(s + ' сек');
+      return parts.join(' ');
+    }
+
+    // колёса времени как в будильнике
+    const TW_ITEM = 38;
+    function buildWheel(boxId, maxH) {
+      const box = document.getElementById(boxId);
+      if (!box) return;
+      const cols = [['ч', maxH], ['мин', 59], ['сек', 59]];
+      box.innerHTML = '<div class="tw-band"></div>' + cols.map(function(c) {
+        let items = '';
+        for (let i = 0; i <= c[1]; i++) items += '<div class="tw-i">' + i + '</div>';
+        return '<div class="tw-c"><div class="tw-s" data-max="' + c[1] + '">' + items + '</div><span class="tw-u">' + c[0] + '</span></div>';
+      }).join('');
+      box.querySelectorAll('.tw-s').forEach(function(sc) {
+        sc._last = 0;
+        sc.addEventListener('scroll', function() {
+          const i = Math.round(sc.scrollTop / TW_ITEM);
+          if (i !== sc._last) {
+            sc._last = i;
+            if (navigator.vibrate) navigator.vibrate(3);
+            updateBannerPreview();
+          }
+        }, { passive: true });
+      });
+    }
+    function setWheel(boxId, h, m, s) {
+      const sc = document.querySelectorAll('#' + boxId + ' .tw-s');
+      [h, m, s].forEach(function(v, i) { if (sc[i]) { sc[i].scrollTop = v * TW_ITEM; sc[i]._last = v; } });
+    }
+    function getWheelSecs(boxId) {
+      const sc = document.querySelectorAll('#' + boxId + ' .tw-s');
+      const v = Array.prototype.map.call(sc, function(x) {
+        return Math.min(parseInt(x.getAttribute('data-max'), 10), Math.max(0, Math.round(x.scrollTop / TW_ITEM)));
+      });
+      return (v[0] || 0) * 3600 + (v[1] || 0) * 60 + (v[2] || 0);
+    }
+    let _bannerAdv = false, _wheelsBuilt = false;
+    function toggleBannerAdv() {
+      _bannerAdv = !_bannerAdv;
+      const row = document.getElementById('bannerAdvToggle');
+      const panel = document.getElementById('bannerAdvPanel');
+      const simple = document.getElementById('bannerSimpleRow');
+      if (row) row.classList.toggle('on', _bannerAdv);
+      if (panel) panel.classList.toggle('on', _bannerAdv);
+      if (simple) simple.style.display = _bannerAdv ? 'none' : '';
+      if (_bannerAdv) {
+        if (!_wheelsBuilt) {
+          buildWheel('twAppear', 99);
+          buildWheel('twHide', 168);
+          _wheelsBuilt = true;
+          setTimeout(function() { setWheel('twAppear', 0, 0, 0); setWheel('twHide', 1, 0, 0); updateBannerPreview(); }, 40);
+        }
+        updateBannerPreview();
+      }
+    }
+    function updateBannerPreview() {
+      const el = document.getElementById('bannerPreview');
+      if (!el || !_bannerAdv) return;
+      const A = getWheelSecs('twAppear'), H = getWheelSecs('twHide'), now = Date.now();
+      if (H <= 0) {
+        el.innerHTML = '<span style="color:var(--accent-red);font-weight:700;">Поставь, сколько баннер будет висеть</span>';
+        return;
+      }
+      el.innerHTML =
+        'Появится ' + (A ? ('в <b>' + fmtClock(now + A * 1000) + '</b> (через ' + fmtDurFull(A) + ')') : '<b>сразу</b>') +
+        '<br>Будет висеть <b>' + fmtDurFull(H) + '</b>' +
+        '<br>Исчезнет в <b>' + fmtClock(now + (A + H) * 1000) + '</b>';
+    }
+
+    async function publishHomeBanner() {
+      const title = (document.getElementById('bannerTitle') && document.getElementById('bannerTitle').value || '').trim();
+      const body = (document.getElementById('bannerBody') && document.getElementById('bannerBody').value || '').trim();
+      const accent = (document.getElementById('bannerAccent') && document.getElementById('bannerAccent').value) || 'blue';
+      if (!title) return showToast('Нужен заголовок');
+      let delayMs = 0, endMs;
+      if (_bannerAdv) {
+        const A = getWheelSecs('twAppear'), H = getWheelSecs('twHide');
+        if (H <= 0) return showToast('Поставь, сколько баннер будет висеть');
+        delayMs = A * 1000;
+        endMs = (A + H) * 1000;
+      } else {
+        const hours = parseFloat(document.getElementById('bannerHours') && document.getElementById('bannerHours').value) || 24;
+        endMs = hours * 3600 * 1000;
+      }
+      const now = Date.now();
+      const payload = {
+        id: 'b' + now.toString(36) + Math.random().toString(36).slice(2, 5),
+        title: title.slice(0, 48),
+        body: body.slice(0, 280),
+        accent: accent,
+        startsAt: new Date(now + delayMs).toISOString(),
+        endsAt: new Date(now + endMs).toISOString(),
+        createdAt: new Date(now).toISOString()
+      };
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'home_banner', value: payload, updated_at: new Date().toISOString() })
+        });
+        _homeBanner = payload;
+        renderHomeBanner();
+        refreshAdminBannerStatus(false);
+        showToast(delayMs ? 'Баннер запланирован' : 'Баннер вывешен', true);
+      } catch (e) {
+        showToast(e.message || 'Не удалось сохранить');
+      }
+    }
+    async function clearHomeBanner() {
+      if (!confirm('Снять баннер с главной у всех?')) return;
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'home_banner', value: null, updated_at: new Date().toISOString() })
+        });
+        _homeBanner = null;
+        renderHomeBanner();
+        refreshAdminBannerStatus(false);
+        showToast('Баннер снят', true);
+      } catch (e) {
+        showToast(e.message || 'Не снялся');
+      }
+    }
+    (function bannerBackgroundLoops() {
+      // быстрый опрос, чтобы короткие задержки и снятие баннера срабатывали вовремя
+      setInterval(function() { if (document.visibilityState === 'visible') pullHomeBanner(); }, 6000);
+      document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'visible') pullHomeBanner(); });
+      setInterval(function() {
+        const pv = document.getElementById('bannerPreview');
+        if (_bannerAdv && pv && pv.offsetParent !== null) updateBannerPreview();
+        const scr = document.getElementById('screenAdminBanner');
+        if (scr && scr.classList.contains('active')) refreshAdminBannerStatus(false);
+      }, 1000);
+    })();
+
+    // ===== админы по ключу + сообщения =====
+    function getAdminCodes() { try { return JSON.parse(localStorage.getItem('ios_admin_codes') || '[]'); } catch (e) { return []; } }
+    function isAdminSession() { const x = getSession(); return !!(x && x.code && getAdminCodes().indexOf(String(x.code).toUpperCase()) >= 0); }
+    function applyAdminEntry() { const b = document.getElementById('adminEntryBtn'); if (b) b.style.display = isAdminSession() ? '' : 'none'; }
+    function openAdminEntry() { if (isAdminSession()) openScreen('screenAdmin'); else showToast('Нет доступа'); }
+    async function fetchAdminKeys() {
+      const rows = await sbFetch('app_settings?key=eq.admin_keys&select=value');
+      let v = rows && rows[0] ? rows[0].value : null;
+      if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = []; } }
+      return Array.isArray(v) ? v.map(function(c) { return String(c).toUpperCase(); }) : [];
+    }
+    async function pullAdminKeys() {
+      try { localStorage.setItem('ios_admin_codes', JSON.stringify(await fetchAdminKeys())); } catch (e) {}
+      applyAdminEntry();
+      try { await checkAdminPromotion(); } catch (e) {}
+    }
+    async function renderAdminAssign() {
+      const sel = document.getElementById('adminAssignSel'), box = document.getElementById('adminAssignedList');
+      if (!sel) return;
+      let keys = [], admins = [];
+      try { keys = await sbFetch('access_keys?select=code,name&order=created_at.desc') || []; } catch (e) { keys = getLocalKeys(); }
+      try { admins = await fetchAdminKeys(); } catch (e) { admins = getAdminCodes(); }
+      sel.innerHTML = keys.map(function(k) { return '<option value="' + escapeHtml(k.code) + '">' + escapeHtml((k.name || '') + ' · ' + k.code) + (admins.indexOf(String(k.code).toUpperCase()) >= 0 ? ' ★' : '') + '</option>'; }).join('');
+      if (box) {
+        const names = {};
+        keys.forEach(function(k) { names[String(k.code).toUpperCase()] = k.name; });
+        box.innerHTML = admins.length ? admins.map(function(c) { return '<div class="key-item-meta">★ ' + escapeHtml((names[c] || '—') + ' · ' + c) + '</div>'; }).join('') : '<div class="key-item-meta">Админов пока нет</div>';
+      }
+    }
+    async function loadAdminPromoPending() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.admin_promo_pending&select=value');
+        let v = rows && rows[0] ? rows[0].value : null;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = {}; } }
+        return v && typeof v === 'object' ? v : {};
+      } catch (e) { return {}; }
+    }
+    async function saveAdminPromoPending(map) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'admin_promo_pending',
+          value: map || {},
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+    function layoutAdminPromoCoachmark() {
+      const btn = document.getElementById('adminEntryBtn');
+      const spot = document.getElementById('adminPromoSpot');
+      const line = document.getElementById('adminPromoLine');
+      const card = document.getElementById('adminPromoCard');
+      if (!btn || !spot || !card) return;
+      const r = btn.getBoundingClientRect();
+      const pad = 10;
+      const size = Math.max(r.width, r.height) + pad * 2;
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      spot.style.width = size + 'px';
+      spot.style.height = size + 'px';
+      spot.style.left = (cx - size / 2) + 'px';
+      spot.style.top = (cy - size / 2) + 'px';
+
+      const cardW = Math.min(300, window.innerWidth - 28);
+      let cardLeft = Math.min(window.innerWidth - cardW - 14, Math.max(14, cx - cardW + 28));
+      let cardTop = cy + size / 2 + 18;
+      // если снизу мало места — карточка слева от кнопки / ниже по центру
+      if (cardTop + 180 > window.innerHeight) {
+        cardTop = Math.max(12, cy - size / 2 - 190);
+      }
+      card.style.width = cardW + 'px';
+      card.style.left = cardLeft + 'px';
+      card.style.top = cardTop + 'px';
+      card.style.right = 'auto';
+
+      if (line) {
+        const cardRectTop = cardTop;
+        const lineTop = Math.min(cy + size / 2, cardRectTop);
+        const lineBottom = Math.max(cy + size / 2, cardRectTop);
+        const h = Math.max(8, lineBottom - lineTop);
+        line.style.left = (cx - 1) + 'px';
+        line.style.top = lineTop + 'px';
+        line.style.height = h + 'px';
+        line.style.display = h > 12 ? 'block' : 'none';
+      }
+    }
+    function showAdminPromoCoachmark() {
+      // всегда с главной — иначе кнопка замка не в кадре
+      try {
+        if (typeof openScreen === 'function') openScreen('screenMenu');
+      } catch (e) {}
+      applyAdminEntry();
+      const btn = document.getElementById('adminEntryBtn');
+      if (btn) {
+        btn.style.display = '';
+        btn.classList.add('admin-promo-pulse');
+      }
+      const ov = document.getElementById('adminPromoOverlay');
+      function reveal() {
+        if (ov) ov.classList.add('on');
+        layoutAdminPromoCoachmark();
+        requestAnimationFrame(function() {
+          layoutAdminPromoCoachmark();
+          requestAnimationFrame(layoutAdminPromoCoachmark);
+        });
+      }
+      // чуть подождать переход на главную
+      setTimeout(reveal, 280);
+      setTimeout(layoutAdminPromoCoachmark, 450);
+      try {
+        showSystemNotification('Мультитул', 'Вас назначили администратором', {
+          tag: 'admin-promo', renotify: true, force: true, always: true
+        });
+      } catch (e) {}
+    }
+    function dismissAdminPromo(openAdmin) {
+      const ov = document.getElementById('adminPromoOverlay');
+      if (ov) ov.classList.remove('on');
+      const btn = document.getElementById('adminEntryBtn');
+      if (btn) btn.classList.remove('admin-promo-pulse');
+      const sess = getSession();
+      if (sess && sess.code) {
+        localStorage.setItem('ios_admin_promo_seen', String(sess.code).toUpperCase() + '|' + (localStorage.getItem('ios_admin_promo_token') || ''));
+      }
+      // снять pending в облаке
+      try {
+        const code = sess && sess.code ? String(sess.code).toUpperCase() : '';
+        if (code && getSbConfig()) {
+          loadAdminPromoPending().then(function(map) {
+            if (map && map[code]) {
+              delete map[code];
+              return saveAdminPromoPending(map);
+            }
+          }).catch(function() {});
+        }
+      } catch (e) {}
+      if (openAdmin && isAdminSession()) {
+        try { openAdminEntry(); } catch (e) {}
+      }
+    }
+    async function checkAdminPromotion() {
+      try {
+        const sess = getSession();
+        if (!sess || !sess.code) return;
+        if (!isAdminSession()) return;
+        const code = String(sess.code).toUpperCase();
+        let token = '';
+        let pending = {};
+        try { pending = await loadAdminPromoPending(); } catch (e) {}
+        if (pending && pending[code]) {
+          token = String(pending[code]);
+        } else {
+          // нет облачного флага — не показываем повторно
+          return;
+        }
+        localStorage.setItem('ios_admin_promo_token', token);
+        const seen = localStorage.getItem('ios_admin_promo_seen') || '';
+        if (seen === code + '|' + token) return;
+        // подождать отрисовку главной / кнопки
+        setTimeout(function() { showAdminPromoCoachmark(); }, 500);
+      } catch (e) {}
+    }
+    async function assignAdmin(on) {
+      const sel = document.getElementById('adminAssignSel');
+      const code = sel && sel.value ? String(sel.value).toUpperCase() : '';
+      if (!code) return showToast('Выбери ключ');
+      try {
+        let list = await fetchAdminKeys();
+        list = list.filter(function(c) { return c !== code; });
+        if (on) list.push(code);
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'admin_keys', value: JSON.stringify(list), updated_at: new Date().toISOString() })
+        });
+        localStorage.setItem('ios_admin_codes', JSON.stringify(list));
+        applyAdminEntry();
+        // флаг «назначен» + пуш
+        try {
+          const map = await loadAdminPromoPending();
+          if (on) {
+            map[code] = new Date().toISOString();
+            await saveAdminPromoPending(map);
+            try {
+              await sendPushToCodes([code], 'Мультитул', 'Вас назначили администратором');
+            } catch (e) {}
+          } else {
+            if (map[code]) {
+              delete map[code];
+              await saveAdminPromoPending(map);
+            }
+          }
+        } catch (e) {}
+        // если назначили самого себя на этом устройстве — сразу подсказка
+        const sess = getSession();
+        if (on && sess && String(sess.code).toUpperCase() === code) {
+          try {
+            const pmap = await loadAdminPromoPending();
+            if (pmap[code]) localStorage.setItem('ios_admin_promo_token', String(pmap[code]));
+          } catch (e2) {}
+          setTimeout(function() { showAdminPromoCoachmark(); }, 300);
+        }
+        showToast(on ? 'Ключ теперь админ' : 'Админ снят', true);
+        renderAdminAssign();
+      } catch (e) { showToast(e.message || 'не вышло'); }
+    }
+    function mapTokenSafe() {
+      return localStorage.getItem('ios_admin_promo_token') || new Date().toISOString();
+    }
+    window._msgSel = {}; window._msgList = []; window._msgImp = false;
+    async function renderMsgScreen() {
+      const box = document.getElementById('msgKeys');
+      if (!box) return;
+      let list = [];
+      try { list = await sbFetch('access_keys?select=*&order=created_at.desc') || []; } catch (e) { list = getLocalKeys(); }
+      list = list.filter(function(k) { return k.active !== false; });
+      window._msgList = list.map(function(k) { return String(k.code).toUpperCase(); });
+      if (!list.length) { box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Ключей нет. Создай их в «Создание ключей».</div>'; updateMsgSendBtn(); return; }
+      const un = await Promise.all(list.map(function(k) { return countUnreadFromUser(String(k.code).toUpperCase()); }));
+      box.innerHTML = list.map(function(k, i) {
+        const c = String(k.code).toUpperCase().replace(/'/g, '');
+        const nm = String(k.name || '').replace(/['\\]/g, '');
+        return '<div class="msg-row' + (window._msgSel[c] ? ' on' : '') + '" onclick="toggleMsgKey(\'' + c + '\')">' +
+          '<div class="msg-ck"></div><div class="msg-info"><b>' + escapeHtml(k.name || 'Без имени') + '</b><small>' + escapeHtml(c) + '</small></div>' +
+          '<button type="button" class="msg-chat" onclick="event.stopPropagation();openKeyChat(\'' + c + '\',\'' + nm + '\',true)">Чат' + (un[i] ? '<span class="key-chat-badge">' + (un[i] > 9 ? '9+' : un[i]) + '</span>' : '') + '</button></div>';
+      }).join('');
+      updateMsgSendBtn();
+    }
+    function toggleMsgKey(c) { window._msgSel[c] = !window._msgSel[c]; renderMsgScreen(); }
+    function msgSelectAll(on) { window._msgSel = {}; if (on) window._msgList.forEach(function(c) { window._msgSel[c] = true; }); renderMsgScreen(); }
+    function updateMsgSendBtn() {
+      const n = Object.keys(window._msgSel).filter(function(c) { return window._msgSel[c]; }).length;
+      const b = document.getElementById('msgSendBtn');
+      if (b) b.textContent = n ? 'Отправить (' + n + ')' : 'Отправить';
+    }
+    function toggleMsgImp() { window._msgImp = !window._msgImp; const r = document.getElementById('msgImpRow'); if (r) r.classList.toggle('on', window._msgImp); }
+    function applyMsgTpl(i) { document.getElementById('msgTitle').value = NOTICE_TPL[i][0]; document.getElementById('msgBody').value = NOTICE_TPL[i][1]; }
+    async function sendMsgToSelected() {
+      const codes = Object.keys(window._msgSel).filter(function(c) { return window._msgSel[c]; });
+      if (!codes.length) return showToast('Выбери, кому отправить');
+      const title = (document.getElementById('msgTitle').value || '').trim() || 'Сообщение';
+      const body = (document.getElementById('msgBody').value || '').trim();
+      if (!body) return showToast('Напиши текст');
+      const notice = { id: 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title: title.slice(0, 40), body: body.slice(0, 500), link: '', linkText: 'Открыть', image: '', pos: 'center', important: !!window._msgImp, at: new Date().toISOString() };
+      showToast('Отправляю…');
+      let ok = 0;
+      for (let i = 0; i < codes.length; i++) { try { await deliverNoticeToCode(codes[i], notice); ok++; } catch (e) {} }
+      if (!ok) return showToast('Не отправилось');
+      try {
+        await pushNoticeToOutbox({ id: notice.id, title: notice.title, body: notice.body, link: '', image: '', pos: 'center', important: notice.important, all: codes.length === window._msgList.length, targetCodes: codes, seen: {}, status: 'pending', at: notice.at });
+      } catch (e) {}
+      try { await sendPushToCodes(codes, notice.important ? 'Важно: ' + notice.title : notice.title, notice.body); } catch (e) {}
+      document.getElementById('msgBody').value = '';
+      showToast('Отправлено: ' + ok, true);
+      try { logAction('сообщение сотрудникам', 'ключей ' + ok); } catch (e) {}
+    }
+    function isLiquid() { return true; }
+    function applyLiquid() {
+      document.body.classList.add('liquid-glass');
+      localStorage.setItem('ios_liquid', '1');
+      syncStatusBarColor();
+    }
+    function toggleLiquidGlass() {
+      /* всегда включено */
+      applyLiquid();
+    }
+
+    // ===== слайдер «в архив» =====
+    (function initArchiveSwipe() {
+      var track = document.getElementById('archiveSwipe');
+      if (!track) return;
+      var knob = track.querySelector('.swipe-knob');
+      var fill = track.querySelector('.swipe-fill');
+      var labelWrap = track.querySelector('.swipe-label');
+      var label = labelWrap.querySelector('span');
+      var IDLE = 'Протяни: неделя в архив';
+      var PAD = 4, x = 0, max = 0, startX = 0, startPos = 0, drag = false, busy = false, hapticArmed = true;
+      function setX(v, animate) {
+        if (animate) track.classList.add('snap');
+        x = Math.max(0, Math.min(max || v, v));
+        knob.style.transform = 'translate3d(' + x + 'px,0,0)';
+        fill.style.width = x > 0 ? (x + knob.offsetWidth + PAD) + 'px' : '0px';
+        var p = max ? x / max : 0;
+        if (!busy) labelWrap.style.opacity = String(Math.max(0, 1 - p * 1.6));
+        if (animate) setTimeout(function() { track.classList.remove('snap'); }, 420);
+      }
+      function measure() { max = Math.max(0, track.clientWidth - knob.offsetWidth - PAD * 2); }
+      function reset() {
+        busy = false;
+        track.classList.remove('done');
+        label.textContent = IDLE;
+        labelWrap.style.opacity = '1';
+        measure();
+        setX(0, true);
+      }
+      function complete() {
+        busy = true;
+        track.classList.add('done');
+        setX(max, true);
+        label.textContent = 'Готово';
+        labelWrap.style.opacity = '1';
+        if (navigator.vibrate) navigator.vibrate([12, 40, 18]);
+        setTimeout(function() { try { archiveWeek(); } catch (e) {} }, 280);
+        setTimeout(reset, 1200);
+      }
+      knob.addEventListener('pointerdown', function(e) {
+        if (busy) return;
+        measure();
+        drag = true; hapticArmed = true;
+        startX = e.clientX; startPos = x;
+        track.classList.remove('snap');
+        track.classList.add('drag');
+        try { knob.setPointerCapture(e.pointerId); } catch (err) {}
+      });
+      knob.addEventListener('pointermove', function(e) {
+        if (!drag) return;
+        setX(startPos + (e.clientX - startX));
+        if (hapticArmed && max && x >= max * 0.9) {
+          hapticArmed = false;
+          if (navigator.vibrate) navigator.vibrate(8);
+        } else if (max && x < max * 0.8) {
+          hapticArmed = true;
+        }
+      });
+      function end() {
+        if (!drag) return;
+        drag = false;
+        track.classList.remove('drag');
+        if (max && x >= max * 0.9) complete();
+        else setX(0, true);
+      }
+      knob.addEventListener('pointerup', end);
+      knob.addEventListener('pointercancel', end);
+      window.addEventListener('resize', function() { if (!busy) { measure(); setX(0); } });
+    })();
+
+
+    // ===== графики выручки =====
+    function fmtMoneyShort(v) {
+      v = Number(v) || 0;
+      if (v >= 1000) return (v / 1000).toFixed(1).replace('.0', '').replace('.', ',') + 'к';
+      return String(Math.round(v));
+    }
+    function renderBars(boxId, pts) {
+      var box = document.getElementById(boxId);
+      if (!box) return;
+      if (!pts || !pts.length) { box.innerHTML = ''; return; }
+      var vals = pts.map(function(p) { return Number(p.value) || 0; });
+      var max = Math.max.apply(null, vals), min = Math.min.apply(null, vals);
+      var avg = vals.reduce(function(a, b) { return a + b; }, 0) / vals.length;
+      var top = max || 1;
+      var multi = pts.length > 1 && max !== min;
+      var cols = '', axis = '';
+      pts.forEach(function(p, i) {
+        var cls = 'bars-col' + (multi && vals[i] === max ? ' max' : '') + (multi && vals[i] === min ? ' min' : '');
+        var click = p.click ? ' onclick="' + p.click + '"' : '';
+        cols += '<div class="' + cls + '"' + click + ' data-h="' + (vals[i] / top * 100).toFixed(1) + '">' +
+          '<div class="bars-val">' + fmtMoneyShort(vals[i]) + '</div><div class="bars-bar"></div></div>';
+        axis += '<div>' + escapeHtml(p.label || '') + '<small>' + escapeHtml(p.sub || '') + '</small></div>';
+      });
+      var avgPct = (avg / top * 100).toFixed(1);
+      box.innerHTML = '<div class="bars-plot">' + cols +
+        (pts.length > 1 ? '<div class="bars-avg" style="bottom:' + avgPct + '%"><span>ср. ' + fmtMoneyShort(avg) + '</span></div>' : '') +
+        '</div><div class="bars-axis">' + axis + '</div>';
+      // анимация роста
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          box.querySelectorAll('.bars-col').forEach(function(c, i) {
+            var h = parseFloat(c.getAttribute('data-h')) || 0;
+            h = Math.max(h, 3);
+            c.querySelector('.bars-bar').style.height = h + '%';
+            var v = c.querySelector('.bars-val');
+            v.style.bottom = 'calc(' + h + '% + 4px)';
+            v.style.opacity = '1';
+          });
+        });
+      });
+    }
+    var _WD = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+    function parseRuDate(str) {
+      var m = String(str || '').match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+      if (!m) return null;
+      return new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+    }
+    function renderArcWeekChart(item) {
+      var card = document.getElementById('arcWeekChartCard');
+      var sum = document.getElementById('arcWeekChartSum');
+      var shifts = (item && item.shifts) || [];
+      if (!card) return;
+      if (!shifts.length) { card.style.display = 'none'; return; }
+      card.style.display = '';
+      var pts = shifts.map(function(sh) {
+        var d = parseRuDate(sh.date);
+        return {
+          value: Number(sh.total) || 0,
+          label: String(sh.date || '').slice(0, 5),
+          sub: d ? _WD[d.getDay()] : ''
+        };
+      });
+      renderBars('arcWeekChart', pts);
+      if (!sum) return;
+      var vals = pts.map(function(p) { return p.value; });
+      var max = Math.max.apply(null, vals), min = Math.min.apply(null, vals);
+      var avg = Math.round(vals.reduce(function(a, b) { return a + b; }, 0) / vals.length);
+      var best = pts[vals.indexOf(max)], worst = pts[vals.indexOf(min)];
+      function cell(t, b, sub, col) {
+        return '<div><small>' + t + '</small><b style="color:' + col + ';">' + b + '</b><small style="text-transform:none;">' + sub + '</small></div>';
+      }
+      sum.innerHTML = vals.length > 1
+        ? cell('Лучший', max.toLocaleString('ru-RU') + ' ₽', best.label + ' ' + best.sub, 'var(--accent-green)') +
+          cell('Среднее', avg.toLocaleString('ru-RU') + ' ₽', 'за смену', '#fff') +
+          cell('Слабый', min.toLocaleString('ru-RU') + ' ₽', worst.label + ' ' + worst.sub, 'var(--accent-orange)')
+        : cell('Выручка', max.toLocaleString('ru-RU') + ' ₽', best.label + ' ' + best.sub, 'var(--accent-blue)');
+    }
+    function renderWeeksTrend() {
+      var card = document.getElementById('weeksTrendCard');
+      if (!card) return;
+      var arc = getArchive().slice(0, 8).reverse();
+      if (arc.length < 2) { card.style.display = 'none'; return; }
+      card.style.display = '';
+      var pts = arc.map(function(w) {
+        var first = String(w.dateRange || '').match(/\d{2}\.\d{2}/);
+        return {
+          value: Number(w.totalRevenue) || 0,
+          label: first ? first[0] : '',
+          sub: (w.shiftsCount || 0) + ' см.',
+          click: 'openArchiveWeek(' + w.id + ')'
+        };
+      });
+      renderBars('weeksTrend', pts);
+    }
+    function syncStatusBarColor() {
+      try {
+        var c = getComputedStyle(document.body).getPropertyValue('--accent-blue').trim();
+        var m = c.match(/^#?([0-9a-f]{6})$/i);
+        if (!m) return;
+        var n = parseInt(m[1], 16), k = 0.30;
+        var r = Math.round(((n >> 16) & 255) * k), g = Math.round(((n >> 8) & 255) * k), b = Math.round((n & 255) * k);
+        var hex = '#' + [r, g, b].map(function(x){ return x.toString(16).padStart(2, '0'); }).join('');
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', hex);
+        document.documentElement.style.backgroundColor = hex;
+      } catch (e) {}
+    }
+    function applyTheme(id) {
+      id = id || getTheme();
+      if (id === 'classic') document.body.removeAttribute('data-theme');
+      else document.body.setAttribute('data-theme', id);
+      localStorage.setItem('ios_theme', id);
+      syncStatusBarColor();
+      try { if (typeof scheduleCloudSave === 'function') scheduleCloudSave(); } catch (e) {}
+      const grid = document.getElementById('themeGrid');
+      if (grid) {
+        grid.innerHTML = THEMES.map(function(t) {
+          return '<button type="button" class="theme-chip' + (t.id === id ? ' on' : '') + '" onclick="setTheme(\'' + t.id + '\')"><div class="theme-dot" style="background:' + t.bar + '"></div><b>' + t.name + '</b></button>';
+        }).join('');
+      }
+    }
+    function setTheme(id) { applyTheme(id); showToast('Тема: ' + ((THEMES.find(function(t){return t.id===id;})||{}).name || id), true); }
+
+    const ORDER_CATS = [
+      { id: 'cig', name: 'Сигареты' },
+      { id: 'disp', name: 'Одноразки' },
+      { id: 'liq', name: 'Жижи' },
+      { id: 'pods', name: 'Поды' },
+      { id: 'snus', name: 'Снюсы' },
+      { id: 'tob', name: 'Табаки' },
+      { id: 'cart', name: 'Картриджи' },
+      { id: 'hookah', name: 'Табак для кальяна' },
+      { id: 'gas', name: 'Газ' },
+      { id: 'benz', name: 'Бензин' },
+      { id: 'drink', name: 'Напитки' },
+      { id: 'other', name: 'Другое' }
+    ];
+    let orderCat = 'cig';
+    function catName(id) {
+      const c = ORDER_CATS.find(function(x){ return x.id === id; });
+      return c ? c.name : 'Другое';
+    }
+    function getOrderList() {
+      try { return JSON.parse(localStorage.getItem('ios_order_list') || '[]'); }
+      catch (e) { return []; }
+    }
+    function setOrderList(arr) {
+      localStorage.setItem('ios_order_list', JSON.stringify(arr || []));
+      renderOrderList();
+      renderAdminOrders();
+    }
+    function fillOrderPoints() {
+      const sel = document.getElementById('ordPoint');
+      if (!sel || typeof POINTS === 'undefined') return;
+      const prev = sel.value || localStorage.getItem('ios_order_point') || '';
+      sel.innerHTML = Object.keys(POINTS).map(function(k) {
+        return '<option value="' + k + '">' + POINTS[k].name + '</option>';
+      }).join('');
+      if (prev && POINTS[prev]) sel.value = prev;
+    }
+    function pointName(id) {
+      try { return (POINTS[id] && POINTS[id].name) || id || 'точка не указана'; }
+      catch (e) { return id || 'точка не указана'; }
+    }
+    function renderOrderCats() {
+      const box = document.getElementById('ordCats');
+      if (!box) return;
+      box.innerHTML = ORDER_CATS.map(function(c) {
+        return '<button type="button" class="ord-cat' + (c.id === orderCat ? ' on' : '') + '" onclick="orderCat=\'' + c.id + '\';renderOrderCats();">' + c.name + '</button>';
+      }).join('');
+      renderOrderList();
+    }
+
+    let selectedOrderPoint = null;
+    let selectedAdminOrderPoint = null;
+    function groupOrdersByPoint(list) {
+      const map = {};
+      const order = [];
+      (list || []).forEach(function(it) {
+        const key = it.point || it.pointName || 'none';
+        if (!map[key]) {
+          map[key] = { key: key, name: it.pointName || pointName(it.point), items: [] };
+          order.push(key);
+        }
+        map[key].items.push(it);
+      });
+      return order.map(function(k){ return map[k]; });
+    }
+    function renderPointCards(groups, admin) {
+      if (!groups.length) return '<div style="color:var(--text-sec);font-size:13px;">Заказов нет</div>';
+      return groups.map(function(g) {
+        const fn = admin ? 'openAdminPointOrder' : 'openPointOrder';
+        const when = formatOrderWhen(pointLastEditIso(g));
+        const sub = when ? ('Последний раз изменён ' + when) : 'Ещё не менялся';
+        return '<div class="menu-item" onclick="' + fn + '(\'' + g.key + '\')" style="margin:0 0 10px;">' +
+          '<div class="menu-item-left"><div class="menu-text"><h3>' + escapeHtml(g.name) + '</h3>' +
+          '<p>' + sub + '</p></div></div>' +
+          '<div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div></div>';
+      }).join('');
+    }
+    function ordIconBtn(kind, fn) {
+      const ok = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l5 5L19 7"/></svg>';
+      const no = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+      const bg = kind === 'ok' ? 'rgba(48,209,88,.16)' : 'rgba(255,69,58,.14)';
+      const col = kind === 'ok' ? 'var(--accent-green)' : 'var(--accent-red)';
+      return '<button type="button" onclick="' + fn + '" style="width:36px;height:36px;border:none;border-radius:11px;background:' + bg + ';color:' + col + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;">' + (kind==='ok'?ok:no) + '</button>';
+    }
+    function formatOrderWhen(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const yy = d.getFullYear();
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mi = String(d.getMinutes()).padStart(2,'0');
+      return dd + '.' + mm + '.' + yy + ' ' + hh + ':' + mi;
+    }
+    function pointLastEditIso(g) {
+      let max = '';
+      (g && g.items || []).forEach(function(it) {
+        const t = it.edited || it.t || '';
+        if (t > max) max = t;
+      });
+      if (!max && g && g.key) {
+        const last = (getOrderArchive() || []).filter(function(a){ return a.point === g.key; })[0];
+        if (last && last.at) max = last.at;
+      }
+      return max;
+    }
+    function renderOnePointOrder(g, admin) {
+      if (!g) return '<div style="color:var(--text-sec);font-size:13px;">Пусто</div>';
+      const lines = (g.items || []).map(function(it) {
+        return '<div class="ord-item' + (it.done ? ' done' : '') + '">' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div class="ord-name">' + escapeHtml(it.text) + ' <span class="ord-cat-badge">' + escapeHtml(catName(it.cat)) + '</span></div>' +
+            (it.who ? '<div class="ord-meta">' + escapeHtml(it.who) + '</div>' : '') +
+          '</div>' +
+          '<div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">' +
+            ordIconBtn('ok', 'toggleOrderItem(\'' + it.id + '\')') +
+            ordIconBtn('no', 'removeOrderItem(\'' + it.id + '\')') +
+          '</div>' +
+          '</div>';
+      }).join('');
+      let bar = '<button class="btn btn-blue" style="margin:0 0 8px;" onclick="copyPointOrder(\'' + g.key + '\')">Копировать</button>';
+      if (admin) {
+        bar = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">' +
+          '<button class="btn btn-blue" style="margin:0;" onclick="copyPointOrder(\'' + g.key + '\')">Копировать</button>' +
+          '<button class="btn btn-green" style="margin:0;" onclick="archivePointOrder(\'' + g.key + '\')">Собран</button></div>';
+      }
+      return bar + (lines || '<div style="color:var(--text-sec);font-size:13px;">Список пуст</div>');
+    }
+    function getOrderArchive() {
+      try { return JSON.parse(localStorage.getItem('ios_order_archive') || '[]'); }
+      catch (e) { return []; }
+    }
+    function setOrderArchive(arr) {
+      localStorage.setItem('ios_order_archive', JSON.stringify(arr || []));
+    }
+    function archivePointOrder(pointKey) {
+      const list = getOrderList();
+      const take = list.filter(function(it){ return (it.point || it.pointName || 'none') === pointKey; });
+      if (!take.length) return showToast('Пусто');
+      const rest = list.filter(function(it){ return (it.point || it.pointName || 'none') !== pointKey; });
+      const arc = getOrderArchive();
+      arc.unshift({
+        id: 'oa' + Date.now(),
+        point: pointKey,
+        name: pointName(pointKey),
+        at: new Date().toISOString(),
+        items: take
+      });
+      setOrderArchive(arc.slice(0, 80));
+      setOrderList(rest);
+      pushOrderList();
+      pushOrderArchive();
+      showToast('Заказ собран', true);
+    }
+    async function pushOrderArchive() {
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'order_archive', value: getOrderArchive(), updated_at: new Date().toISOString() })
+        });
+      } catch (e) {}
+    }
+    async function pullOrderArchive() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.order_archive&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return;
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return; } }
+        if (Array.isArray(v)) setOrderArchive(v);
+      } catch (e) {}
+    }
+    function copyPointOrder(pointKey) {
+      const g = findPointGroup(pointKey);
+      if (!g || !g.items.length) return showToast('Пусто');
+      const byCat = {};
+      g.items.forEach(function(it) {
+        const c = catName(it.cat);
+        if (!byCat[c]) byCat[c] = [];
+        byCat[c].push((it.done ? '✓ ' : '') + it.text);
+      });
+      let text = g.name + '\n';
+      Object.keys(byCat).forEach(function(c) {
+        text += '\n' + c + ':\n' + byCat[c].map(function(l){ return '• ' + l; }).join('\n');
+      });
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ showToast('Заказ скопирован', true); }).catch(function(){ fallbackCopy(text); });
+      } else fallbackCopy(text);
+    }
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('Заказ скопирован', true); }
+      catch (e) { showToast('Не скопировалось'); }
+      ta.remove();
+    }
+
+    /** Собрать группы заказов: все или одна точка */
+    function collectOrderGroups(pointKey) {
+      const all = groupOrdersByPoint(getOrderList());
+      if (!pointKey) return all.filter(function(g) { return g.items && g.items.length; });
+      const g = findPointGroup(pointKey);
+      if (!g || !g.items.length) return [];
+      return [g];
+    }
+
+    function formatOrdersPretty(pointKey) {
+      const groups = collectOrderGroups(pointKey);
+      if (!groups.length) return '';
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, '0');
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mi = String(now.getMinutes()).padStart(2, '0');
+      const head = pointKey
+        ? ('Заказ · ' + (groups[0].name || pointName(pointKey)))
+        : 'Заказы · все точки';
+      let text = head + '\n' + dd + '.' + mm + '.' + now.getFullYear() + '  ' + hh + ':' + mi + '\n';
+      text += '────────────────────\n';
+      groups.forEach(function(g, gi) {
+        if (gi) text += '\n';
+        if (!pointKey || groups.length > 1) {
+          text += '\n📍 ' + (g.name || 'Точка') + '\n';
+        }
+        const byCat = {};
+        const catOrder = [];
+        (g.items || []).forEach(function(it) {
+          const c = catName(it.cat);
+          if (!byCat[c]) { byCat[c] = []; catOrder.push(c); }
+          byCat[c].push(it);
+        });
+        catOrder.forEach(function(c) {
+          text += '\n' + c + '\n';
+          byCat[c].forEach(function(it) {
+            const mark = it.done ? '✓' : '•';
+            text += '  ' + mark + ' ' + (it.text || '') + '\n';
+          });
+        });
+        const open = (g.items || []).filter(function(it) { return !it.done; }).length;
+        const done = (g.items || []).filter(function(it) { return it.done; }).length;
+        text += '\n  позиций: ' + (g.items || []).length;
+        if (done) text += ' · собрано ' + done;
+        if (open) text += ' · осталось ' + open;
+        text += '\n';
+      });
+      return text.trim() + '\n';
+    }
+
+    function exportOrdersText(pointKey) {
+      const text = formatOrdersPretty(pointKey);
+      if (!text) return showToast('Нечего выгружать');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showToast('Текст скопирован', true);
+        }).catch(function() { fallbackCopy(text); });
+      } else fallbackCopy(text);
+      // share sheet if available
+      try {
+        if (navigator.share) {
+          const title = pointKey ? ('Заказ · ' + pointName(pointKey)) : 'Заказы · все точки';
+          navigator.share({ title: title, text: text }).catch(function() {});
+        }
+      } catch (e) {}
+    }
+
+    function buildOrdersCanvas(pointKey) {
+      const groups = collectOrderGroups(pointKey);
+      if (!groups.length) return null;
+
+      const W = 720;
+      const PAD = 36;
+      const lineH = 28;
+      const catH = 34;
+      const titleH = 44;
+      const pointH = 40;
+
+      // measure height
+      let h = PAD + 70; // header
+      groups.forEach(function(g) {
+        if (!pointKey || groups.length > 1) h += pointH + 8;
+        const byCat = {};
+        const catOrder = [];
+        (g.items || []).forEach(function(it) {
+          const c = catName(it.cat);
+          if (!byCat[c]) { byCat[c] = []; catOrder.push(c); }
+          byCat[c].push(it);
+        });
+        catOrder.forEach(function(c) {
+          h += catH;
+          h += byCat[c].length * lineH;
+        });
+        h += 28; // footer stats + gap
+      });
+      h += PAD + 24;
+
+      const canvas = document.createElement('canvas');
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = W + 'px';
+      canvas.style.height = h + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      // background
+      const bg = ctx.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, '#12141a');
+      bg.addColorStop(1, '#0a0b0f');
+      ctx.fillStyle = bg;
+      roundRect(ctx, 0, 0, W, h, 0);
+      ctx.fill();
+
+      // top accent bar
+      const acc = ctx.createLinearGradient(0, 0, W, 0);
+      acc.addColorStop(0, '#0a84ff');
+      acc.addColorStop(0.5, '#5e5ce6');
+      acc.addColorStop(1, '#bf5af2');
+      ctx.fillStyle = acc;
+      ctx.fillRect(0, 0, W, 4);
+
+      let y = PAD + 8;
+      const now = new Date();
+      const dateStr = String(now.getDate()).padStart(2, '0') + '.' +
+        String(now.getMonth() + 1).padStart(2, '0') + '.' + now.getFullYear() + '  ' +
+        String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+      ctx.fillStyle = '#8e8e93';
+      ctx.font = '600 13px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText('МУЛЬТИТУЛ · ЗАКАЗ', PAD, y);
+      y += 28;
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 28px -apple-system, BlinkMacSystemFont, sans-serif';
+      const head = pointKey
+        ? (groups[0].name || pointName(pointKey))
+        : 'Все точки';
+      ctx.fillText(head, PAD, y);
+      y += 22;
+      ctx.fillStyle = '#8e8e93';
+      ctx.font = '500 14px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText(dateStr, PAD, y);
+      y += 28;
+
+      // divider
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(PAD, y);
+      ctx.lineTo(W - PAD, y);
+      ctx.stroke();
+      y += 24;
+
+      groups.forEach(function(g, gi) {
+        if (gi) y += 10;
+        if (!pointKey || groups.length > 1) {
+          // point chip
+          ctx.fillStyle = 'rgba(10,132,255,0.14)';
+          roundRect(ctx, PAD, y - 18, W - PAD * 2, 32, 10);
+          ctx.fill();
+          ctx.fillStyle = '#64b5ff';
+          ctx.font = '700 15px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillText(g.name || 'Точка', PAD + 14, y + 2);
+          y += pointH;
+        }
+
+        const byCat = {};
+        const catOrder = [];
+        (g.items || []).forEach(function(it) {
+          const c = catName(it.cat);
+          if (!byCat[c]) { byCat[c] = []; catOrder.push(c); }
+          byCat[c].push(it);
+        });
+
+        catOrder.forEach(function(c) {
+          ctx.fillStyle = '#ff9f0a';
+          ctx.font = '800 12px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillText(c.toUpperCase(), PAD, y);
+          y += catH - 8;
+
+          byCat[c].forEach(function(it) {
+            // bullet
+            if (it.done) {
+              ctx.fillStyle = '#30d158';
+              ctx.beginPath();
+              ctx.arc(PAD + 8, y - 5, 5, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.arc(PAD + 8, y - 5, 5, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+            ctx.fillStyle = it.done ? 'rgba(255,255,255,0.45)' : '#f2f2f7';
+            ctx.font = (it.done ? '500' : '600') + ' 16px -apple-system, BlinkMacSystemFont, sans-serif';
+            let label = String(it.text || '');
+            // truncate
+            const maxW = W - PAD * 2 - 28;
+            while (ctx.measureText(label).width > maxW && label.length > 3) {
+              label = label.slice(0, -2);
+            }
+            if (label !== String(it.text || '')) label += '…';
+            ctx.fillText(label, PAD + 22, y);
+            if (it.done) {
+              // strike
+              const tw = ctx.measureText(label).width;
+              ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+              ctx.beginPath();
+              ctx.moveTo(PAD + 22, y - 5);
+              ctx.lineTo(PAD + 22 + tw, y - 5);
+              ctx.stroke();
+            }
+            y += lineH;
+          });
+          y += 6;
+        });
+
+        const total = (g.items || []).length;
+        const done = (g.items || []).filter(function(it) { return it.done; }).length;
+        ctx.fillStyle = '#636366';
+        ctx.font = '500 12px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillText(total + ' поз.' + (done ? (' · собрано ' + done) : '') + (total - done ? (' · ждут ' + (total - done)) : ''), PAD, y);
+        y += 22;
+      });
+
+      return canvas;
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      const rr = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + h, rr);
+      ctx.arcTo(x + w, y + h, x, y + h, rr);
+      ctx.arcTo(x, y + h, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
+    }
+
+    function exportOrdersImage(pointKey) {
+      const canvas = buildOrdersCanvas(pointKey);
+      if (!canvas) return showToast('Нечего выгружать');
+      canvas.toBlob(function(blob) {
+        if (!blob) return showToast('Не собралось');
+        const url = URL.createObjectURL(blob);
+        showOrderImagePreview(url, blob, pointKey);
+      }, 'image/png');
+    }
+
+    function showOrderImagePreview(url, blob, pointKey) {
+      closeOrderImagePreview();
+      const ov = document.createElement('div');
+      ov.className = 'ord-export-preview';
+      ov.id = 'ordExportPreview';
+      ov.onclick = function(e) {
+        if (e.target === ov) closeOrderImagePreview();
+      };
+      const name = pointKey ? ('zakaz_' + pointKey) : 'zakaz_vse_tochki';
+      ov.innerHTML =
+        '<div class="box" onclick="event.stopPropagation()">' +
+          '<div style="font-size:15px;font-weight:750;">Картинка заказа</div>' +
+          '<img src="' + url + '" alt="заказ">' +
+          '<div class="actions">' +
+            '<button type="button" class="btn btn-blue" id="ordExpShare">Поделиться</button>' +
+            '<button type="button" class="btn btn-green" id="ordExpDl">Скачать</button>' +
+          '</div>' +
+          '<button type="button" class="btn btn-red-soft" style="margin:0;height:42px;" onclick="closeOrderImagePreview()">Закрыть</button>' +
+        '</div>';
+      document.body.appendChild(ov);
+      const file = new File([blob], name + '.png', { type: 'image/png' });
+      const shareBtn = document.getElementById('ordExpShare');
+      const dlBtn = document.getElementById('ordExpDl');
+      if (shareBtn) {
+        shareBtn.onclick = async function() {
+          try {
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({ files: [file], title: 'Заказ' });
+              return;
+            }
+          } catch (e) {}
+          try {
+            if (navigator.share) await navigator.share({ title: 'Заказ', url: url });
+            else showToast('Скачай картинку');
+          } catch (e2) {}
+        };
+      }
+      if (dlBtn) {
+        dlBtn.onclick = function() {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = name + '.png';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          showToast('Сохранено', true);
+        };
+      }
+    }
+    function closeOrderImagePreview() {
+      const el = document.getElementById('ordExportPreview');
+      if (el) {
+        const img = el.querySelector('img');
+        if (img && img.src) try { URL.revokeObjectURL(img.src); } catch (e) {}
+        el.remove();
+      }
+    }
+
+    function updateAdminOrdExportUI() {
+      const card = document.getElementById('adminOrdExportCard');
+      const box = document.getElementById('adminOrdExportBtns');
+      const hint = card && card.querySelector('.ord-export-hint');
+      if (!box) return;
+      if (selectedAdminOrderPoint) {
+        if (card) card.style.display = '';
+        const key = selectedAdminOrderPoint;
+        box.innerHTML =
+          '<button type="button" class="btn btn-blue ord-exp-btn" onclick="exportOrdersText(\'' + key + '\')"><span>Текст · эта точка</span></button>' +
+          '<button type="button" class="btn btn-purple ord-exp-btn" onclick="exportOrdersImage(\'' + key + '\')"><span>Картинка · эта точка</span></button>';
+        if (hint) hint.textContent = 'Только заказ этой точки · текст или PNG';
+      } else {
+        if (card) card.style.display = '';
+        box.innerHTML =
+          '<button type="button" class="btn btn-blue ord-exp-btn" onclick="exportOrdersText(null)"><span>Текст · все точки</span></button>' +
+          '<button type="button" class="btn btn-purple ord-exp-btn" onclick="exportOrdersImage(null)"><span>Картинка · все точки</span></button>';
+        if (hint) hint.textContent = 'Внутри точки — выгрузка только её заказа';
+      }
+    }
+
+    function findPointGroup(key) {
+      return groupOrdersByPoint(getOrderList()).filter(function(g){ return g.key === key; })[0] || null;
+    }
+    function openPointOrder(key) {
+      selectedOrderPoint = key;
+      renderOrderList();
+    }
+    function openAdminPointOrder(key) {
+      selectedAdminOrderPoint = key;
+      renderAdminOrders();
+    }
+    function backAdminOrders() {
+      if (selectedAdminOrderPoint) {
+        selectedAdminOrderPoint = null;
+        renderAdminOrders();
+        return;
+      }
+      openScreen('screenAdmin');
+    }
+    function togglePointOrders(pointKey) {
+      const list = getOrderList();
+      const ofPoint = list.filter(function(it){ return (it.point || it.pointName || 'none') === pointKey; });
+      const allDone = ofPoint.every(function(it){ return it.done; });
+      list.forEach(function(it) {
+        if ((it.point || it.pointName || 'none') === pointKey) it.done = !allDone;
+      });
+      setOrderList(list); pushOrderList();
+    }
+    function renderAdminOrders() {
+      const box = document.getElementById('adminOrdList');
+      const title = document.getElementById('adminOrdTitle');
+      const sub = document.getElementById('adminOrdSub');
+      const backLbl = document.getElementById('adminOrdBackLbl');
+      if (!box) return;
+      try { updateAdminOrdExportUI(); } catch (e) {}
+      if (!selectedAdminOrderPoint) {
+        if (title) title.textContent = 'Точки';
+        if (sub) sub.textContent = 'Открой точку — там заказ';
+        if (backLbl) backLbl.textContent = 'Админка';
+        box.innerHTML = renderPointCards(groupOrdersByPoint(getOrderList()), true);
+        return;
+      }
+      const g = findPointGroup(selectedAdminOrderPoint);
+      if (title) title.textContent = g ? g.name : 'Заказ';
+      if (sub) sub.textContent = 'Заказ точки';
+      if (backLbl) backLbl.textContent = 'Точки';
+      box.innerHTML = renderOnePointOrder(g, true);
+    }
+    function renderOrderList() {
+      const box = document.getElementById('ordList');
+      const title = document.getElementById('ordTitle');
+      const sub = document.getElementById('ordSub');
+      if (!box) return;
+      const sel = document.getElementById('ordPoint');
+      const key = (sel && sel.value) || localStorage.getItem('ios_order_point') || '';
+      if (title) title.textContent = 'Заказать';
+      if (sub) sub.textContent = key ? pointName(key) : 'Выбери точку';
+      if (!key) {
+        box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Выбери точку сверху</div>';
+        return;
+      }
+      const g = findPointGroup(key) || { key: key, name: pointName(key), items: [] };
+      box.innerHTML = renderOnePointOrder(g, false);
+    }
+
+    function addOrderItem() {
+      const inp = document.getElementById('ordInput');
+      const text = (inp && inp.value || '').trim();
+      if (!text) return showToast('Напиши что заказать');
+      const list = getOrderList();
+      let who = 'сотрудник';
+      try { const s = getSession(); if (s) who = s.name || s.code || who; } catch (e) {}
+      const pointEl = document.getElementById('ordPoint');
+      const point = (pointEl && pointEl.value) || '';
+      if (point) localStorage.setItem('ios_order_point', point);
+      if (!point) return showToast('Выбери точку');
+      const nowIso = new Date().toISOString();
+      list.unshift({ id: 'o' + Date.now(), cat: orderCat, text: text, who: who, point: point, pointName: pointName(point), t: nowIso, edited: nowIso, done: false });
+      setOrderList(list);
+      if (inp) inp.value = '';
+      pushOrderList();
+      try { logAction('заказал', text); } catch (e) {}
+      showToast('Добавлено', true);
+    }
+    function toggleOrderItem(id) {
+      const nowIso = new Date().toISOString();
+      const list = getOrderList().map(function(it){ if (it.id === id) { it.done = !it.done; it.edited = nowIso; } return it; });
+      setOrderList(list); pushOrderList();
+    }
+    function removeOrderItem(id) {
+      setOrderList(getOrderList().filter(function(it){ return it.id !== id; }));
+      pushOrderList();
+    }
+    async function pullOrderList() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.order_list&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) { renderOrderList(); return; }
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = []; } }
+        if (Array.isArray(v)) { localStorage.setItem('ios_order_list', JSON.stringify(v)); }
+        renderOrderList();
+        renderAdminOrders();
+      } catch (e) { renderOrderList(); renderAdminOrders(); }
+    }
+    async function pushOrderList() {
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ key: 'order_list', value: JSON.stringify(getOrderList()), updated_at: new Date().toISOString() })
+        });
+      } catch (e) {}
+    }
+
+    function getPayQr() {
+      try { return JSON.parse(localStorage.getItem('ios_pay_qr') || '{}'); }
+      catch (e) { return {}; }
+    }
+    function setPayQr(d) {
+      localStorage.setItem('ios_pay_qr', JSON.stringify(d || {}));
+      if (typeof scheduleCloudSave === 'function') scheduleCloudSave();
+    }
+    function fillPayQrForm() {
+      const d = getPayQr();
+      const p = document.getElementById('payQrPhone');
+      const b = document.getElementById('payQrBank');
+      const l = document.getElementById('payQrLink');
+      const s = document.getElementById('payQrSum');
+      if (p) p.value = d.phone || '';
+      if (b) b.value = d.bank || '';
+      if (l) l.value = d.link || '';
+      if (s) s.value = d.sum || '';
+      if (d.phone || d.link) buildPayQr(true);
+    }
+    function buildPayQr(silent) {
+      if (!silent) { try { logAction('собрал QR перевода'); } catch (e) {} }
+      const phone = ((document.getElementById('payQrPhone') || {}).value || '').trim();
+      const bank = ((document.getElementById('payQrBank') || {}).value || '').trim();
+      const link = ((document.getElementById('payQrLink') || {}).value || '').trim();
+      const sum = ((document.getElementById('payQrSum') || {}).value || '').trim();
+      if (!phone && !link) {
+        if (!silent) showToast('Нужен телефон или ссылка');
+        return;
+      }
+      setPayQr({ phone: phone, bank: bank, link: link, sum: sum });
+      let payload = link;
+      if (!payload) {
+        payload = 'Перевод СБП\nТел: ' + phone + (bank ? '\nБанк: ' + bank : '') + (sum ? '\nСумма: ' + sum + ' ₽' : '');
+      } else if (sum && payload.indexOf('sum') === -1) {
+        payload = link;
+      }
+      const img = document.getElementById('payQrImg');
+      const box = document.getElementById('payQrBox');
+      const txt = document.getElementById('payQrText');
+      if (img) img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&ecc=M&data=' + encodeURIComponent(payload);
+      if (box) box.style.display = 'block';
+      if (txt) txt.textContent = (phone ? phone : '') + (bank ? ' · ' + bank : '') + (sum ? '\n' + sum + ' ₽' : '') + (link ? '\nссылка из банка' : '');
+      if (!silent) showToast('QR готов', true);
+    }
+
+    function getSupplyDates() {
+      try { return JSON.parse(localStorage.getItem('ios_supply_dates') || '{}'); }
+      catch (e) { return {}; }
+    }
+    function setSupplyDatesLocal(d) {
+      localStorage.setItem('ios_supply_dates', JSON.stringify(d || {}));
+    }
+    function fmtSupplyDate(iso) {
+      if (!iso) return 'даты нет';
+      const p = String(iso).split('-');
+      if (p.length !== 3) return iso;
+      return p[2] + '.' + p[1] + '.' + p[0];
+    }
+    function supplyAgo(iso) {
+      if (!iso) return '—';
+      const t = new Date(iso + 'T12:00:00');
+      if (isNaN(t.getTime())) return '—';
+      const now = new Date();
+      let diff = now.getTime() - t.getTime();
+      if (diff < 0) diff = 0;
+      const mins = Math.floor(diff / 60000);
+      const hours = Math.floor(mins / 60);
+      const days = Math.floor(hours / 24);
+      if (days <= 0 && hours < 12) return 'сегодня';
+      if (days <= 0) return hours + ' ч';
+      if (days === 1) return '1 день';
+      if (days < 5) return days + ' дня';
+      return days + ' дней';
+    }
+    function renderSupplyCard() {
+      const d = getSupplyDates();
+      const cigD = document.getElementById('supplyCigDate');
+      const othD = document.getElementById('supplyOtherDate');
+      const cigA = document.getElementById('supplyCigAgo');
+      const othA = document.getElementById('supplyOtherAgo');
+      if (cigD) cigD.textContent = d.cig ? fmtSupplyDate(d.cig) : 'даты нет';
+      if (othD) othD.textContent = d.other ? fmtSupplyDate(d.other) : 'даты нет';
+      if (cigA) cigA.textContent = supplyAgo(d.cig);
+      if (othA) othA.textContent = supplyAgo(d.other);
+    }
+    function fillSupplyForm() {
+      const d = getSupplyDates();
+      const a = document.getElementById('supplyCigInput');
+      const b = document.getElementById('supplyOtherInput');
+      if (a) a.value = d.cig || '';
+      if (b) b.value = d.other || '';
+    }
+    function parseSupplyValue(v) {
+      if (v == null) return null;
+      if (typeof v === 'string') {
+        try { v = JSON.parse(v); } catch (e) { return null; }
+      }
+      if (v && typeof v.value !== 'undefined' && !v.cig && !v.other) {
+        return parseSupplyValue(v.value);
+      }
+      if (v && typeof v === 'object') return { cig: v.cig || '', other: v.other || '' };
+      return null;
+    }
+    async function pullSupplyDates() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.supply_dates&select=value');
+        const parsed = rows && rows[0] ? parseSupplyValue(rows[0].value) : null;
+        if (parsed && (parsed.cig || parsed.other)) {
+          setSupplyDatesLocal(parsed);
+        }
+        renderSupplyCard();
+      } catch (e) { renderSupplyCard(); }
+    }
+    async function saveSupplyDates() {
+      try { logAction('сменил даты поставок'); } catch (e) {}
+      const d = {
+        cig: (document.getElementById('supplyCigInput') || {}).value || '',
+        other: (document.getElementById('supplyOtherInput') || {}).value || ''
+      };
+      setSupplyDatesLocal(d);
+      renderSupplyCard();
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({
+            key: 'supply_dates',
+            value: JSON.stringify(d),
+            updated_at: new Date().toISOString()
+          })
+        });
+        showToast('Даты сохранены', true);
+        scheduleAdminCloudSave();
+      } catch (e) {
+        scheduleAdminCloudSave();
+        showToast('Сохранил локально, облако мимо');
+      }
+    }
+    function markSupplyToday(kind) {
+      const today = new Date();
+      const iso = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+      const el = document.getElementById(kind === 'cig' ? 'supplyCigInput' : 'supplyOtherInput');
+      if (el) el.value = iso;
+      saveSupplyDates();
+    }
+    setInterval(renderSupplyCard, 60000);
+
+    function collectAdminSharedPayload() {
+      return {
+        ios_employees: localStorage.getItem('ios_employees'),
+        ios_point_data: localStorage.getItem('ios_point_data'),
+        ios_supply_dates: localStorage.getItem('ios_supply_dates'),
+        _savedAt: new Date().toISOString()
+      };
+    }
+
+    function applyAdminSharedPayload(payload) {
+      if (!payload || typeof payload !== 'object') return false;
+      let changed = false;
+      if (payload.ios_employees !== undefined && payload.ios_employees !== null) {
+        if (localStorage.getItem('ios_employees') !== payload.ios_employees) {
+          localStorage.setItem('ios_employees', payload.ios_employees);
+          changed = true;
+        }
+      }
+      if (payload.ios_point_data !== undefined && payload.ios_point_data !== null) {
+        if (localStorage.getItem('ios_point_data') !== payload.ios_point_data) {
+          localStorage.setItem('ios_point_data', payload.ios_point_data);
+          changed = true;
+        }
+      }
+      if (payload.ios_supply_dates !== undefined && payload.ios_supply_dates !== null) {
+        if (localStorage.getItem('ios_supply_dates') !== payload.ios_supply_dates) {
+          localStorage.setItem('ios_supply_dates', payload.ios_supply_dates);
+          changed = true;
+          renderSupplyCard();
+        }
+      }
+      return changed;
+    }
+
+    async function pushAdminSharedData() {
+      try {
+        const payload = collectAdminSharedPayload();
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({
+            key: 'admin_shared',
+            value: JSON.stringify(payload),
+            updated_at: new Date().toISOString()
+          })
+        });
+      } catch (e) {
+        console.warn('admin shared save', e);
+      }
+    }
+
+    async function pullAdminSharedData() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.admin_shared&select=value');
+        if (!rows || !rows[0] || !rows[0].value) return false;
+        let payload = rows[0].value;
+        if (typeof payload === 'string') {
+          try { payload = JSON.parse(payload); } catch (e) { return false; }
+        }
+        return applyAdminSharedPayload(payload);
+      } catch (e) {
+        console.warn('admin shared pull', e);
+        return false;
+      }
+    }
+
+    async function pushKeyDataToCloud() {
+      const session = getSession();
+      const cfg = getSbConfig();
+      if (!session || !cfg) return;
+      try {
+        const payload = collectUserPayload();
+        // не затирать входящее сообщение от создателя
+        try {
+          const remote = await pullKeyDataFromCloud(session.code);
+          if (remote && remote.ios_notice && remote.ios_notice.id) {
+            const seen = localStorage.getItem('ios_notice_seen_id');
+            if (seen !== String(remote.ios_notice.id)) {
+              payload.ios_notice = remote.ios_notice;
+            }
+          }
+        } catch (e) {}
+        // ios_notice не из localStorage — только из remote merge выше
+        await sbFetch('key_data?on_conflict=code', {
+          method: 'POST',
+          headers: {
+            'Prefer': 'resolution=merge-duplicates,return=minimal'
+          },
+          body: JSON.stringify({
+            code: session.code,
+            payload: payload,
+            updated_at: new Date().toISOString()
+          })
+        });
+      } catch (e) {
+        console.warn('cloud save', e);
+      }
+    }
+
+    async function pullKeyDataFromCloud(code) {
+      const rows = await sbFetch('key_data?code=eq.' + encodeURIComponent(code) + '&select=payload');
+      if (rows && rows[0] && rows[0].payload) return rows[0].payload;
+      return null;
+    }
+
+    async function findKeyRecord(code) {
+      const normalized = String(code || '').trim().toUpperCase();
+      const cfg = getSbConfig();
+      if (cfg) {
+        try {
+          const rows = await sbFetch('access_keys?code=eq.' + encodeURIComponent(normalized) + '&select=*');
+          if (rows && rows[0]) return rows[0];
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+      const local = getLocalKeys().find(function(k) { return k.code === normalized; });
+      return local || null;
+    }
+
+    function keyIsValid(rec) {
+      if (!rec) return { ok: false, reason: 'Ключ не найден' };
+      if (rec.active === false) return { ok: false, reason: 'Ключ отключён', disabled: true };
+      if (rec.expires_at) {
+        const exp = new Date(rec.expires_at).getTime();
+        if (!isNaN(exp) && Date.now() > exp) return { ok: false, reason: 'Срок ключа истёк' };
+      }
+      return { ok: true };
+    }
+
+    function disableInfoKey(code) {
+      return 'key_disable_' + String(code || '').trim().toUpperCase();
+    }
+    async function loadKeyDisableInfo(code) {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(disableInfoKey(code)) + '&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return null;
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return null; } }
+        return v && typeof v === 'object' ? v : null;
+      } catch (e) { return null; }
+    }
+    async function saveKeyDisableInfo(code, info) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: disableInfoKey(code),
+          value: info,
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+    async function clearKeyDisableInfo(code) {
+      try {
+        await sbFetch('app_settings?key=eq.' + encodeURIComponent(disableInfoKey(code)), {
+          method: 'DELETE',
+          headers: { 'Prefer': 'return=minimal' }
+        });
+      } catch (e) {
+        try {
+          await saveKeyDisableInfo(code, null);
+        } catch (e2) {}
+      }
+    }
+    function formatDisableUntil(until) {
+      if (!until) return 'навсегда (пока не включат)';
+      try {
+        const d = new Date(until);
+        return 'до ' + d.toLocaleString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      } catch (e) { return 'до ' + String(until); }
+    }
+    function showKeyDisabledInfo(info, code) {
+      const el = document.getElementById('keyDisabledInfoText');
+      const reason = (info && info.reason) ? String(info.reason) : 'без указания причины';
+      const until = formatDisableUntil(info && info.until);
+      if (el) {
+        el.innerHTML = 'Ключ <b style="color:#fff">' + escapeHtml(code || '') + '</b> выключен.<br><br>' +
+          'Причина: <b style="color:#ff6961">' + escapeHtml(reason) + '</b><br>' +
+          'Срок: <b style="color:#fff">' + escapeHtml(until) + '</b>';
+      }
+      const m = document.getElementById('keyDisabledInfoModal');
+      if (m) m.classList.add('active');
+    }
+    function closeKeyDisabledInfo() {
+      const m = document.getElementById('keyDisabledInfoModal');
+      if (m) m.classList.remove('active');
+    }
+
+    window._disableKeyCode = null;
+    window._disableKeyDays = 1;
+    function setDisableDur(days) {
+      window._disableKeyDays = days;
+      const row = document.getElementById('disableDurRow');
+      if (!row) return;
+      row.querySelectorAll('.disable-dur').forEach(function(btn) {
+        btn.classList.toggle('on', String(btn.getAttribute('data-days')) === String(days));
+      });
+    }
+    function openDisableKeyModal(code, name) {
+      window._disableKeyCode = String(code || '').trim().toUpperCase();
+      window._disableKeyDays = 1;
+      setDisableDur(1);
+      const nameEl = document.getElementById('disableKeyName');
+      if (nameEl) nameEl.textContent = (name || code || '') + (code ? ' · ' + code : '');
+      const reason = document.getElementById('disableKeyReason');
+      if (reason) reason.value = '';
+      const m = document.getElementById('disableKeyModal');
+      if (m) m.classList.add('active');
+    }
+    function closeDisableKeyModal() {
+      const m = document.getElementById('disableKeyModal');
+      if (m) m.classList.remove('active');
+      window._disableKeyCode = null;
+    }
+    async function confirmDisableKey() {
+      const code = window._disableKeyCode;
+      if (!code) return;
+      const reason = ((document.getElementById('disableKeyReason') && document.getElementById('disableKeyReason').value) || '').trim();
+      if (!reason) return showToast('Укажи причину');
+      const days = window._disableKeyDays;
+      let until = null;
+      if (days > 0) {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        until = d.toISOString();
+      }
+      const info = {
+        reason: reason.slice(0, 200),
+        until: until,
+        disabled_at: new Date().toISOString()
+      };
+      try {
+        await saveKeyDisableInfo(code, info);
+        await setKeyActive(code, false, true);
+        closeDisableKeyModal();
+        showToast('Ключ выключен', true);
+        try { logAction('выключил ключ', code + ' · ' + reason.slice(0, 40)); } catch (e) {}
+      } catch (e) {
+        showToast(e.message || 'не вышло');
+      }
+    }
+
+    async function maybeAutoEnableKey(rec) {
+      if (!rec || rec.active !== false) return rec;
+      const info = await loadKeyDisableInfo(rec.code);
+      if (info && info.until) {
+        const t = new Date(info.until).getTime();
+        if (!isNaN(t) && Date.now() > t) {
+          try {
+            await setKeyActive(rec.code, true, true);
+            await clearKeyDisableInfo(rec.code);
+            rec.active = true;
+          } catch (e) {}
+        }
+      }
+      return rec;
+    }
+
+    async function validateCurrentSession(opts) {
+      opts = opts || {};
+      const sess = getSession();
+      if (!sess || !sess.code) return false;
+      try {
+        let rec = await findKeyRecord(sess.code);
+        rec = await maybeAutoEnableKey(rec);
+        const check = keyIsValid(rec);
+        if (check.ok) return true;
+        if (check.disabled || (rec && rec.active === false)) {
+          const info = await loadKeyDisableInfo(sess.code);
+          const reason = (info && info.reason) ? ('Выключен: ' + info.reason) : (check.reason || 'Ключ отключён');
+          dropDeadSession(reason);
+          if (info) setTimeout(function() { showKeyDisabledInfo(info, sess.code); }, 400);
+          return false;
+        }
+        dropDeadSession(check.reason || 'Ключ больше не действует');
+        return false;
+      } catch (e) {
+        // сеть упала — не выкидываем зря
+        if (opts.strict) {
+          dropDeadSession('Ключ не подтверждён');
+          return false;
+        }
+        return true;
+      }
+    }
+
+    function dropDeadSession(reason) {
+      clearSession();
+      const info = document.getElementById('accountSessionInfo');
+      if (info) info.textContent = 'Нет активного ключа';
+      const logoutBtn = document.getElementById('accountLogoutBtn');
+      if (logoutBtn) logoutBtn.style.display = 'none';
+      showToast(reason || 'Ключ удалён');
+      if (isGateEnabled()) {
+        document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+        const gate = document.getElementById('screenGate');
+        if (gate) gate.classList.add('active');
+      }
+    }
+
+
+    function showBoot(text) {
+      const el = document.getElementById('bootLoader');
+      const t = document.getElementById('bootLoaderText');
+      if (t) t.textContent = text || 'Загрузка…';
+      if (el) { el.classList.remove('off'); el.style.display = 'flex'; }
+    }
+    function hideBoot() {
+      const el = document.getElementById('bootLoader');
+      if (!el) return;
+      el.classList.add('off');
+      el.style.display = 'none';
+    }
+
+    let pendingBind = null;
+
+    async function submitAccessKey() {
+      const input = document.getElementById('gateKeyInput');
+      const code = (input && input.value || '').trim().toUpperCase();
+      if (!code) return showToast('Введи ключ');
+      showBoot('Проверяю ключ…');
+      try {
+        let rec = await findKeyRecord(code);
+        if (!rec) { hideBoot(); return showToast('Ключ не найден'); }
+        rec = await maybeAutoEnableKey(rec);
+        const check = keyIsValid(rec);
+        if (!check.ok) {
+          hideBoot();
+          if (check.disabled || (rec && rec.active === false)) {
+            const info = await loadKeyDisableInfo(code);
+            showKeyDisabledInfo(info || { reason: 'без указания причины', until: null }, code);
+            return;
+          }
+          return showToast(check.reason);
+        }
+
+        const session = {
+          code: rec.code,
+          name: rec.name || 'Сотрудник',
+          expires_at: rec.expires_at || null
+        };
+
+        let remote = null;
+        if (getSbConfig()) {
+          try { remote = await pullKeyDataFromCloud(rec.code); } catch (e) {}
+        }
+
+        const localHas = hasLocalUserData();
+        const remoteHas = remote && (remote.ios_multitool_data || remote.ios_multitool_archive || remote.ios_notes);
+
+        if (localHas && !remoteHas) {
+          pendingBind = { session: session, remote: remote };
+          setSession(session);
+          const card = document.getElementById('gateBindCard');
+          if (card) card.style.display = 'block';
+          hideBoot();
+          showToast('Найдены локальные данные');
+          return;
+        }
+
+        if (remoteHas) {
+          applyUserPayload(remote);
+        }
+
+        setSession(session);
+        playAppStoreSound();
+        finishGateLogin();
+      } catch (e) {
+        hideBoot();
+        showToast(e.message || 'Ошибка входа');
+      }
+    }
+
+    async function bindLocalDataToKey() {
+      if (!pendingBind) return finishGateLogin();
+      setSession(pendingBind.session);
+      await pushKeyDataToCloud();
+      pendingBind = null;
+      const card = document.getElementById('gateBindCard');
+      if (card) card.style.display = 'none';
+      playAppStoreSound();
+      showToast('Данные привязаны к ключу', true);
+      finishGateLogin();
+    }
+
+    function skipBindLocalData() {
+      if (pendingBind && pendingBind.remote) {
+        applyUserPayload(pendingBind.remote);
+      }
+      if (pendingBind) setSession(pendingBind.session);
+      pendingBind = null;
+      const card = document.getElementById('gateBindCard');
+      if (card) card.style.display = 'none';
+      finishGateLogin();
+    }
+
+    function finishGateLogin() {
+      showBoot('Собираю данные…');
+      render();
+      renderNotes();
+      openScreen('screenMenu');
+      hideBoot();
+      showToast('Вход выполнен', true);
+      registerDeviceSession();
+      try { startNoticePolling(); } catch (e) {}
+      try { startChatPolling(); } catch (e) {}
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 400);
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1200);
+      try { registerMultitoolSW(); } catch (e) {}
+      try { maybeAskNotifPermission(); } catch (e) {}
+    }
+
+    function logoutAccessKey() {
+      try { logAction('вышел из ключа'); } catch (e) {}
+      clearSession();
+      showToast('Вы вышли');
+      applyTheme(getTheme());
+    rebuildStreakFromShifts();
+    try { registerMultitoolSW(); } catch (e) {}
+    bootAccessGate();
+    (function(){
+      const ta = document.getElementById('keyChatInput');
+      if (ta) ta.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendKeyChatMessage();
+        }
+      });
+    })();
+    }
+
+    async function createAccessKey(source) {
+      const isAdmin = source === 'admin';
+      const nameEl = document.getElementById(isAdmin ? 'adminNewKeyName' : 'newKeyName');
+      const daysEl = document.getElementById(isAdmin ? 'adminNewKeyDays' : 'newKeyDays');
+      const name = (nameEl && nameEl.value || '').trim();
+      const eternal = !!window._eternalKey;
+      const days = parseInt((daysEl && daysEl.value || '30'), 10);
+      if (!name) return showToast('Укажи имя');
+      if (!eternal && (!days || days < 1)) return showToast('Срок в днях или вечный');
+      const code = genAccessCode();
+      const rec = {
+        code: code,
+        name: name,
+        expires_at: eternal ? null : (function(){ const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString(); })(),
+        active: true,
+        created_at: new Date().toISOString()
+      };
+
+      const list = getLocalKeys();
+      list.unshift(rec);
+      saveLocalKeys(list);
+
+      let cloudOk = false;
+      try {
+        await sbFetch('access_keys', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify(rec)
+        });
+        await sbFetch('key_data', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ code: code, payload: {}, updated_at: new Date().toISOString() })
+        });
+        cloudOk = true;
+      } catch (e) {
+        showToast('Облако: ' + e.message);
+      }
+
+      if (nameEl) nameEl.value = '';
+      const resId = isAdmin ? 'adminNewKeyResult' : 'newKeyResult';
+      const codeId = isAdmin ? 'adminNewKeyCode' : 'newKeyCode';
+      const resEl = document.getElementById(resId);
+      const codeEl = document.getElementById(codeId);
+      if (resEl) resEl.style.display = 'block';
+      if (codeEl) codeEl.textContent = code;
+      window._lastNewKey = code;
+      playAppStoreSound();
+      showToast(cloudOk ? 'Ключ в базе' : 'Ключ только локально', cloudOk);
+      refreshAccessKeysList();
+    }
+
+    function copyNewKeyCode() {
+      const c = window._lastNewKey || (document.getElementById('newKeyCode') && document.getElementById('newKeyCode').textContent);
+      if (!c) return;
+      navigator.clipboard.writeText(c).then(() => showToast('Ключ скопирован', true));
+    }
+
+        async function countUnreadFromUser(code) {
+      try {
+        const list = await loadChatMessages(code);
+        return list.filter(function(m) { return m.from === 'user' && !m.read; }).length;
+      } catch (e) { return 0; }
+    }
+
+    async function updateAdminKeysChatBadge(total) {
+      window._admUnread = total; setTimeout(function() { try { renderAdminHome(); } catch (e) {} }, 0);
+      const el = document.getElementById('adminKeysChatBadge');
+      if (!el) return;
+      if (total > 0) {
+        el.textContent = total > 99 ? '99+' : String(total);
+        el.classList.add('on');
+      } else {
+        el.textContent = '0';
+        el.classList.remove('on');
+      }
+    }
+
+    async function refreshAccessKeysList(silent) {
+      const boxes = [document.getElementById('accessKeysList'), document.getElementById('adminAccessKeysList')].filter(Boolean);
+      if (!boxes.length) {
+        if (!silent) showToast('Список не найден на экране');
+        return;
+      }
+
+      if (!silent) {
+        boxes.forEach(function(box) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Обновляю…</div>';
+        });
+      }
+
+      let list = [];
+      let err = null;
+      try {
+        const data = await sbFetch('access_keys?select=*&order=created_at.desc');
+        list = Array.isArray(data) ? data : [];
+      } catch (e) {
+        err = (e && e.message) ? e.message : 'ошибка';
+        list = getLocalKeys();
+      }
+
+      // непрочитанные от сотрудников
+      const unreadMap = {};
+      let totalUnread = 0;
+      if (list.length && getSbConfig()) {
+        await Promise.all(list.map(async function(k) {
+          const code = String(k.code || '').trim().toUpperCase();
+          if (!code) return;
+          const n = await countUnreadFromUser(code);
+          unreadMap[code] = n;
+          totalUnread += n;
+        }));
+      }
+      updateAdminKeysChatBadge(totalUnread);
+
+      boxes.forEach(function(box) {
+        if (!list.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">' +
+            (err ? ('База: ' + escapeHtml(String(err)) + ' · ключей нет') : 'Ключей пока нет') +
+            '</div>';
+          return;
+        }
+        let h = '';
+        if (err) {
+          h += '<div style="color:var(--accent-orange);font-size:12px;margin-bottom:8px;">Облако: ' +
+            escapeHtml(String(err)) + ' · локальный список</div>';
+        }
+        list.forEach(function(k) {
+          if (!keyMatchesFilter(k)) return;
+          const check = keyIsValid(k);
+          const badge = check.ok
+            ? '<span class="key-badge ok">активен</span>'
+            : ('<span class="key-badge ' + (k.active === false ? 'off' : 'exp') + '">' +
+              escapeHtml(check.reason || 'нет') + '</span>');
+          const exp = k.expires_at ? new Date(k.expires_at).toLocaleDateString('ru-RU') : '∞';
+          const codeSafe = String(k.code || '').replace(/\\/g, '').replace(/'/g, '');
+          const codeUp = codeSafe.toUpperCase();
+          const unread = unreadMap[codeUp] || 0;
+          const chatBadge = unread > 0
+            ? ('<span class="key-chat-badge">' + (unread > 9 ? '9+' : unread) + '</span>')
+            : '';
+          h += '<div class="key-item">' +
+            '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(k.name || '') + '</div>' + badge + '</div>' +
+            '<div class="key-item-code">' + escapeHtml(k.code || '') + '</div>' +
+            '<div class="key-item-meta">' + (k.expires_at ? ('до ' + exp) : 'вечный') + '</div>' +
+            '<div class="key-actions">' +
+              '<button type="button" class="key-act copy" data-code="' + escapeHtml(codeSafe) + '" onclick="copyAccessKeyCode(this)">Копировать</button>' +
+              (k.active === false
+                ? '<button type="button" class="key-act toggle-on" onclick="setKeyActive(\'' + codeSafe + '\',true)">Включить</button>'
+                : '<button type="button" class="key-act toggle-off" onclick="openDisableKeyModal(\'' + codeSafe + '\',\'' + String(k.name || '').replace(/'/g,'') + '\')">Выключить</button>') +
+              '<button type="button" class="key-act extend" onclick="extendAccessKey(\'' + codeSafe + '\',30)">+30 дней</button>' +
+              '<button type="button" class="key-act eternal" onclick="makeKeyEternal(\'' + codeSafe + '\')">Вечный</button>' +
+              '<button type="button" class="key-act danger" onclick="deleteAccessKey(\'' + codeSafe + '\')">Удалить</button>' +
+              '<button type="button" class="key-act chat" onclick="openKeyChat(\'' + codeSafe + '\',\'' + String(k.name || '').replace(/'/g,'') + '\',true)">Чат' + chatBadge + '</button>' +
+            '</div></div>';
+        });
+        box.innerHTML = h;
+      });
+
+      if (!silent) {
+        if (err) showToast('База: ' + err);
+        else showToast('Список обновлён · ' + list.length, true);
+      }
+    }
+
+    function copyAccessKeyCode(btn) {
+      const code = btn && btn.getAttribute('data-code');
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(function() {
+        showToast('Скопировано', true);
+      }).catch(function() {
+        showToast('Не удалось скопировать');
+      });
+    }
+
+    async function setKeyActive(code, active, silent) {
+      code = String(code || '').trim().toUpperCase();
+      let list = getLocalKeys();
+      list = list.map(function(k) {
+        if (k.code === code) k.active = active;
+        return k;
+      });
+      saveLocalKeys(list);
+      if (getSbConfig()) {
+        try {
+          await sbFetch('access_keys?code=eq.' + encodeURIComponent(code), {
+            method: 'PATCH',
+            headers: { 'Prefer': 'return=minimal' },
+            body: JSON.stringify({ active: active })
+          });
+        } catch (e) {
+          if (!silent) showToast('Облако: ' + e.message);
+          throw e;
+        }
+      }
+      if (active) {
+        try { await clearKeyDisableInfo(code); } catch (e) {}
+      }
+      if (!silent) showToast(active ? 'Ключ включён' : 'Ключ отключён', true);
+      refreshAccessKeysList(true);
+    }
+
+    function toggleEternalKey() {
+      window._eternalKey = !window._eternalKey;
+      const el = document.getElementById('adminEternalOpt');
+      if (el) el.classList.toggle('selected', !!window._eternalKey);
+      const days = document.getElementById('adminNewKeyDays');
+      if (days) days.disabled = !!window._eternalKey;
+    }
+
+    async function patchKeyCloud(code, patch) {
+      await sbFetch('access_keys?code=eq.' + encodeURIComponent(code), {
+        method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify(patch)
+      });
+      let list = getLocalKeys();
+      list = list.map(function(k) {
+        if (k.code === code) Object.assign(k, patch);
+        return k;
+      });
+      saveLocalKeys(list);
+    }
+
+    async function extendAccessKey(code, days) {
+      days = days || 30;
+      try {
+        const rows = await sbFetch('access_keys?code=eq.' + encodeURIComponent(code) + '&select=expires_at');
+        let base = new Date();
+        if (rows && rows[0] && rows[0].expires_at) {
+          const prev = new Date(rows[0].expires_at);
+          if (prev.getTime() > base.getTime()) base = prev;
+        }
+        base.setDate(base.getDate() + days);
+        await patchKeyCloud(code, { expires_at: base.toISOString() });
+        showToast('Продлён на ' + days + ' дн.', true);
+        refreshAccessKeysList();
+      } catch (e) {
+        showToast('Не продлилось: ' + (e.message || 'ошибка'));
+      }
+    }
+
+    async function makeKeyEternal(code) {
+      try {
+        await patchKeyCloud(code, { expires_at: null });
+        showToast('Ключ теперь вечный', true);
+        refreshAccessKeysList();
+      } catch (e) {
+        showToast('Не вышло: ' + (e.message || 'ошибка'));
+      }
+    }
+
+    async function deleteAccessKey(code) {
+      if (!confirm('Удалить ключ ' + code + '? Данные ключа тоже пропадут из облака.')) return;
+      try {
+        try {
+          await sbFetch('key_data?code=eq.' + encodeURIComponent(code), { method: 'DELETE' });
+        } catch (e) {}
+        await sbFetch('access_keys?code=eq.' + encodeURIComponent(code), { method: 'DELETE' });
+        saveLocalKeys(getLocalKeys().filter(function(k) { return k.code !== code; }));
+        try {
+          await sbFetch('device_sessions?access_code=eq.' + encodeURIComponent(code), {
+            method: 'PATCH',
+            headers: { 'Prefer': 'return=minimal' },
+            body: JSON.stringify({ revoked: true })
+          });
+        } catch (e) {}
+        const sess = getSession();
+        if (sess && sess.code === code) dropDeadSession('Этот ключ удалён');
+        showToast('Ключ удалён', true);
+        refreshAccessKeysList();
+      } catch (e) {
+        showToast('Не удалился: ' + (e.message || 'ошибка'));
+      }
+    }
+
+    function getDeviceId() {
+      let id = localStorage.getItem('ios_device_id');
+      if (!id) {
+        id = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('ios_device_id', id);
+      }
+      return id;
+    }
+
+    function guessDeviceName() {
+      const ua = navigator.userAgent || '';
+      const custom = (localStorage.getItem('ios_device_name') || '').trim();
+      if (custom) return custom;
+      if (/iPhone/i.test(ua)) return 'iPhone';
+      if (/iPad/i.test(ua)) return 'iPad';
+      if (/Android/i.test(ua)) {
+        const m = ua.match(/Android\s([\d.]+)/);
+        return m ? ('Android ' + m[1]) : 'Android';
+      }
+      if (/Macintosh|Mac OS X/i.test(ua)) return 'Mac';
+      if (/Windows/i.test(ua)) return 'Windows';
+      if (/Linux/i.test(ua)) return 'Linux';
+      return 'Устройство';
+    }
+
+    function formatLastSeen(iso) {
+      if (!iso) return 'давно';
+      const t = new Date(iso).getTime();
+      if (isNaN(t)) return 'давно';
+      const sec = Math.max(0, Math.round((Date.now() - t) / 1000));
+      if (sec < 60) return 'только что';
+      const min = Math.round(sec / 60);
+      if (min < 60) return min + ' мин. назад';
+      const hrs = Math.round(min / 60);
+      if (hrs < 24) return hrs + ' ч. назад';
+      const days = Math.round(hrs / 24);
+      return days + ' дн. назад';
+    }
+
+    function isDeviceOnline(iso) {
+      if (!iso) return false;
+      const t = new Date(iso).getTime();
+      return !isNaN(t) && (Date.now() - t) < 70000;
+    }
+
+    async function registerDeviceSession() {
+      try {
+        const sess = getSession();
+        if (!sess || !sess.code) return; // только вход по ключу
+        await sbFetch('device_sessions?on_conflict=id', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
+          body: JSON.stringify({
+            id: getDeviceId(),
+            access_code: String(sess.code).trim().toUpperCase(),
+            access_name: sess.name || null,
+            device_name: guessDeviceName(),
+            last_seen: new Date().toISOString(),
+            revoked: false
+          })
+        });
+      } catch (e) {
+        console.warn('device register', e);
+      }
+    }
+
+    async function heartbeatDeviceSession() {
+      try { pullMyRole(); } catch (e) {}
+      try { pullSupplyDates(); } catch (e) {}
+      try { applyMyFines(); } catch (e) {}
+      try { await pullHomeBanner(); } catch (e) {}
+      try { await pullAdminKeys(); } catch (e) {}
+      try { await fetchGateFromCloud(); enforceGateScreen(); } catch (e) {}
+      try {
+        await validateCurrentSession();
+        const rows = await sbFetch('device_sessions?id=eq.' + encodeURIComponent(getDeviceId()) + '&select=revoked');
+        if (rows && rows[0] && rows[0].revoked) {
+          clearSession();
+          showToast('Сессию сбросил создатель');
+          document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+          const gate = document.getElementById('screenGate');
+          if (gate) gate.classList.add('active');
+          return;
+        }
+        const sess = getSession();
+        if (sess && sess.code) {
+          await sbFetch('device_sessions?on_conflict=id', {
+            method: 'POST',
+            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+            body: JSON.stringify({
+              id: getDeviceId(),
+              access_code: String(sess.code).trim().toUpperCase(),
+              access_name: sess.name || null,
+              device_name: guessDeviceName(),
+              last_seen: new Date().toISOString(),
+              revoked: false
+            })
+          });
+        }
+      } catch (e) {
+        console.warn('device beat', e);
+      }
+    }
+
+    async function refreshDeviceSessions() {
+      const box = document.getElementById('deviceSessionsList');
+      if (!box) return;
+      box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Обновляю…</div>';
+      try {
+        const list = await sbFetch('device_sessions?select=*&order=last_seen.desc') || [];
+        // только входы с ключом
+        const keyed = list.filter(function(d) {
+          return d && d.access_code && String(d.access_code).trim();
+        });
+        if (!keyed.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Пока нет входов по ключу.</div>';
+          return;
+        }
+        const myId = getDeviceId();
+        let h = '';
+        keyed.forEach(function(d) {
+          const online = !d.revoked && isDeviceOnline(d.last_seen);
+          const code = String(d.access_code || '').trim().toUpperCase();
+          const name = (d.access_name || '').trim();
+          const who = (name ? name + ' · ' : '') + code;
+          const mine = d.id === myId ? ' · это ты' : '';
+          const status = d.revoked
+            ? '<span class="key-badge off">выбит</span>'
+            : (online ? '<span class="key-badge ok">в сети</span>' : '<span class="key-badge exp">оффлайн</span>');
+          const meta = d.revoked
+            ? 'нужно войти заново'
+            : (online ? 'сейчас на сайте' : ('был ' + formatLastSeen(d.last_seen)));
+          const safeId = String(d.id).replace(/\\/g, '\\\\').replace(/'/g, '');
+          h += '<div class="key-item">' +
+            '<div class="key-item-top"><div class="key-item-name">' + escapeHtml((d.device_name || 'Устройство') + mine) + '</div>' + status + '</div>' +
+            '<div class="key-item-meta">' + escapeHtml(who) + '</div>' +
+            '<div class="key-item-meta">' + escapeHtml(meta) + '</div>' +
+            (d.id === myId ? '' :
+              '<button type="button" class="btn btn-red-soft" style="height:36px;font-size:13px;margin-top:8px;" onclick="kickDevice(\'' + safeId + '\')">Выбить / разлогинить</button>') +
+            '</div>';
+        });
+        box.innerHTML = h;
+      } catch (e) {
+        box.innerHTML = '<div style="color:var(--accent-orange);font-size:13px;">База: ' + escapeHtml(e.message || 'ошибка') + '. Выполни SQL таблицы device_sessions.</div>';
+      }
+    }
+
+    async function kickDevice(id) {
+      if (!id) return;
+      try {
+        await sbFetch('device_sessions?id=eq.' + encodeURIComponent(id), {
+          method: 'PATCH',
+          headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ revoked: true })
+        });
+        showToast('Устройство выбито', true);
+        refreshDeviceSessions();
+      } catch (e) {
+        showToast('Не выбилось: ' + (e.message || 'ошибка'));
+      }
+    }
+
+
+    var RT_NAMES = { overview: 'Обзор', people: 'Люди', keys: 'Ключи', play: 'Роли', alerts: 'Алерты', log: 'Лог' };
+    function showCreatorTab(id) {
+      const map = { overview: 'Overview', people: 'People', keys: 'Keys', play: 'Play', log: 'Log', alerts: 'Alerts' };
+      window._rtTab = id;
+      ['overview','people','keys','play','log','alerts'].forEach(function(k) {
+        const panel = document.getElementById('crPanel' + map[k]);
+        const nav = document.getElementById('crNav' + map[k]);
+        if (panel) panel.classList.toggle('on', k === id);
+        if (nav) nav.classList.toggle('on', k === id);
+      });
+      const name = document.getElementById('rtTabName');
+      if (name) name.textContent = RT_NAMES[id] || id;
+      const body = document.getElementById('rtBody');
+      if (body) body.scrollTop = 0;
+      window.scrollTo(0, 0);
+      try { rtSyncPills(); } catch (e) {}
+      if (id === 'overview') { rtLoadRecent(); }
+      if (id === 'people') { refreshDeviceSessions(); refreshPeekAccounts(); }
+      if (id === 'keys') { refreshAccessKeysList(); renderAdminAssign(); }
+      if (id === 'log') refreshActivityLog();
+      if (id === 'alerts') refreshNoticeOutbox();
+    }
+
+    function creatorGoBack() {
+      if (isGateEnabled() && !getSession()) openScreen('screenGate');
+      else openScreen('screenMenu');
+    }
+
+    function renderCreatorScreen() {
+      try { renderCreatorDash(); } catch (e) {}
+      showCreatorTab('overview');
+      const el = document.getElementById('creatorPinDisplay');
+      if (el) el.textContent = getAdminPin();
+      updateGateModeUI();
+      testSupabaseConnection(false);
+      fetchGateFromCloud();
+      fetchAdminPinFromCloud().then(function(p) {
+        if (el) el.textContent = p || getAdminPin();
+      });
+    }
+
+    function renderAdminKeysScreen() {
+      testSupabaseConnection(false);
+      refreshAccessKeysList();
+    }
+
+    function enforceGateScreen() {
+      if (!isGateEnabled()) return;
+      if (getSession()) return;
+      const creator = document.getElementById('screenCreator');
+      if (creator && creator.classList.contains('active')) return;
+      setOnlyScreen('screenGate');
+    }
+
+    async function syncCoinsFromCloud() { return syncUserFromCloud(); }
+    function withTimeout(p, ms) {
+      return Promise.race([
+        Promise.resolve(p).catch(function(){ return null; }),
+        new Promise(function(res){ setTimeout(function(){ res(null); }, ms); })
+      ]);
+    }
+    async function bootAccessGate() {
+      showBoot(getSession() ? 'Входим…' : 'Загрузка…');
+      // жёсткий сброс лоадера — сеть не должна держать экран вечно
+      var bootSafety = setTimeout(function() { try { hideBoot(); } catch (e) {} }, 2500);
+      try {
+        await withTimeout(fetchGateFromCloud(), 2500);
+        try { await withTimeout(ensureCreatorPasswordInCloud(), 2000); } catch (e) {}
+        await withTimeout(validateCurrentSession(), 2500);
+        await withTimeout(syncUserFromCloud(), 3000);
+        await withTimeout(pullAdminSharedData(), 2500);
+        await withTimeout(pullOrderList(), 2500);
+        try { pullMyRole(); } catch (e) {}
+        if (!isGateEnabled()) {
+          setOnlyScreen('screenMenu');
+          renderSupplyCard();
+          pullSupplyDates();
+          if (getSession()) {
+            try { startNoticePolling(); } catch (e) {}
+            try { startChatPolling(); } catch (e) {}
+            setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 500);
+            try { registerMultitoolSW(); } catch (e) {}
+            try { maybeAskNotifPermission(); } catch (e) {}
+          }
+          return;
+        }
+        const session = getSession();
+        if (session) {
+          if (session.expires_at && Date.now() > new Date(session.expires_at).getTime()) {
+            clearSession();
+            setOnlyScreen('screenGate');
+            showToast('Срок ключа истёк');
+            return;
+          }
+          setOnlyScreen('screenMenu');
+          renderSupplyCard();
+          pullSupplyDates();
+          try { startNoticePolling(); } catch (e) {}
+          try { startChatPolling(); } catch (e) {}
+          setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 500);
+          setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1500);
+          try { registerMultitoolSW(); } catch (e) {}
+          try { maybeAskNotifPermission(); } catch (e) {}
+          return;
+        }
+        setOnlyScreen('screenGate');
+      } catch (e) {
+        if (getSession()) {
+          setOnlyScreen('screenMenu');
+          try { startNoticePolling(); } catch (e2) {}
+        } else setOnlyScreen('screenGate');
+      } finally {
+        try { clearTimeout(bootSafety); } catch (e) {}
+        hideBoot();
+        setTimeout(hideBoot, 50);
+        setTimeout(hideBoot, 500);
+        setTimeout(renderStreak, 50);
+        setTimeout(renderStreak, 400);
+      }
+    }
+
+
+
+    // ============ SYSTEM NOTIFICATIONS (PWA) ============
+    let _swReg = null;
+    let _notifPromptShown = false;
+
+    function notifSupported() {
+      return typeof window !== 'undefined' && 'Notification' in window;
+    }
+
+    function getNotifPermission() {
+      if (!notifSupported()) return 'unsupported';
+      return Notification.permission; // granted | denied | default
+    }
+
+    async function registerMultitoolSW() {
+      if (!('serviceWorker' in navigator)) return null;
+      try {
+        const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+        _swReg = reg;
+        return reg;
+      } catch (e) {
+        console.warn('SW register', e);
+        return null;
+      }
+    }
+
+    function updateNotifSettingsUI() {
+      const st = document.getElementById('notifSettingsStatus');
+      const btn = document.getElementById('notifSettingsBtn');
+      if (!st || !btn) return;
+      const p = getNotifPermission();
+      if (p === 'unsupported') {
+        st.textContent = 'Этот браузер не поддерживает уведомления';
+        btn.style.display = 'none';
+        return;
+      }
+      btn.style.display = '';
+      if (p === 'granted') {
+        st.textContent = 'Включены. Можно свернуть сайт — пуши будут приходить (на iPhone только с главного экрана).';
+        btn.textContent = 'Проверить';
+      } else if (p === 'denied') {
+        st.textContent = 'Запрещены в системе. Разреши в настройках телефона → сайт / Safari.';
+        btn.textContent = 'Как включить';
+      } else {
+        st.textContent = 'Ещё не включены. Нажми, чтобы разрешить.';
+        btn.textContent = 'Включить';
+      }
+    }
+
+    function openNotifPermModal() {
+      const m = document.getElementById('notifPermModal');
+      if (m) m.classList.add('active');
+      _notifPromptShown = true;
+    }
+    function closeNotifPermModal() {
+      const m = document.getElementById('notifPermModal');
+      if (m) m.classList.remove('active');
+    }
+
+    async function acceptNotifPrompt() {
+      closeNotifPermModal();
+      localStorage.setItem('ios_notif_prompted', '1');
+      try {
+        const res = await Notification.requestPermission();
+        if (res === 'granted') {
+          await registerMultitoolSW();
+          try { await subscribeWebPush(); } catch (e) {}
+          showToast('Уведомления включены', true);
+          try {
+            showSystemNotification('Мультитул', 'Готово — уведомления работают');
+          } catch (e) {}
+        } else if (res === 'denied') {
+          showToast('Доступ запрещён');
+        } else {
+          showToast('Не разрешено');
+        }
+      } catch (e) {
+        showToast('Не удалось запросить доступ');
+      }
+      updateNotifSettingsUI();
+    }
+
+    function dismissNotifPrompt() {
+      closeNotifPermModal();
+      // не долбим каждый раз в этой же сессии; при следующем заходе если default — спросим снова
+      sessionStorage.setItem('ios_notif_skip_session', '1');
+    }
+
+    async function requestNotifFromSettings() {
+      const p = getNotifPermission();
+      if (p === 'granted') {
+        showToast('Подписываю и шлю тест…');
+        try { await registerMultitoolSW(); } catch (e) {}
+        try { await subscribeWebPush(); } catch (e) {}
+        // локальный тест (когда сайт открыт)
+        try {
+          showSystemNotification('Мультитул', 'Локальный тест: сайт открыт', { force: true, always: true });
+        } catch (e) {}
+        // серверный тест (должен дойти и в фоне)
+        const sess = getSession();
+        if (sess && sess.code) {
+          const r = await sendPushToCodes([sess.code], 'Мультитул', 'Серверный тест фона');
+          if (!r || !r.ok) {
+            showToast('Сервер: ' + ((r && r.error) || 'ошибка'));
+          } else if (!r.sent) {
+            showToast('Подписки: ' + r.subs + ', отправлено 0 — смотри Logs');
+          } else {
+            showToast('Сервер ок · отправлено ' + r.sent, true);
+          }
+        } else {
+          showToast('Нет ключа сессии — войди по ключу');
+        }
+        updateNotifSettingsUI();
+        return;
+      }
+      if (p === 'denied') {
+        showToast('Разреши уведомления в настройках телефона');
+        return;
+      }
+      if (p === 'unsupported') {
+        showToast('Не поддерживается');
+        return;
+      }
+      openNotifPermModal();
+    }
+
+    /** Спросить доступ при входе, только если ещё не granted/denied */
+    function maybeAskNotifPermission() {
+      if (!notifSupported()) return;
+      const p = getNotifPermission();
+      if (p === 'granted') {
+        registerMultitoolSW().then(function() { try { subscribeWebPush(); } catch (e) {} });
+        return;
+      }
+      if (p === 'denied' || p === 'unsupported') return;
+      // default
+      if (sessionStorage.getItem('ios_notif_skip_session') === '1') return;
+      if (_notifPromptShown) return;
+      // небольшая пауза после входа, чтобы не пересечься с boot
+      setTimeout(function() {
+        if (getNotifPermission() !== 'default') return;
+        if (sessionStorage.getItem('ios_notif_skip_session') === '1') return;
+        openNotifPermModal();
+      }, 1600);
+    }
+
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const raw = atob(base64);
+      const out = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+      return out;
+    }
+
+    function pushSubStorageKey(code) {
+      return 'push_subs_' + String(code || '').trim().toUpperCase();
+    }
+
+    async function loadPushSubs(code) {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(pushSubStorageKey(code)) + '&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return [];
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return []; } }
+        return Array.isArray(v) ? v : [];
+      } catch (e) { return []; }
+    }
+
+    async function savePushSubs(code, list) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: pushSubStorageKey(code),
+          value: (list || []).slice(-20),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+
+    async function subscribeWebPush() {
+      if (!notifSupported() || Notification.permission !== 'granted') return null;
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+      try {
+        const reg = _swReg || await registerMultitoolSW();
+        if (!reg) return null;
+        await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        // ключ VAPID обновлён — старую подписку сбрасываем
+        if (sub) {
+          try { await sub.unsubscribe(); } catch (e) {}
+          sub = null;
+        }
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+        const sess = getSession();
+        if (sess && sess.code && sub) {
+          const json = sub.toJSON();
+          if (!json.keys || !json.keys.p256dh) {
+            console.warn('push sub without keys');
+            return sub;
+          }
+          const list = await loadPushSubs(sess.code);
+          const endpoint = json.endpoint;
+          const filtered = list.filter(function(s) { return s.endpoint !== endpoint; });
+          filtered.unshift({
+            endpoint: endpoint,
+            keys: {
+              p256dh: json.keys.p256dh,
+              auth: json.keys.auth
+            },
+            at: new Date().toISOString(),
+            device: (navigator.userAgent || '').slice(0, 80)
+          });
+          await savePushSubs(sess.code, filtered);
+        }
+        return sub;
+      } catch (e) {
+        console.warn('push subscribe', e);
+        return null;
+      }
+    }
+
+    async function sendPushToCodes(codes, title, body) {
+      if (!codes || !codes.length || !getSbConfig()) {
+        return { ok: false, error: 'нет ключей/базы', sent: 0, subs: 0 };
+      }
+      const cfg = getSbConfig();
+      const allSubs = [];
+      for (let i = 0; i < codes.length; i++) {
+        try {
+          const list = await loadPushSubs(codes[i]);
+          list.forEach(function(s) { allSubs.push(s); });
+        } catch (e) {}
+      }
+      if (!allSubs.length) {
+        return { ok: false, error: 'нет подписок (зайди с главного экрана и разреши пуши)', sent: 0, subs: 0 };
+      }
+      try {
+        const res = await fetch(cfg.url + '/functions/v1/send-push', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': cfg.anon,
+            'Authorization': 'Bearer ' + cfg.anon
+          },
+          body: JSON.stringify({
+            title: title || 'Мультитул',
+            body: body || '',
+            subscriptions: allSubs,
+            url: './'
+          })
+        });
+        let data = null;
+        try { data = await res.json(); } catch (e) {}
+        if (!res.ok) {
+          const err = (data && data.error) ? data.error : ('HTTP ' + res.status);
+          console.warn('send-push', err);
+          return { ok: false, error: err, sent: 0, subs: allSubs.length };
+        }
+        return {
+          ok: true,
+          sent: (data && data.sent) || 0,
+          subs: allSubs.length,
+          dead: (data && data.dead) || [],
+          error: null
+        };
+      } catch (e) {
+        console.warn('send-push', e);
+        return { ok: false, error: (e && e.message) || 'сеть', sent: 0, subs: allSubs.length };
+      }
+    }
+
+    function showSystemNotification(title, body, opts) {
+      opts = opts || {};
+      if (!notifSupported()) return;
+      if (Notification.permission !== 'granted') return;
+      // если вкладка активна и не force — можно не дублировать
+      if (!opts.force && document.visibilityState === 'visible' && !opts.always) {
+        // всё равно можно тихо не слать; для чата шлём только в фоне
+        if (!opts.whenHidden) {
+          // default: show only when hidden
+        } else {
+          return;
+        }
+      }
+      if (opts.whenHidden && document.visibilityState === 'visible') return;
+
+      var payload = {
+        body: body || '',
+        tag: opts.tag || 'multitool',
+        renotify: !!opts.renotify
+      };
+      try {
+        if (_swReg && _swReg.showNotification) {
+          _swReg.showNotification(title || 'Мультитул', payload);
+          return;
+        }
+        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+          navigator.serviceWorker.ready.then(function(reg) {
+            reg.showNotification(title || 'Мультитул', payload);
+          }).catch(function() {
+            new Notification(title || 'Мультитул', payload);
+          });
+          return;
+        }
+        new Notification(title || 'Мультитул', payload);
+      } catch (e) {
+        try { new Notification(title || 'Мультитул', payload); } catch (e2) {}
+      }
+    }
+
+    // hook: after open app prefs
+    const _openAppPrefsOrig = typeof openAppPrefs === 'function' ? openAppPrefs : null;
+
+
+    // ============ АККАУНТ ============
+
+    function getDev() {
+      try { return JSON.parse(localStorage.getItem('ios_dev') || '{}'); }
+      catch (e) { return {}; }
+    }
+    function setDev(d) {
+      localStorage.setItem('ios_dev', JSON.stringify(d));
+      applyDevMode();
+      updateDevMenuUI();
+    }
+    function toggleDevFlag(key) {
+      if (!key) return;
+      const d = getDev();
+      d.mode = true;
+      d[key] = !d[key];
+      try { localStorage.setItem('ios_dev', JSON.stringify(d)); } catch (e) {}
+      applyDevMode();
+      updateDevMenuUI();
+      try { devLog('mod ' + key + ' = ' + !!d[key], d[key] ? 'ok' : 'warn'); } catch (e) {}
+    }
+    function updateDevMenuUI() {
+      const d = getDev();
+      const map = { swOutlines: 'outlines', swCoords: 'coords', swConsole: 'console', swFps: 'fps', swGrid: 'grid', swHud: 'hud', swHits: 'hits', swSlow: 'slow' };
+      Object.keys(map).forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('on', !!d[map[id]]);
+      });
+      const hud = document.getElementById('devHud');
+      if (hud) {
+        const sess = getSession();
+        hud.innerHTML = (document.querySelector('.screen.active') || {}).id +
+          '<br>' + ((sess && sess.code) ? sess.code : 'no-key');
+      }
+    }
+    function applyDevMode() {
+      const d = getDev();
+      document.body.classList.toggle('dev-outlines', !!d.outlines);
+      document.body.classList.toggle('dev-coords', !!d.coords);
+      document.body.classList.toggle('dev-console', !!d.console);
+      document.body.classList.toggle('dev-fps', !!d.fps);
+      document.body.classList.toggle('dev-grid', !!d.grid);
+      document.body.classList.toggle('dev-hud', !!d.hud);
+      document.body.classList.toggle('dev-slow', !!d.slow);
+    }
+    const APP_VERSION = '2.6.6';
+    const CHANGELOG = [
+      { v: '2.6.6', d: '22.10.2026', t: 'График учитывает месяц и выходные (сб/вс).' },
+      { v: '2.6.5', d: '22.10.2026', t: 'ИИ умеет добавлять смены, ставить график 2/2 и менять календарь по команде.' },
+      { v: '2.6.4', d: '22.10.2026', t: 'Жидкое стекло всегда включено. «Мои смены» в таббаре. Настройки обновлены, режим разработчика убран из меню.' },
+      { v: '2.6.3', d: '22.10.2026', t: 'Удалены рулетка, монеты и магазин наград.' },
+      { v: '2.6.2', d: '22.10.2026', t: 'Убрана вкладка «Ещё». Плавнее пузырь вкладок. Вертикальный свайп больше не переключает на «Заказ».' },
+      { v: '3.0.0', d: '22.10.2026', t: 'Полное обновление стилистики сайта, добавлен режим "Жидкое стекло" и другие изменения.' },
+      { v: '2.5.6', d: '13.10.2026', t: 'Сообщения от руководства работают стабильно и быстро.' },
+      { v: '2.5.0', d: '27.09.2026', t: 'Заказы: категории, галочки, дата изменения. Плавные переходы экранов, умнее ИИ.' },
+      { v: '2.4.0', d: '27.09.2026', t: 'Версия на главной и список изменений.' },
+      { v: '2.3.4', d: '27.09.2026', t: 'Заказы: копировать весь список.' },
+      { v: '2.3.3', d: '27.09.2026', t: 'Смены, заметки и монеты синхронизируются с аккаунтом.' },
+      { v: '2.3.2', d: '27.09.2026', t: 'QR временно «в разработке».' }
+    ];
+    function openChangelog() {
+      const box = document.getElementById('changelogList');
+      const v2 = document.getElementById('appVerLabel2');
+      if (v2) v2.textContent = APP_VERSION;
+      if (box) {
+        box.innerHTML = CHANGELOG.map(function(c, i) {
+          const delay = Math.min(i, 12) * 0.045;
+          return '<div class="cl-item' + (i === 0 ? ' latest' : '') + '" style="animation-delay:' + delay + 's">' +
+            '<div class="cl-rail"><div class="cl-dot"></div></div>' +
+            '<div class="cl-card">' +
+              '<div class="cl-row"><div class="cl-v">v' + c.v + '</div><div class="cl-d">' + c.d + '</div></div>' +
+              '<div class="cl-t">' + c.t + '</div>' +
+            '</div></div>';
+        }).join('');
+        box.scrollTop = 0;
+      }
+      const m = document.getElementById('changelogModal');
+      if (m) m.classList.add('active');
+    }
+    function closeChangelog() {
+      const m = document.getElementById('changelogModal');
+      if (m) m.classList.remove('active');
+    }
+    function openAppPrefs() {
+      try { applyLiquid(); } catch (e) {}
+      try { updateNotifSettingsUI(); } catch (e) {}
+      const m = document.getElementById('appPrefsModal');
+      if (m) m.classList.add('active');
+      applyTheme(getTheme());
+      try {
+        const g = document.getElementById('prefsGroqKey');
+        if (g) g.value = getGroqKey() || '';
+      } catch (e) {}
+    }
+    function saveGroqKeyFromPrefs() {
+      const el = document.getElementById('prefsGroqKey');
+      const key = (el && el.value || '').trim();
+      if (!key) return showToast('Вставь ключ');
+      setGroqKey(key);
+      try {
+        const a = document.getElementById('accountGroqKey');
+        if (a) a.value = key;
+      } catch (e) {}
+      showToast('Ключ сохранён', true);
+    }
+    function closeAppPrefs() {
+      const m = document.getElementById('appPrefsModal');
+      if (m) m.classList.remove('active');
+    }
+    function openDevMenu() {
+      closeAppPrefs();
+      const d = getDev();
+      d.mode = true;
+      setDev(d);
+      updateDevMenuUI();
+      document.getElementById('devMenu').classList.add('on');
+      devLog('mod menu open', 'ok');
+    }
+    function closeDevMenu() {
+      const m = document.getElementById('devMenu');
+      if (m) m.classList.remove('on');
+    }
+    document.addEventListener('click', function(e) {
+      const row = e.target.closest && e.target.closest('#devMenu .dev-row[data-dev]');
+      if (!row) return;
+      e.preventDefault();
+      e.stopPropagation();
+      toggleDevFlag(row.getAttribute('data-dev'));
+    }, true);
+    function devLog(msg, kind) {
+      const box = document.getElementById('devConsole');
+      if (!box) return;
+      const t = new Date();
+      const ts = String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0') + ':' + String(t.getSeconds()).padStart(2,'0');
+      const line = document.createElement('div');
+      line.className = kind === 'err' ? 'l-err' : (kind === 'ok' ? 'l-ok' : (kind === 'warn' ? 'l-warn' : ''));
+      line.textContent = ts + '  ' + msg;
+      box.appendChild(line);
+      box.scrollTop = box.scrollHeight;
+      while (box.children.length > 80) box.removeChild(box.firstChild);
+    }
+    function clearDevConsole() {
+      const box = document.getElementById('devConsole');
+      if (box) box.innerHTML = '';
+    }
+    function devGiveCoins(n) {
+      showToast('Монеты отключены');
+    }
+    function devDumpInfo() {
+      const sess = getSession();
+      const keys = Object.keys(localStorage).length;
+      devLog('ls keys ' + keys + ' · ' + ((sess && sess.code) || 'no-key'), 'warn');
+      showToast('Смотри консоль');
+    }
+    let devFpsLast = performance.now(), devFpsFrames = 0;
+    function tickDevFps(now) {
+      devFpsFrames++;
+      if (now - devFpsLast >= 500) {
+        const el = document.getElementById('devFps');
+        if (el) el.textContent = String(Math.round(devFpsFrames * 1000 / (now - devFpsLast)));
+        devFpsFrames = 0;
+        devFpsLast = now;
+      }
+      requestAnimationFrame(tickDevFps);
+    }
+    requestAnimationFrame(tickDevFps);
+    document.addEventListener('pointermove', function(e) {
+      const el = document.getElementById('devCoords');
+      if (el && document.body.classList.contains('dev-coords')) {
+        el.textContent = 'x ' + Math.round(e.clientX) + ' · y ' + Math.round(e.clientY);
+      }
+    }, { passive: true });
+    document.addEventListener('click', function(e) {
+      const d = getDev();
+      if (d.hits) {
+        const dot = document.createElement('div');
+        dot.className = 'dev-hit';
+        dot.style.left = e.clientX + 'px';
+        dot.style.top = e.clientY + 'px';
+        document.body.appendChild(dot);
+        setTimeout(function(){ dot.remove(); }, 360);
+      }
+      const t = e.target.closest('button, .btn, .menu-item, .icon-btn, .option-btn');
+      if (t) devLog('tap ' + (t.className || t.tagName).toString().slice(0,36));
+    }, true);
+
+    function openAccountModal() {
+      const k = document.getElementById('accountGroqKey');
+      if (k) k.value = getGroqKey() || '';
+      const info = document.getElementById('accountSessionInfo');
+      const logoutBtn = document.getElementById('accountLogoutBtn');
+      if (info) info.textContent = 'Проверяем ключ…';
+      document.getElementById('accountModal').classList.add('active');
+      validateCurrentSession({ strict: true }).then(function() {
+        const sess = getSession();
+        if (info) {
+          if (sess) {
+            info.textContent = 'Ключ: ' + sess.name + ' · ' + sess.code + (sess.expires_at ? (' · до ' + new Date(sess.expires_at).toLocaleDateString('ru-RU')) : ' · без срока');
+          } else {
+            info.textContent = isGateEnabled() ? 'Нет активного ключа' : 'Открытый режим (ключ не обязателен)';
+          }
+        }
+        if (logoutBtn) logoutBtn.style.display = sess ? 'flex' : 'none';
+      });
+    }
+    function closeAccountModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        document.getElementById('accountModal').classList.remove('active');
+      }
+    }
+
+    function backupProfile() {
+      playAppStoreSound();
+      const backupData = {
+        ios_multitool_data: localStorage.getItem('ios_multitool_data'),
+        ios_multitool_archive: localStorage.getItem('ios_multitool_archive'),
+        ios_paid_amount: localStorage.getItem('ios_paid_amount'),
+        ios_month_shifts: localStorage.getItem('ios_month_shifts'),
+        ios_notes: localStorage.getItem('ios_notes'),
+        ios_point_data: localStorage.getItem('ios_point_data'),
+        ios_employees: localStorage.getItem('ios_employees'),
+        ios_payouts: localStorage.getItem('ios_payouts'),
+        exportDate: new Date().toISOString()
+      };
+
+      const jsonStr = JSON.stringify(backupData, null, 2);
+      const fileName = 'multitool_backup_' + new Date().toISOString().slice(0,10) + '.json';
+
+      if (navigator.canShare) {
+        try {
+          const file = new File([jsonStr], fileName, { type: 'application/json' });
+          if (navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: 'Бекап Мультитул' })
+              .then(() => closeAccountModal())
+              .catch(() => {});
+            return;
+          }
+        } catch (e) {}
+      }
+
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      closeAccountModal();
+      showToast('Бекап сохранён');
+    }
+
+    function triggerFileUpload() { document.getElementById('profileFileInput').click(); }
+
+    function restoreProfile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          if (parsed.ios_multitool_data !== undefined || parsed.ios_point_data !== undefined) {
+            if (parsed.ios_multitool_data !== null && parsed.ios_multitool_data !== undefined) localStorage.setItem('ios_multitool_data', parsed.ios_multitool_data);
+            if (parsed.ios_multitool_archive !== null && parsed.ios_multitool_archive !== undefined) localStorage.setItem('ios_multitool_archive', parsed.ios_multitool_archive);
+            if (parsed.ios_paid_amount !== null && parsed.ios_paid_amount !== undefined) localStorage.setItem('ios_paid_amount', parsed.ios_paid_amount);
+            if (parsed.ios_month_shifts !== null && parsed.ios_month_shifts !== undefined) localStorage.setItem('ios_month_shifts', parsed.ios_month_shifts);
+            if (parsed.ios_notes !== null && parsed.ios_notes !== undefined) localStorage.setItem('ios_notes', parsed.ios_notes);
+            if (parsed.ios_point_data !== null && parsed.ios_point_data !== undefined) localStorage.setItem('ios_point_data', parsed.ios_point_data);
+            if (parsed.ios_employees !== null && parsed.ios_employees !== undefined) localStorage.setItem('ios_employees', parsed.ios_employees);
+            if (parsed.ios_payouts !== null && parsed.ios_payouts !== undefined) localStorage.setItem('ios_payouts', parsed.ios_payouts);
+
+            playAppStoreSound();
+            closeAccountModal();
+            render();
+            renderNotes();
+            showToast('Профиль успешно загружен!');
+          } else {
+            showToast('Неверный формат файла бекапа');
+          }
+        } catch (err) {
+          showToast('Ошибка чтения файла');
+        }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+
+    // ============ ADD TO HOME SCREEN ============
+    let deferredInstallPrompt = null;
+
+    (function setupPwaManifest() {
+      try {
+        const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230a84ff'/%3E%3Ctext x='256' y='330' text-anchor='middle' font-size='260' font-family='system-ui,sans-serif' font-weight='700' fill='white'%3EM%3C/text%3E%3C/svg%3E";
+        const manifest = {
+          name: 'Мультитул',
+          short_name: 'Мультитул',
+          start_url: '.',
+          display: 'standalone',
+          background_color: '#000000',
+          theme_color: '#000000',
+          icons: [
+            { src: icon, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+          ]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        let link = document.querySelector('link[rel="manifest"]');
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'manifest';
+          document.head.appendChild(link);
+        }
+        link.href = url;
+      } catch (e) {}
+    })();
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+    });
+
+    function isIos() {
+      return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+    function isAndroid() {
+      return /android/i.test(navigator.userAgent);
+    }
+    function isStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
+    function updateAddHomeFabVisibility() {
+      const fab = document.getElementById('addHomeFab');
+      if (!fab) return;
+      if (isStandalone()) fab.classList.add('hidden');
+      else fab.classList.remove('hidden');
+    }
+
+    function closeAddHomeModal(e) {
+      if (!e || e.target.classList.contains('modal-overlay')) {
+        const m = document.getElementById('addHomeModal');
+        if (m) m.classList.remove('active');
+      }
+    }
+
+    function openAddHomeModal(html, primaryLabel, primaryFn) {
+      const body = document.getElementById('addHomeBody');
+      const btn = document.getElementById('addHomePrimaryBtn');
+      if (body) body.innerHTML = html;
+      if (btn) {
+        btn.textContent = primaryLabel || 'Понятно';
+        btn.onclick = function() {
+          document.getElementById('addHomeModal').classList.remove('active');
+          if (typeof primaryFn === 'function') primaryFn();
+        };
+      }
+      document.getElementById('addHomeModal').classList.add('active');
+    }
+
+    async function promptAddToHome() {
+      if (isStandalone()) {
+        updateAddHomeFabVisibility();
+        showToast('Уже на экране «Домой»', true);
+        return;
+      }
+
+      if (deferredInstallPrompt) {
+        try {
+          deferredInstallPrompt.prompt();
+          const choice = await deferredInstallPrompt.userChoice;
+          deferredInstallPrompt = null;
+          if (choice && choice.outcome === 'accepted') {
+            showToast('Добавлено', true);
+            updateAddHomeFabVisibility();
+          }
+        } catch (e) {
+          showToast('Не удалось открыть установку');
+        }
+        return;
+      }
+
+      if (isIos()) {
+        openAddHomeModal(
+          '<p style="margin-bottom:12px;color:#fff;font-weight:600;">iPhone / iPad (Safari)</p>' +
+          '<p>1. Нажми кнопку <b style="color:#fff;">Поделиться</b> <span style="color:var(--accent-blue);">⬆</span> внизу Safari</p>' +
+          '<p style="margin-top:8px;">2. Прокрути и выбери <b style="color:#fff;">«На экран „Домой“»</b></p>' +
+          '<p style="margin-top:8px;">3. Нажми <b style="color:#fff;">Добавить</b></p>' +
+          '<p style="margin-top:12px;font-size:12px;">Если заходишь не через Safari (Telegram / Chrome) — открой сайт в Safari.</p>',
+          'Понятно'
+        );
+        return;
+      }
+
+      if (isAndroid()) {
+        openAddHomeModal(
+          '<p style="margin-bottom:12px;color:#fff;font-weight:600;">Android (Chrome)</p>' +
+          '<p>1. Нажми <b style="color:#fff;">⋮</b> в правом верхнем углу Chrome</p>' +
+          '<p style="margin-top:8px;">2. Выбери <b style="color:#fff;">«Установить приложение»</b> или <b style="color:#fff;">«На главный экран»</b></p>' +
+          '<p style="margin-top:12px;font-size:12px;">Если пункта нет — обнови Chrome или открой сайт ещё раз.</p>',
+          'Понятно'
+        );
+        return;
+      }
+
+      openAddHomeModal(
+        '<p>В меню браузера найди пункт <b style="color:#fff;">«Установить»</b> или <b style="color:#fff;">«Добавить на главный экран»</b>.</p>',
+        'Понятно'
+      );
+    }
+
+
+
+
+    function parseMaybeJson(v) {
+      if (v == null) return null;
+      if (typeof v === 'object') return v;
+      try { return JSON.parse(v); } catch (e) { return null; }
+    }
+
+    function summarizePayload(payload) {
+      const data = parseMaybeJson(payload && payload.ios_multitool_data) || { shifts: [], deductions: [] };
+      const paid = parseFloat(payload && payload.ios_paid_amount != null ? payload.ios_paid_amount : 1300) || 1300;
+      const shifts = data.shifts || [];
+      const deductions = data.deductions || [];
+      let rev = 0, toPay = 0;
+      shifts.forEach(function(s) {
+        const total = Number(s.total) || 0;
+        rev += total;
+        toPay += 2300 + Math.round(total * 0.03);
+      });
+      let dedSum = 0;
+      deductions.forEach(function(d) { dedSum += Number(d.amount) || 0; });
+      const paidTotal = paid * shifts.length;
+      const remain = toPay - paidTotal - dedSum;
+      const archive = parseMaybeJson(payload && payload.ios_multitool_archive) || [];
+      return {
+        shifts: shifts,
+        deductions: deductions,
+        archive: Array.isArray(archive) ? archive : [],
+        paidRate: paid,
+        paid: paidTotal,
+        rev: rev,
+        toPay: toPay,
+        remain: remain,
+        savedAt: payload && payload._savedAt
+      };
+    }
+
+    async function refreshPeekAccounts() {
+      const box = document.getElementById('peekAccountsList');
+      if (!box) return;
+      box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Гружу аккаунты…</div>';
+      try {
+        const keys = await sbFetch('access_keys?select=*&order=created_at.desc') || [];
+        let dataRows = [];
+        try { dataRows = await sbFetch('key_data?select=code,payload,updated_at') || []; } catch (e) {}
+        const byCode = {};
+        dataRows.forEach(function(r) { byCode[r.code] = r; });
+        if (!keys.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Ключей пока нет</div>';
+          return;
+        }
+        let h = '';
+        keys.forEach(function(k) {
+          const row = byCode[k.code] || {};
+          const payload = row.payload || {};
+          const sum = summarizePayload(payload);
+          const when = sum.savedAt || row.updated_at;
+          const whenTxt = when ? formatStoryTimeSafe(when) : 'ещё не заходил';
+          const codeSafe = String(k.code || '').replace(/'/g, '');
+          h += '<div class="key-item" onclick="openPeekAccount(\'' + codeSafe + '\')" style="cursor:pointer;">' +
+            '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(k.name || 'Без имени') + '</div>' +
+            (k.active === false ? '<span class="key-badge off">выкл</span>' : '<span class="key-badge ok">аккаунт</span>') + '</div>' +
+            '<div class="key-item-code">' + escapeHtml(k.code || '') + '</div>' +
+            '<div class="key-item-meta">' + sum.shifts.length + ' смен · ' + Number(sum.rev).toLocaleString('ru-RU') + ' ₽ · ' + escapeHtml(whenTxt) + '</div>' +
+            '</div>';
+        });
+        box.innerHTML = h;
+      } catch (e) {
+        box.innerHTML = '<div style="color:var(--accent-orange);font-size:13px;">' + escapeHtml(e.message || 'ошибка базы') + '</div>';
+      }
+    }
+
+    function formatStoryTimeSafe(iso) {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      const t = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      const now = new Date();
+      if (d.toDateString() === now.toDateString()) return 'сегодня ' + t;
+      return d.toLocaleDateString('ru-RU') + ' ' + t;
+    }
+
+    async function openPeekAccount(code) {
+      if (!code) return;
+      openScreen('screenPeekAccount');
+      const nameEl = document.getElementById('peekName');
+      const metaEl = document.getElementById('peekMeta');
+      const statsEl = document.getElementById('peekStats');
+      const weekEl = document.getElementById('peekWeek');
+      const dedEl = document.getElementById('peekDeductions');
+      const arcEl = document.getElementById('peekArchive');
+      if (nameEl) nameEl.textContent = 'Загрузка…';
+      if (weekEl) weekEl.textContent = '';
+      try {
+        const keys = await sbFetch('access_keys?code=eq.' + encodeURIComponent(code) + '&select=*');
+        const rec = keys && keys[0] ? keys[0] : { code: code, name: code };
+        const rows = await sbFetch('key_data?code=eq.' + encodeURIComponent(code) + '&select=payload,updated_at');
+        const payload = rows && rows[0] && rows[0].payload ? rows[0].payload : {};
+        const sum = summarizePayload(payload);
+        if (nameEl) nameEl.textContent = rec.name || 'Сотрудник';
+        if (metaEl) metaEl.textContent = rec.code + (sum.savedAt || (rows && rows[0] && rows[0].updated_at) ? ' · обновлено ' + formatStoryTimeSafe(sum.savedAt || rows[0].updated_at) : ' · пустой профиль');
+        if (statsEl) {
+          statsEl.innerHTML =
+            '<div class="stat-box"><div class="card-title" style="margin:0;">Смен</div><div class="stat-num">' + sum.shifts.length + '</div></div>' +
+            '<div class="stat-box"><div class="card-title" style="margin:0;">Выручка</div><div class="stat-num">' + Number(sum.rev).toLocaleString('ru-RU') + ' ₽</div></div>' +
+            '<div class="stat-box"><div class="card-title" style="margin:0;">К выплате</div><div class="stat-num">' + Number(sum.toPay).toLocaleString('ru-RU') + ' ₽</div></div>' +
+            '<div class="stat-box"><div class="card-title" style="margin:0;">Выплачено</div><div class="stat-num">' + Number(sum.paid).toLocaleString('ru-RU') + ' ₽</div></div>' +
+            '<div class="stat-box" style="grid-column:1 / -1;"><div class="card-title" style="margin:0;">Остаток</div><div class="stat-num" style="color:var(--accent-green);">' + Number(sum.remain).toLocaleString('ru-RU') + ' ₽</div></div>';
+        }
+        if (weekEl) {
+          if (!sum.shifts.length) weekEl.innerHTML = '<span style="color:var(--text-sec);">Неделя пустая</span>';
+          else {
+            let htmlw = '';
+            sum.shifts.forEach(function(s, i) {
+              const total = Number(s.total) || 0;
+              const toPay = 2300 + Math.round(total * 0.03);
+              htmlw += '<div class="peek-shift">' +
+                '<div><b>' + escapeHtml(s.date || ('Смена ' + (i+1))) + '</b><div class="peek-sub">выручка</div></div>' +
+                '<div class="peek-sum">' + total.toLocaleString('ru-RU') + ' ₽<div class="peek-sub">к выплате ' + toPay.toLocaleString('ru-RU') + ' ₽</div></div>' +
+                '</div>';
+            });
+            weekEl.innerHTML = htmlw;
+          }
+        }
+        const dedCard = document.getElementById('peekDedCard');
+        if (dedEl) {
+          if (!sum.deductions.length) {
+            if (dedCard) dedCard.style.display = 'none';
+          } else {
+            if (dedCard) dedCard.style.display = '';
+            dedEl.innerHTML = sum.deductions.map(function(d) {
+              return '<div class="peek-shift"><div><b>' + escapeHtml(d.reason || 'Вычет') + '</b></div><div class="peek-sum" style="color:var(--accent-orange);">−' + Number(d.amount || 0).toLocaleString('ru-RU') + ' ₽</div></div>';
+            }).join('');
+          }
+        }
+        const arcCard = document.getElementById('peekArcCard');
+        if (arcEl) {
+          if (!sum.archive.length) {
+            if (arcCard) arcCard.style.display = 'none';
+          } else {
+            if (arcCard) arcCard.style.display = '';
+            arcEl.innerHTML = sum.archive.map(function(w, i) {
+              const n = (w.shifts && w.shifts.length) || w.shiftsCount || 0;
+              const label = w.from && w.to ? (w.from + ' — ' + w.to) : ('Неделя ' + (i+1));
+              return '<div class="peek-shift"><div><b>' + escapeHtml(label) + '</b></div><div class="peek-sum">' + n + ' смен</div></div>';
+            }).join('');
+          }
+        }
+      } catch (e) {
+        if (nameEl) nameEl.textContent = 'Ошибка';
+        if (weekEl) weekEl.textContent = e.message || 'нет данных';
+      }
+    }
+
+
+
+
+    function hexToRgba(hex, a) {
+      hex = String(hex || '#0a84ff').replace('#','');
+      if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      const n = parseInt(hex, 16);
+      const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+    }
+
+    async function fetchAllRoles() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.user_roles&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return {};
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return {}; } }
+        return v && typeof v === 'object' ? v : {};
+      } catch (e) { return {}; }
+    }
+
+    async function saveAllRoles(map) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'user_roles',
+          value: JSON.stringify(map),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+
+    function applyRoleBadge(role) {
+      const el = document.getElementById('roleBadge');
+      if (!el) return;
+      if (!role || !role.name) {
+        el.className = 'role-badge';
+        el.style.display = 'none';
+        el.textContent = '';
+        return;
+      }
+      const alpha = Math.max(0.2, Math.min(1, Number(role.alpha != null ? role.alpha : 0.8)));
+      const c1 = role.color || '#0a84ff';
+      const c2 = role.color2 || c1;
+      el.textContent = role.name;
+      el.className = 'role-badge on' + (role.shine ? ' shine' : '');
+      el.style.display = 'block';
+      el.style.opacity = String(alpha);
+      if (role.shine) {
+        el.style.color = 'transparent';
+        el.style.background = 'linear-gradient(90deg,' + c1 + ',' + c2 + ',' + c1 + ')';
+        el.style.webkitBackgroundClip = 'text';
+        el.style.backgroundClip = 'text';
+        el.style.webkitTextFillColor = 'transparent';
+        el.style.border = '1px solid ' + hexToRgba(c1, 0.45);
+        el.style.backgroundColor = hexToRgba(c1, 0.12);
+      } else {
+        el.style.webkitTextFillColor = '';
+        el.style.backgroundClip = '';
+        el.style.webkitBackgroundClip = '';
+        el.style.color = c1;
+        el.style.background = hexToRgba(c1, 0.16);
+        el.style.border = '1px solid ' + hexToRgba(c1, 0.4);
+        el.style.animation = 'none';
+      }
+    }
+
+    async function pullMyRole() {
+      try { pullAdminKeys(); } catch (e) {}
+      try { pullHomeBanner(); } catch (e) {}
+      const sess = getSession();
+      if (!sess || !sess.code) { applyRoleBadge(null); return; }
+      const map = await fetchAllRoles();
+      const role = map[sess.code] || map[String(sess.code).toUpperCase()] || null;
+      if (role) localStorage.setItem('ios_my_role', JSON.stringify(role));
+      else localStorage.removeItem('ios_my_role');
+      try { if (typeof scheduleCloudSave === 'function') scheduleCloudSave(); } catch (e) {}
+      applyRoleBadge(role);
+    }
+
+    async function loadRoleForKey() {
+      const code = (document.getElementById('roleKey').value || '').trim().toUpperCase();
+      if (!code) return showToast('Введи ключ');
+      const map = await fetchAllRoles();
+      const r = map[code];
+      if (!r) return showToast('Роли на ключе нет');
+      document.getElementById('roleName').value = r.name || '';
+      document.getElementById('roleColor').value = r.color || '#0a84ff';
+      document.getElementById('roleColor2').value = r.color2 || '#bf5af2';
+      const al = Math.round((r.alpha != null ? r.alpha : 0.8) * 100);
+      document.getElementById('roleAlpha').value = al;
+      document.getElementById('roleAlphaVal').textContent = al + '%';
+      document.getElementById('roleShineBtn').classList.toggle('selected', !!r.shine);
+      showToast('Роль загружена', true);
+    }
+
+    async function saveRoleForKey() {
+      const code = (document.getElementById('roleKey').value || '').trim().toUpperCase();
+      const name = (document.getElementById('roleName').value || '').trim();
+      if (!code) return showToast('Введи ключ');
+      if (!name) return showToast('Название роли');
+      try {
+        const rec = await findKeyRecord(code);
+        if (!rec) return showToast('Ключ не найден');
+        const map = await fetchAllRoles();
+        map[code] = {
+          name: name,
+          color: document.getElementById('roleColor').value || '#0a84ff',
+          color2: document.getElementById('roleColor2').value || '#bf5af2',
+          alpha: (parseInt(document.getElementById('roleAlpha').value, 10) || 80) / 100,
+          shine: document.getElementById('roleShineBtn').classList.contains('selected')
+        };
+        await saveAllRoles(map);
+        const sess = getSession();
+        if (sess && sess.code === code) applyRoleBadge(map[code]);
+        showToast('Роль сохранена', true);
+      } catch (e) {
+        showToast(e.message || 'не записалось');
+      }
+    }
+
+    async function clearRoleForKey() {
+      const code = (document.getElementById('roleKey').value || '').trim().toUpperCase();
+      if (!code) return showToast('Введи ключ');
+      try {
+        const map = await fetchAllRoles();
+        delete map[code];
+        await saveAllRoles(map);
+        const sess = getSession();
+        if (sess && sess.code === code) applyRoleBadge(null);
+        showToast('Роль снята', true);
+      } catch (e) {
+        showToast(e.message || 'ошибка');
+      }
+    }
+
+    let _noticeShowing = null;
+    let _noticePollTimer = null;
+
+    function noticeStorageKey(code) {
+      return 'notice_' + String(code || '').trim().toUpperCase();
+    }
+
+    async function loadNoticeOutbox() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.notice_outbox&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return [];
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return []; } }
+        return Array.isArray(v) ? v : [];
+      } catch (e) { return []; }
+    }
+    async function saveNoticeOutbox(list) {
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: 'notice_outbox',
+          value: JSON.stringify((list || []).slice(0, 80)),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+    async function pushNoticeToOutbox(entry) {
+      const list = await loadNoticeOutbox();
+      list.unshift(entry);
+      await saveNoticeOutbox(list);
+    }
+    async function patchNoticeOutboxItem(id, mutator) {
+      const list = await loadNoticeOutbox();
+      let changed = false;
+      list.forEach(function(it) {
+        if (String(it.id) === String(id)) { mutator(it); changed = true; }
+      });
+      if (changed) await saveNoticeOutbox(list);
+      return changed;
+    }
+    async function deliverNoticeToCode(code, notice) {
+      code = String(code || '').trim().toUpperCase();
+      // главный канал — app_settings (не затирается синком смен)
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: noticeStorageKey(code),
+          value: notice,
+          updated_at: new Date().toISOString()
+        })
+      });
+      // дубль в key_data (best effort)
+      try {
+        await patchKeyPayload(code, function(payload) { payload.ios_notice = notice; });
+      } catch (e) {}
+    }
+    async function removeNoticeFromCode(code, noticeId) {
+      code = String(code || '').trim().toUpperCase();
+      try {
+        await patchKeyPayload(code, function(payload) {
+          if (payload.ios_notice && String(payload.ios_notice.id) === String(noticeId)) delete payload.ios_notice;
+        });
+      } catch (e) {}
+      try {
+        await sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)), {
+          method: 'DELETE', headers: { 'Prefer': 'return=minimal' }
+        });
+      } catch (e) {
+        try {
+          await sbFetch('app_settings?on_conflict=key', {
+            method: 'POST',
+            headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+            body: JSON.stringify({ key: noticeStorageKey(code), value: '', updated_at: new Date().toISOString() })
+          });
+        } catch (e2) {}
+      }
+    }
+    function noticeStatusLabel(it) {
+      if (!it) return '';
+      if (it.status === 'cancelled') return 'отменено';
+      const targets = it.targetCodes || [];
+      const seen = it.seen || {};
+      const seenN = targets.filter(function(c) { return !!seen[c]; }).length;
+      if (!targets.length) return seenN ? 'просмотрено' : 'ждёт';
+      if (seenN >= targets.length) return 'просмотрено';
+      if (seenN > 0) return 'просмотрено ' + seenN + '/' + targets.length;
+      return 'ждёт';
+    }
+    async function refreshNoticeOutbox() {
+      const box = document.getElementById('noticeOutboxList');
+      if (!box) return;
+      box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Гружу…</div>';
+      try {
+        const list = await loadNoticeOutbox();
+        if (!list.length) {
+          box.innerHTML = '<div style="color:var(--text-sec);font-size:13px;">Очередь пуста</div>';
+          return;
+        }
+        box.innerHTML = list.slice(0, 40).map(function(it) {
+          const st = noticeStatusLabel(it);
+          const stColor = it.status === 'cancelled' ? 'var(--accent-red)'
+            : (st.indexOf('просмотрено') === 0 && st.indexOf('/') < 0 ? 'var(--accent-green)' : 'var(--accent-orange)');
+          const who = it.all ? 'всем' : ((it.targetCodes || []).join(', ') || '—');
+          const fullySeen = st === 'просмотрено';
+          const canCancel = it.status !== 'cancelled' && !fullySeen;
+          const imp = it.important ? ' <span style="color:#ff6961;font-size:11px;font-weight:700;">· важно</span>' : '';
+          return '<div class="key-item" style="margin-bottom:8px;">' +
+            '<div class="key-item-top"><div class="key-item-name">' + escapeHtml(it.title || 'Сообщение') + imp +
+            '</div><span class="key-badge" style="background:rgba(255,255,255,.06);color:' + stColor + ';">' + escapeHtml(st) + '</span></div>' +
+            '<div class="key-item-meta" style="margin-top:6px;">' + escapeHtml((it.body || '').slice(0, 90)) + '</div>' +
+            '<div class="key-item-meta">→ ' + escapeHtml(who) +
+            (it.at ? ' · ' + escapeHtml(formatActTime(it.at)) : '') + '</div>' +
+            (canCancel
+              ? '<button type="button" class="key-act danger" style="margin-top:10px;width:100%;" onclick="cancelNoticeOutbox(\'' + String(it.id).replace(/'/g,'') + '\')">Отменить</button>'
+              : '') +
+            '</div>';
+        }).join('');
+      } catch (e) {
+        box.innerHTML = '<div style="color:#ff453a;font-size:13px;">' + escapeHtml(e.message || 'ошибка') + '</div>';
+      }
+    }
+    async function cancelNoticeOutbox(id) {
+      if (!confirm('Отменить это уведомление?')) return;
+      showToast('Отменяю…');
+      try {
+        const list = await loadNoticeOutbox();
+        const it = list.find(function(x) { return String(x.id) === String(id); });
+        if (!it) return showToast('Уже нет');
+        if (it.status === 'cancelled') return showToast('Уже отменено');
+        // сначала статус — чтобы клиенты не показывали
+        it.status = 'cancelled';
+        it.cancelledAt = new Date().toISOString();
+        await saveNoticeOutbox(list);
+        const codes = it.targetCodes || [];
+        // чистим app_settings быстро (главный канал)
+        await Promise.all(codes.map(function(code) {
+          return sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)), {
+            method: 'DELETE',
+            headers: { 'Prefer': 'return=minimal' }
+          }).catch(function() {
+            return sbFetch('app_settings?on_conflict=key', {
+              method: 'POST',
+              headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+              body: JSON.stringify({
+                key: noticeStorageKey(code),
+                value: null,
+                updated_at: new Date().toISOString()
+              })
+            }).catch(function() {});
+          });
+        }));
+        // key_data — фоном, не блокируем UI
+        codes.forEach(function(code) {
+          removeNoticeFromCode(code, id).catch(function() {});
+        });
+        showToast('Отменено', true);
+        refreshNoticeOutbox();
+      } catch (e) {
+        showToast(e.message || 'не вышло');
+      }
+    }
+
+    function normalizeNotice(raw) {
+      if (!raw) return null;
+      let n = raw;
+      if (typeof n === 'string') {
+        try { n = JSON.parse(n); } catch (e) { return null; }
+      }
+      if (!n || typeof n !== 'object' || !n.id || !n.body) return null;
+      n.important = !!n.important;
+      return n;
+    }
+
+    function formatNoticeHtml(text) {
+      var s = String(text || '');
+      s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      s = s.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+      s = s.replace(/\n/g, '<br>');
+      return s;
+    }
+
+    function safeNoticeUrl(u) {
+      u = String(u || '').trim();
+      if (!u) return '';
+      if (!/^https?:\/\//i.test(u)) return '';
+      return u.slice(0, 500);
+    }
+
+    window._noticePos = 'center';
+    window._noticeImportant = false;
+    function setNoticePos(pos) {
+      window._noticePos = (pos === 'top' || pos === 'bottom' || pos === 'center') ? pos : 'center';
+      ['top','center','bottom'].forEach(function(p) {
+        const el = document.getElementById('noticePos' + p.charAt(0).toUpperCase() + p.slice(1));
+        if (el) el.classList.toggle('on', p === window._noticePos);
+      });
+    }
+    function toggleNoticeImportant(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      window._noticeImportant = !window._noticeImportant;
+      const row = document.getElementById('rtImp');
+      if (row) row.classList.toggle('on', window._noticeImportant);
+    }
+
+    function buildNoticeFromForm() {
+      const title = (document.getElementById('noticeTitle').value || '').trim() || 'Сообщение';
+      const body = (document.getElementById('noticeBody').value || '').trim();
+      const link = safeNoticeUrl(document.getElementById('noticeLink') && document.getElementById('noticeLink').value);
+      const linkText = ((document.getElementById('noticeLinkText') && document.getElementById('noticeLinkText').value) || '').trim() || 'Открыть';
+      const image = safeNoticeUrl(document.getElementById('noticeImage') && document.getElementById('noticeImage').value);
+      if (!body) return null;
+      return {
+        id: 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+        title: title.slice(0, 40),
+        body: body.slice(0, 500),
+        link: link || '',
+        linkText: linkText.slice(0, 40),
+        image: image || '',
+        pos: window._noticePos || 'center',
+        important: !!window._noticeImportant,
+        at: new Date().toISOString()
+      };
+    }
+
+    async function sendKeyNotice() {
+      const code = (document.getElementById('noticeKey').value || '').trim().toUpperCase();
+      if (!code) return showToast('Введи ключ');
+      if (!getSbConfig()) return showToast('Нет подключения к базе');
+      const notice = buildNoticeFromForm();
+      if (!notice) return showToast('Напиши текст');
+      try {
+        const rec = await findKeyRecord(code);
+        if (!rec) return showToast('Ключ не найден');
+        await deliverNoticeToCode(code, notice);
+        await pushNoticeToOutbox({
+          id: notice.id, title: notice.title, body: notice.body,
+          link: notice.link || '', image: notice.image || '', pos: notice.pos || 'center',
+          important: !!notice.important,
+          all: false, targetCodes: [code], seen: {}, status: 'pending', at: notice.at
+        });
+        try {
+          await sendPushToCodes([code], notice.important ? ('Важно: ' + notice.title) : notice.title, notice.body);
+        } catch (e) {}
+        showToast('Отправлено на ' + code, true);
+        try { logAction('отправил сообщение', code); } catch (e) {}
+        const bodyEl = document.getElementById('noticeBody');
+        if (bodyEl) bodyEl.value = '';
+        try { refreshNoticeOutbox(); } catch (e) {}
+      } catch (e) {
+        showToast(e.message || 'не отправилось');
+      }
+    }
+
+
+    async function sendKeyNoticeToAll() {
+      if (!getSbConfig()) return showToast('Нет подключения к базе');
+      const notice = buildNoticeFromForm();
+      if (!notice) return showToast('Напиши текст');
+      showToast('Рассылка…');
+      try {
+        let keys = [];
+        try { keys = await sbFetch('access_keys?select=code,active&order=created_at.desc') || []; }
+        catch (e) { keys = getLocalKeys() || []; }
+        keys = (keys || []).filter(function(k) { return k && k.code && k.active !== false; });
+        if (!keys.length) return showToast('Нет ключей');
+        let ok = 0, fail = 0;
+        const codes = [];
+        for (let i = 0; i < keys.length; i++) {
+          const code = String(keys[i].code).trim().toUpperCase();
+          try { await deliverNoticeToCode(code, notice); codes.push(code); ok++; }
+          catch (e) { fail++; }
+        }
+        await pushNoticeToOutbox({
+          id: notice.id, title: notice.title, body: notice.body,
+          link: notice.link || '', image: notice.image || '', pos: notice.pos || 'center',
+          important: !!notice.important,
+          all: true, targetCodes: codes, seen: {}, status: 'pending', at: notice.at
+        });
+        try {
+          await sendPushToCodes(codes, notice.important ? ('Важно: ' + notice.title) : notice.title, notice.body);
+        } catch (e) {}
+        showToast('Всем: ' + ok + (fail ? (', ошибок ' + fail) : ''), true);
+        try { logAction('рассылка сообщения', 'ключей ' + ok); } catch (e) {}
+        try { refreshNoticeOutbox(); } catch (e) {}
+      } catch (e) {
+        showToast(e.message || 'рассылка не вышла');
+      }
+    }
+
+    function showKeyNoticeUI(notice) {
+      notice = normalizeNotice(notice);
+      if (!notice) return;
+      if (_noticeShowing && _noticeShowing.id === notice.id) return;
+      if (localStorage.getItem('ios_notice_seen_id') === String(notice.id)) return;
+      _noticeShowing = notice;
+      const t = document.getElementById('keyNoticeTitle');
+      const b = document.getElementById('keyNoticeBody');
+      const img = document.getElementById('keyNoticeImage');
+      const link = document.getElementById('keyNoticeLink');
+      if (t) t.textContent = notice.title || 'Сообщение';
+      if (b) b.innerHTML = '<div class="notice-fmt">' + formatNoticeHtml(notice.body || '') + '</div>';
+      const kicker = document.getElementById('keyNoticeKicker');
+      const icon = document.getElementById('keyNoticeIcon');
+      const sheetEl = document.getElementById('keyNoticeSheet');
+      if (kicker) kicker.textContent = notice.important ? 'Важно' : 'Сообщение';
+      if (icon) {
+        if (notice.important) {
+          icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>';
+        } else {
+          icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>';
+        }
+      }
+      if (sheetEl) { sheetEl.classList.toggle('important', !!notice.important && !notice.fine); sheetEl.classList.toggle('fine', !!notice.fine); }
+      if (notice.fine) {
+        const fa = Number(notice.fine.amount) || 0;
+        if (kicker) kicker.textContent = 'Штраф';
+        if (t) t.textContent = 'Вам выписан штраф';
+        if (icon) icon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M18 17H6v-2h12v2zm0-4H6v-2h12v2zm0-4H6V7h12v2zM3 22l1.5-1.5L6 22l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22l1.5-1.5L21 22V2l-1.5 1.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2 4.5 3.5 3 2v20z"/></svg>';
+        if (b) b.innerHTML =
+          '<div class="fine-hero">' +
+            '<div class="fine-amt">−' + fa.toLocaleString('ru-RU') + ' ₽</div>' +
+            (notice.fine.reason ? '<div class="fine-reason">' + escapeHtml(notice.fine.reason) + '</div>' : '') +
+          '</div>' +
+          (notice.fine.deduct !== false
+            ? '<div class="fine-note">Добавлено в вычеты этой недели</div>'
+            : '') +
+          '<button type="button" class="fine-ok" onclick="dismissKeyNotice()">Понятно</button>';
+        try { if (navigator.vibrate) navigator.vibrate([25, 70, 25, 70, 60]); } catch (e) {}
+      }
+      if (img) {
+        const src = safeNoticeUrl(notice.image);
+        if (src) {
+          img.src = src;
+          img.classList.add('on');
+          img.style.display = 'block';
+        } else {
+          img.removeAttribute('src');
+          img.classList.remove('on');
+          img.style.display = 'none';
+        }
+      }
+      if (link) {
+        const href = safeNoticeUrl(notice.link);
+        if (href) {
+          link.href = href;
+          link.textContent = notice.linkText || 'Открыть';
+          link.style.display = 'flex';
+        } else {
+          link.removeAttribute('href');
+          link.style.display = 'none';
+        }
+      }
+      const m = document.getElementById('keyNoticeModal');
+      if (m) {
+        _noticeClosing = false;
+        m.classList.remove('on', 'leaving', 'pos-top', 'pos-center', 'pos-bottom');
+        m.style.display = 'none';
+        void m.offsetWidth;
+        const pos = (notice.pos === 'top' || notice.pos === 'bottom') ? notice.pos : 'center';
+        m.classList.add('pos-' + pos);
+        m.style.display = 'flex';
+        void m.offsetWidth;
+        m.classList.add('on');
+        const sheet = m.querySelector('.notice-sheet');
+        if (sheet) {
+          sheet.style.animation = 'none';
+          void sheet.offsetWidth;
+          sheet.style.animation = '';
+        }
+      }
+      try { playAppStoreSound(); } catch (e) {}
+    }
+
+    let _noticeClosing = false;
+    async function dismissKeyNotice() {
+      if (_noticeClosing) return;
+      const notice = _noticeShowing;
+      const m = document.getElementById('keyNoticeModal');
+      if (m && m.classList.contains('on')) {
+        _noticeClosing = true;
+        m.classList.remove('on');
+        m.classList.add('leaving');
+        await new Promise(function(r) { setTimeout(r, 280); });
+        m.classList.remove('leaving', 'pos-top', 'pos-center', 'pos-bottom');
+        m.style.display = 'none';
+        _noticeClosing = false;
+      } else if (m) {
+        m.classList.remove('on', 'leaving', 'pos-top', 'pos-center', 'pos-bottom');
+        m.style.display = 'none';
+      }
+      if (!notice || !notice.id) { _noticeShowing = null; return; }
+      localStorage.setItem('ios_notice_seen_id', String(notice.id));
+      _noticeShowing = null;
+      const sess = getSession();
+      if (!sess || !sess.code || !getSbConfig()) return;
+      try { await removeNoticeFromCode(sess.code, notice.id); } catch (e) {}
+      try {
+        await patchNoticeOutboxItem(notice.id, function(it) {
+          if (!it.seen) it.seen = {};
+          it.seen[sess.code] = new Date().toISOString();
+        });
+      } catch (e) {}
+    }
+
+    async function isNoticeCancelled(id) {
+      if (!id) return false;
+      try {
+        const list = await loadNoticeOutbox();
+        const it = list.find(function(x) { return String(x.id) === String(id); });
+        return !!(it && it.status === 'cancelled');
+      } catch (e) { return false; }
+    }
+    async function fetchNoticeFromOutbox(code) {
+      try {
+        const list = await loadNoticeOutbox();
+        const pending = list.filter(function(it) {
+          if (!it || it.status === 'cancelled') return false;
+          if (localStorage.getItem('ios_notice_seen_id') === String(it.id)) return false;
+          const targets = it.targetCodes || [];
+          if (it.all && (!targets.length || targets.indexOf(code) >= 0)) return true;
+          return targets.indexOf(code) >= 0;
+        });
+        if (!pending.length) return null;
+        // newest first already
+        const it = pending[0];
+        if (it.seen && it.seen[code]) return null;
+        return normalizeNotice({
+          id: it.id,
+          title: it.title,
+          body: it.body,
+          link: it.link || '',
+          linkText: it.linkText || 'Открыть',
+          image: it.image || '',
+          pos: it.pos || 'center',
+          important: !!it.important,
+          fine: it.fine || null,
+          at: it.at
+        });
+      } catch (e) { return null; }
+    }
+    async function fetchNoticeForCode(code) {
+      code = String(code || '').trim().toUpperCase();
+      if (!code || !getSbConfig()) return null;
+      let n = null;
+      // 1) app_settings — основной канал
+      try {
+        const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(noticeStorageKey(code)) + '&select=value');
+        if (rows && rows[0] && rows[0].value != null && rows[0].value !== '') {
+          n = normalizeNotice(rows[0].value);
+        }
+      } catch (e) {}
+      // 2) очередь (если settings пустые)
+      if (!n) {
+        try { n = await fetchNoticeFromOutbox(code); } catch (e) {}
+      }
+      // 3) key_data
+      if (!n) {
+        try {
+          const remote = await pullKeyDataFromCloud(code);
+          n = normalizeNotice(remote && remote.ios_notice);
+        } catch (e) {}
+      }
+      if (!n) return null;
+      if (await isNoticeCancelled(n.id)) {
+        try { await removeNoticeFromCode(code, n.id); } catch (e) {}
+        return null;
+      }
+      return n;
+    }
+
+    async function checkKeyNotice() {
+      if (_noticeShowing || _noticeClosing) return;
+      const sess = getSession();
+      if (!sess || !sess.code) return;
+      try {
+        const notice = await fetchNoticeForCode(sess.code);
+        if (!notice) return;
+        if (localStorage.getItem('ios_notice_seen_id') === String(notice.id)) return;
+        showKeyNoticeUI(notice);
+      } catch (e) {
+        console.warn('checkKeyNotice', e);
+      }
+    }
+
+    function startNoticePolling() {
+      if (_noticePollTimer) clearInterval(_noticePollTimer);
+      _noticePollTimer = setInterval(function() {
+        try { checkKeyNotice(); } catch (e) {}
+      }, 1500);
+      try { checkKeyNotice(); } catch (e) {}
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 400);
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 1000);
+      setTimeout(function() { try { checkKeyNotice(); } catch (e) {} }, 2500);
+      if (!window._noticeVisBound) {
+        window._noticeVisBound = true;
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible') {
+            try { checkKeyNotice(); } catch (e) {}
+          }
+        });
+        window.addEventListener('focus', function() {
+          try { checkKeyNotice(); } catch (e) {}
+        });
+      }
+    }
+
+
+    // ============ CHAT BY KEY ============
+    let _chatCode = null;
+    let _chatAsAdmin = false;
+    let _chatPollTimer = null;
+    let _chatLastCount = 0;
+
+    function chatStorageKey(code) {
+      return 'chat_' + String(code || '').trim().toUpperCase();
+    }
+
+    async function loadChatMessages(code) {
+      code = String(code || '').trim().toUpperCase();
+      if (!code || !getSbConfig()) return [];
+      try {
+        const rows = await sbFetch('app_settings?key=eq.' + encodeURIComponent(chatStorageKey(code)) + '&select=value');
+        if (!rows || !rows[0] || rows[0].value == null) return [];
+        let v = rows[0].value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { return []; } }
+        return Array.isArray(v) ? v : [];
+      } catch (e) { return []; }
+    }
+
+    async function saveChatMessages(code, list) {
+      code = String(code || '').trim().toUpperCase();
+      await sbFetch('app_settings?on_conflict=key', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          key: chatStorageKey(code),
+          value: (list || []).slice(-200),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+
+    function formatChatTime(iso) {
+      try {
+        const d = new Date(iso);
+        const p = function(n){ return String(n).padStart(2,'0'); };
+        return p(d.getHours()) + ':' + p(d.getMinutes());
+      } catch (e) { return ''; }
+    }
+
+    function chatStatusHtml(m, mine) {
+      if (!mine) return '';
+      const isRead = !!m.read;
+      const label = isRead ? 'прочитано' : 'доставлено';
+      const tickCls = isRead ? 'chat-ticks read' : 'chat-ticks';
+      return '<span class="chat-status' + (isRead ? ' read' : '') + '">' + label + '</span>' +
+        '<span class="' + tickCls + '">' +
+        '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' +
+        (isRead
+          ? '<svg class="tick2" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>'
+          : '') +
+        '</span>';
+    }
+
+    function renderChatMessages(list, opts) {
+      opts = opts || {};
+      const box = document.getElementById('keyChatMsgs');
+      if (!box) return;
+      if (!list || !list.length) {
+        box.innerHTML = '<div class="chat-empty">Напиши сообщение</div>';
+        return;
+      }
+      const meRole = _chatAsAdmin ? 'admin' : 'user';
+      const lastId = opts.animateId || null;
+      box.innerHTML = list.map(function(m, i) {
+        const mine = m.from === meRole;
+        const rowCls = (mine ? 'me' : 'them') + (m._sending ? ' sending' : '');
+        const delay = lastId && m.id === lastId ? '0s' : (opts.stagger ? Math.min(i, 12) * 0.03 + 's' : '0s');
+        return '<div class="chat-row ' + rowCls + '" style="animation-delay:' + delay + '">' +
+          '<div class="chat-bubble ' + (mine ? 'me' : 'them') + '">' + escapeHtml(m.text || '') + '</div>' +
+          '<div class="chat-meta">' +
+            '<span>' + escapeHtml(formatChatTime(m.at)) + '</span>' +
+            chatStatusHtml(m, mine) +
+          '</div></div>';
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function openKeyChat(code, name, asAdmin) {
+      code = String(code || '').trim().toUpperCase();
+      if (!code) return;
+      if (!getSbConfig()) return showToast('Нет базы');
+      _chatCode = code;
+      _chatAsAdmin = !!asAdmin;
+      const title = document.getElementById('keyChatTitle');
+      const sub = document.getElementById('keyChatSub');
+      if (title) title.textContent = name ? String(name) : (asAdmin ? code : 'Поддержка');
+      if (sub) sub.textContent = asAdmin ? code : 'Чат с администрацией';
+      const ov = document.getElementById('keyChatOverlay');
+      if (ov) ov.classList.add('on');
+      const input = document.getElementById('keyChatInput');
+      if (input) input.value = '';
+      await refreshOpenChat();
+      // mark read for current side
+      try { await markChatRead(code, asAdmin); } catch (e) {}
+      updateChatBadge();
+      if (_chatPollTimer) clearInterval(_chatPollTimer);
+      _chatPollTimer = setInterval(function() { refreshOpenChat(); }, 2500);
+    }
+
+    function openMyChat() {
+      const sess = getSession();
+      if (!sess || !sess.code) return showToast('Сначала войди по ключу');
+      openKeyChat(sess.code, sess.name || 'Чат', false);
+    }
+
+    function closeKeyChat() {
+      const ov = document.getElementById('keyChatOverlay');
+      if (ov) ov.classList.remove('on');
+      if (_chatPollTimer) { clearInterval(_chatPollTimer); _chatPollTimer = null; }
+      const wasAdmin = _chatAsAdmin;
+      _chatCode = null;
+      updateChatBadge();
+      if (wasAdmin) {
+        try { refreshAccessKeysList(true); } catch (e) {}
+      }
+    }
+
+    async function refreshOpenChat() {
+      if (!_chatCode) return;
+      try { await markChatRead(_chatCode, _chatAsAdmin); } catch (e) {}
+      const list = await loadChatMessages(_chatCode);
+      renderChatMessages(list);
+      if (!_chatAsAdmin) updateChatBadge();
+    }
+
+    async function markChatRead(code, asAdmin) {
+      const list = await loadChatMessages(code);
+      const fromOther = asAdmin ? 'user' : 'admin';
+      let changed = false;
+      list.forEach(function(m) {
+        if (m.from === fromOther && !m.read) {
+          m.read = true;
+          changed = true;
+        }
+      });
+      if (changed) await saveChatMessages(code, list);
+    }
+
+    async function sendKeyChatMessage() {
+      if (!_chatCode) return;
+      const input = document.getElementById('keyChatInput');
+      const text = (input && input.value || '').trim();
+      if (!text) return;
+      const btn = document.getElementById('keyChatSendBtn');
+      if (btn) btn.disabled = true;
+      const msgId = 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      const msg = {
+        id: msgId,
+        from: _chatAsAdmin ? 'admin' : 'user',
+        text: text.slice(0, 1000),
+        at: new Date().toISOString(),
+        delivered: false,
+        read: false,
+        _sending: true
+      };
+      try {
+        let list = await loadChatMessages(_chatCode);
+        list.push(msg);
+        if (input) input.value = '';
+        renderChatMessages(list, { animateId: msgId });
+        // save to cloud (app_settings) — не localStorage
+        const toSave = list.map(function(m) {
+          const o = { id: m.id, from: m.from, text: m.text, at: m.at, delivered: true, read: !!m.read };
+          return o;
+        });
+        await saveChatMessages(_chatCode, toSave);
+        list = await loadChatMessages(_chatCode);
+        renderChatMessages(list, { animateId: msgId });
+        if (_chatAsAdmin) {
+          try {
+            await sendPushToCodes([_chatCode], 'Сообщение', text.slice(0, 120));
+          } catch (e) {}
+        }
+        try { logAction(_chatAsAdmin ? 'написал в чат ключу' : 'написал в чат', _chatCode); } catch (e) {}
+      } catch (e) {
+        showToast(e.message || 'не отправилось');
+        try {
+          const list = await loadChatMessages(_chatCode);
+          renderChatMessages(list);
+        } catch (e2) {}
+      }
+      if (btn) btn.disabled = false;
+    }
+
+    async function countUnreadForMe() {
+      const sess = getSession();
+      if (!sess || !sess.code || !getSbConfig()) return 0;
+      try {
+        const list = await loadChatMessages(sess.code);
+        return list.filter(function(m) { return m.from === 'admin' && !m.read; }).length;
+      } catch (e) { return 0; }
+    }
+
+    async function updateChatBadge() {
+      const badge = document.getElementById('chatUnreadBadge');
+      if (!badge) return;
+      const n = await countUnreadForMe();
+      if (n > 0) {
+        badge.textContent = n > 9 ? '9+' : String(n);
+        badge.classList.add('on');
+      } else {
+        badge.classList.remove('on');
+        badge.textContent = '0';
+      }
+      // toast once when new arrives while on main
+      if (n > _chatLastCount && n > 0 && !_chatCode) {
+        showToast('Новое сообщение');
+        try {
+          showSystemNotification('Новое сообщение', 'У вас ' + n + ' непрочитанных', {
+            tag: 'chat-unread', renotify: true, force: true, always: true
+          });
+        } catch (e) {}
+      }
+      _chatLastCount = n;
+    }
+
+    function startChatPolling() {
+      updateChatBadge();
+      setInterval(function() {
+        if (document.visibilityState !== 'visible') return;
+        updateChatBadge();
+        // бейдж в админке на ключах
+        try {
+          const adm = document.getElementById('screenAdmin');
+          const keys = document.getElementById('screenAdminKeys');
+          const cr = document.getElementById('screenCreator');
+          if ((adm && adm.classList.contains('active')) ||
+              (keys && keys.classList.contains('active')) ||
+              (cr && cr.classList.contains('active'))) {
+            refreshAccessKeysList(true);
+          }
+        } catch (e) {}
+      }, 5000);
+    }
+
+    async function patchKeyPayload(code, mutator) {
+      let payload = {};
+      try { payload = await pullKeyDataFromCloud(code) || {}; } catch (e) {}
+      mutator(payload);
+      payload._savedAt = new Date().toISOString();
+      await sbFetch('key_data?on_conflict=code', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({
+          code: code,
+          payload: payload,
+          updated_at: new Date().toISOString()
+        })
+      });
+      return payload;
+    }
+
+
+
+
+
+    render();
+    renderNotes();
+    try { applyRoleBadge(JSON.parse(localStorage.getItem('ios_my_role')||'null')); } catch(e) {}
+    pullMyRole();
+    applyTheme(getTheme());
+    applyLiquid();
+    rebuildStreakFromShifts();
+    bootAccessGate();
+    (function(){
+      const ta = document.getElementById('keyChatInput');
+      if (ta) ta.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendKeyChatMessage();
+        }
+      });
+    })();
+    fetchAdminPinFromCloud();
+    pullAdminSharedData();
+    registerDeviceSession();
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState !== 'visible') return;
+      syncUserFromCloud();
+      pullAdminSharedData();
+      pullOrderList();
+      try { applyMyFines(); } catch (e) {}
+      try { checkKeyNotice(); } catch (e) {}
+    });
+
+    document.addEventListener('click', function(e) {
+      try {
+        if (e.target.closest && e.target.closest('#crPanelLog')) return;
+        const t = e.target.closest && e.target.closest('button, .btn, .menu-item, .option-btn, .cash-btn, .cr-nav-item');
+        if (!t) return;
+        let label = (t.innerText || t.getAttribute('title') || '').replace(/\s+/g, ' ').trim();
+        if (!label || label.length > 60) label = (t.className || 'кнопка').slice(0, 40);
+        if (/Назад|Мультитул|Обновить лог|Очистить/.test(label)) return;
+        logAction('нажал «' + label + '»');
+      } catch (err) {}
+    }, true);
+
+    updateTabBar((document.querySelector(".screen.active")||{}).id);
+    try { applyAdminEntry(); } catch (e) {}
+    setInterval(heartbeatDeviceSession, 20000);
+    updateAddHomeFabVisibility();
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', updateAddHomeFabVisibility);
+
+
+/* bootAccessGate failsafe */
+try {
+  setTimeout(function() {
+    try { hideBoot(); } catch (e) {}
+    var el = document.getElementById('bootLoader');
+    if (el) { el.classList.add('off'); el.style.display = 'none'; }
+  }, 3000);
+} catch (e) {}
