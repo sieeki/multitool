@@ -609,9 +609,19 @@
     }
 
     function openCreatorAuthModal() {
-      document.getElementById('creatorPasswordInput').value = '';
-      document.getElementById('creatorAuthModal').classList.add('active');
-      setTimeout(() => document.getElementById('creatorPasswordInput').focus(), 200);
+      const input = document.getElementById('creatorPasswordInput');
+      const modal = document.getElementById('creatorAuthModal');
+      if (input) input.value = '';
+      if (modal) {
+        modal.style.zIndex = '12000';
+        modal.classList.add('active');
+      }
+      setTimeout(function() {
+        try { if (input) input.focus(); } catch (e) {}
+      }, 200);
+    }
+    function openCreatorAuthFromMaint() {
+      openCreatorAuthModal();
     }
     function closeCreatorAuthModal(e) {
       if (!e || e.target.classList.contains('modal-overlay')) {
@@ -636,6 +646,8 @@
       }
       if (val === expected) {
         playAppStoreSound();
+        try { sessionStorage.setItem('ios_maint_bypass', '1'); } catch (e) {}
+        document.body.classList.remove('on-maint');
         closeCreatorAuthModal();
         openScreen('screenCreator');
         renderCreatorScreen();
@@ -3582,7 +3594,119 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       const b = document.getElementById('gateModeOff');
       if (a) a.classList.toggle('selected', on);
       if (b) b.classList.toggle('selected', !on);
+      try { updateMaintModeUI(); } catch (e) {}
     }
+
+    function isMaintEnabled() {
+      return localStorage.getItem('ios_maint_enabled') === '1';
+    }
+    function cacheMaintEnabled(on) {
+      localStorage.setItem('ios_maint_enabled', on ? '1' : '0');
+    }
+    async function fetchMaintFromCloud() {
+      try {
+        const rows = await sbFetch('app_settings?key=eq.site_maintenance&select=value');
+        if (rows && rows[0] && rows[0].value != null) {
+          let raw = rows[0].value;
+          if (typeof raw === 'object') raw = raw.value != null ? raw.value : JSON.stringify(raw);
+          raw = String(raw).replace(/"/g, '').trim().toLowerCase();
+          const on = raw === '1' || raw === 'true' || raw === 'on';
+          cacheMaintEnabled(on);
+          updateMaintModeUI();
+          return on;
+        }
+      } catch (e) {}
+      return isMaintEnabled();
+    }
+    async function setMaintEnabled(on) {
+      cacheMaintEnabled(!!on);
+      updateMaintModeUI();
+      try { playAppStoreSound(); } catch (e) {}
+      showToast('Сохраняю…');
+      try {
+        await sbFetch('app_settings?on_conflict=key', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({
+            key: 'site_maintenance',
+            value: on ? '1' : '0',
+            updated_at: new Date().toISOString()
+          })
+        });
+        showToast(on ? 'Техработы включены у всех' : 'Техработы выключены', true);
+        if (on) {
+          // root остаётся; остальные увидят после обновления
+        } else {
+          enforceMaintScreen();
+        }
+      } catch (e) {
+        showToast('Не записалось: ' + (e.message || 'ошибка'));
+      }
+    }
+    function updateMaintModeUI() {
+      const on = isMaintEnabled();
+      const a = document.getElementById('maintModeOn');
+      const b = document.getElementById('maintModeOff');
+      if (a) a.classList.toggle('selected', on);
+      if (b) b.classList.toggle('selected', !on);
+      document.body.classList.toggle('on-maint', on && isMaintScreenActive());
+    }
+    function isMaintScreenActive() {
+      const el = document.getElementById('screenMaint');
+      return !!(el && el.classList.contains('active'));
+    }
+    function showMaintenanceScreen() {
+      setOnlyScreen('screenMaint');
+      document.body.classList.add('on-maint');
+      try { stopDinoGame(); } catch (e) {}
+      try { bindMaintSecretTap(); } catch (e) {}
+    }
+    function enforceMaintScreen() {
+      if (!isMaintEnabled()) {
+        document.body.classList.remove('on-maint');
+        try { stopDinoGame(); } catch (e) {}
+        return false;
+      }
+      try {
+        if (sessionStorage.getItem('ios_maint_bypass') === '1') {
+          document.body.classList.remove('on-maint');
+          return false;
+        }
+      } catch (e) {}
+      const creator = document.getElementById('screenCreator');
+      if (creator && creator.classList.contains('active')) return true;
+      const admin = document.getElementById('screenAdmin');
+      if (admin && admin.classList.contains('active')) return true;
+      showMaintenanceScreen();
+      return true;
+    }
+
+    // секрет: 7 тапов по названию → пароль root (чтобы выключить техработы)
+    let _maintTaps = 0, _maintTapTimer = null;
+    function bindMaintSecretTap() {
+      const t = document.getElementById('maintTitleTap');
+      if (!t || t._maintBound) return;
+      t._maintBound = true;
+      t.addEventListener('click', function() {
+        _maintTaps++;
+        clearTimeout(_maintTapTimer);
+        _maintTapTimer = setTimeout(function() { _maintTaps = 0; }, 2000);
+        if (_maintTaps >= 7) {
+          _maintTaps = 0;
+          try { openCreatorAuthModal(); } catch (e2) {}
+        }
+      });
+    }
+
+    // --- Chrome-like dino ---
+    let _dino = null;
+    function stopDinoGame() {
+      if (_dino && _dino.raf) cancelAnimationFrame(_dino.raf);
+      _dino = null;
+    }
+    function startDinoGame() { /* removed */ }
+
+
 
     function getSession() {
       try { return JSON.parse(localStorage.getItem('ios_access_session') || 'null'); }
@@ -7115,6 +7239,10 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     }
 
     function enforceGateScreen() {
+      if (isMaintEnabled()) {
+        enforceMaintScreen();
+        return;
+      }
       if (!isGateEnabled()) return;
       if (getSession()) return;
       const creator = document.getElementById('screenCreator');
@@ -7135,12 +7263,21 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       var bootSafety = setTimeout(function() { try { hideBoot(); } catch (e) {} }, 2500);
       try {
         await withTimeout(fetchGateFromCloud(), 2500);
+        try { await withTimeout(fetchMaintFromCloud(), 2000); } catch (e) {}
         try { await withTimeout(ensureCreatorPasswordInCloud(), 2000); } catch (e) {}
         await withTimeout(validateCurrentSession(), 2500);
         await withTimeout(syncUserFromCloud(), 3000);
         await withTimeout(pullAdminSharedData(), 2500);
         await withTimeout(pullOrderList(), 2500);
         try { pullMyRole(); } catch (e) {}
+        if (isMaintEnabled()) {
+          var bypass = false;
+          try { bypass = sessionStorage.getItem('ios_maint_bypass') === '1'; } catch (e) {}
+          if (!bypass) {
+            showMaintenanceScreen();
+            return;
+          }
+        }
         if (!isGateEnabled()) {
           setOnlyScreen('screenMenu');
           renderSupplyCard();
@@ -7562,7 +7699,6 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       { v: '2.6.4', d: '22.10.2026', t: 'Жидкое стекло всегда включено. «Мои смены» в таббаре. Настройки обновлены, режим разработчика убран из меню.' },
       { v: '2.6.3', d: '22.10.2026', t: 'Удалены рулетка, монеты и магазин наград.' },
       { v: '2.6.2', d: '22.10.2026', t: 'Убрана вкладка «Ещё». Плавнее пузырь вкладок. Вертикальный свайп больше не переключает на «Заказ».' },
-      { v: '3.0.0', d: '22.10.2026', t: 'Полное обновление стилистики сайта, добавлен режим "Жидкое стекло" и другие изменения.' },
       { v: '2.5.6', d: '13.10.2026', t: 'Сообщения от руководства работают стабильно и быстро.' },
       { v: '2.5.0', d: '27.09.2026', t: 'Заказы: категории, галочки, дата изменения. Плавные переходы экранов, умнее ИИ.' },
       { v: '2.4.0', d: '27.09.2026', t: 'Версия на главной и список изменений.' },
@@ -9040,3 +9176,23 @@ try {
     if (el) { el.classList.add('off'); el.style.display = 'none'; }
   }, 3000);
 } catch (e) {}
+
+
+/* maint poll */
+setInterval(function() {
+  try {
+    if (typeof fetchMaintFromCloud !== 'function') return;
+    fetchMaintFromCloud().then(function(on) {
+      if (on) enforceMaintScreen();
+      else if (isMaintScreenActive()) {
+        document.body.classList.remove('on-maint');
+        stopDinoGame();
+        // вернуть на гейт/меню
+        try { bootAccessGate(); } catch (e) {
+          if (isGateEnabled() && !getSession()) setOnlyScreen('screenGate');
+          else setOnlyScreen('screenMenu');
+        }
+      }
+    });
+  } catch (e) {}
+}, 8000);
