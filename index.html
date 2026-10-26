@@ -143,6 +143,18 @@
   </div>
 
   <!-- ВХОД ПО КЛЮЧУ -->
+  <div id="screenMaint" class="screen">
+    <div class="maint-fill">
+      <div class="maint-inner">
+        <div class="maint-badge">Техработы</div>
+        <h1 class="maint-title" id="maintTitleTap">Мультитул</h1>
+        <p class="maint-sub">Сайт на технических работах</p>
+        <p class="maint-hint">Обновляем систему. Зайдите чуть позже — всё вернётся само.</p>
+        <div class="maint-pulse" aria-hidden="true"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+
   <div id="screenGate" class="screen active">
     <div class="gate-wrap">
       <div class="gate-logo">
@@ -1034,6 +1046,14 @@
           <div class="rt-seg">
             <div class="option-btn" id="gateModeOff" onclick="setGateEnabled(false)"><span>Открытый</span></div>
             <div class="option-btn" id="gateModeOn" onclick="setGateEnabled(true)"><span>Только по ключу</span></div>
+          </div>
+        </div>
+        <div class="rt-gate rt-g" style="margin-top:10px;">
+          <div class="rt-al">Техработы</div>
+          <div class="rt-as" style="margin-bottom:8px;">Скрывает вход и ключи · у всех экран «на работах» + мини-игра</div>
+          <div class="rt-seg">
+            <div class="option-btn" id="maintModeOff" onclick="setMaintEnabled(false)"><span>Выкл</span></div>
+            <div class="option-btn" id="maintModeOn" onclick="setMaintEnabled(true)"><span>Вкл · техработы</span></div>
           </div>
         </div>
         <details class="rt-more rt-g" ontoggle="if(this.open) rtLoadRecent()">
