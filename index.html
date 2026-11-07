@@ -11,6 +11,7 @@
   <title>Мультитул</title>
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230a84ff'/%3E%3Ctext x='90' y='118' text-anchor='middle' font-size='88' font-family='system-ui,sans-serif' fill='white'%3EM%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/redesign.css">
 </head>
 <body>
 
@@ -28,7 +29,7 @@
         <div>
           <div class="cl-kicker">Обновления</div>
           <div class="cl-title">Что нового</div>
-          <div class="cl-now">Сейчас <span class="cl-ver-pill">v<span id="appVerLabel2">2.6.6</span></span></div>
+          <div class="cl-now">Сейчас <span class="cl-ver-pill">v<span id="appVerLabel2">2.7.0</span></span></div>
         </div>
         <button type="button" class="cl-close" onclick="closeChangelog()" aria-label="Закрыть">
           <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -121,26 +122,6 @@
   <div id="devGrid"></div>
   <div id="devConsole"></div>
 
-  <div class="online-bar" id="onlineBar" onclick="openCreatorAuthModal()">
-    <div class="online-dot"></div>
-    <span id="onlineCount">1 в сети</span>
-  </div>
-
-  <button type="button" class="reload-fab" id="reloadFab" onclick="hardReloadApp()" title="Обновить" aria-label="Обновить страницу">
-    <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0012 4V1L7 6l5 5V7c2.76 0 5 2.24 5 5a5 5 0 01-7.9 4.03l-1.43 1.46A6.98 6.98 0 0019 12c0-1.87-.74-3.6-1.35-5.65zM6 12c0-1.61.61-3.09 1.61-4.22L6.18 6.35A6.98 6.98 0 005 12c0 3.31 2.27 6.09 5.34 6.82l.66-1.94C8.28 16.4 6 14.42 6 12z"/></svg>
-  </button>
-  <button type="button" class="add-home-fab" id="addHomeFab" onclick="promptAddToHome()" title="На экран Домой" aria-label="На экран Домой">
-    <svg viewBox="0 0 24 24"><path d="M18 1.01L8 1c-1.1 0-2 .9-2 2v3h2V5h10v14H8v-1H6v3c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM10 15h2V8H5v2h3.59L3 15.59 4.41 17 10 11.41V15z"/></svg>
-  </button>
-
-
-
-
-  <div id="bootLoader">
-    <div class="boot-spin"></div>
-    <div class="boot-title">Мультитул</div>
-    <div class="boot-sub" id="bootLoaderText">Загрузка…</div>
-  </div>
 
   <!-- ВХОД ПО КЛЮЧУ -->
   <div id="screenMaint" class="screen">
@@ -189,8 +170,11 @@
       <div class="header-title">
         <h1 id="brandTitle">Мультитул</h1>
         <p id="brandSub">Рабочий набор</p>
-        <div id="appVerBtn" onclick="openChangelog()" style="margin-top:8px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-sec);background:var(--card-inner);border-radius:999px;padding:4px 9px;cursor:pointer;width:fit-content;">
-          v<span id="appVerLabel">2.6.6</span>
+        <div class="home-chips">
+        <div id="appVerBtn" onclick="openChangelog()" style="display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--text-sec);background:var(--card-inner);border-radius:999px;padding:4px 9px;cursor:pointer;width:fit-content;">
+          v<span id="appVerLabel">2.7.0</span>
+        </div>
+          <div class="online-bar" id="onlineBar" onclick="openCreatorAuthModal()"><div class="online-dot"></div><span id="onlineCount">1 в сети</span></div>
         </div>
       </div>
       <div class="header-actions">
@@ -205,7 +189,7 @@
           <div class="icon-btn" onclick="toggleGlobalMenu(event)">
             <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
           </div>
-          <div id="globalDropdown" style="display: none; position: absolute; right: 0; top: 44px; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 6px; width: 170px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+          <div id="globalDropdown" style="display: none; position: absolute; right: 0; top: 44px; background: var(--card-bg); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 6px; width: 196px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
             <div onclick="openSeasonModal(); toggleGlobalMenu();" id="seasonMenuItem" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
               <svg id="seasonMenuIcon" style="width:16px; height:16px; fill:var(--accent-blue);" viewBox="0 0 24 24"><path d="M12 2L10 8L4 6L8 12L2 14L8 16L6 22L12 16L18 22L16 16L22 14L16 12L20 6L14 8L12 2Z"/></svg>
               <span id="seasonMenuLabel">Эффекты: Выкл</span>
@@ -217,6 +201,18 @@
             <div onclick="openAppPrefs(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
               <svg style="width:16px; height:16px; fill:var(--accent-orange);" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
               Настройки
+            </div>
+            <div onclick="openMyChat(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+              <svg style="width:16px;height:16px;fill:var(--accent-blue);" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>
+              Сообщения
+            </div>
+            <div onclick="hardReloadApp(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+              <svg style="width:16px;height:16px;fill:var(--accent-green);" viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0012 4V1L7 6l5 5V7c2.76 0 5 2.24 5 5a5 5 0 01-7.9 4.03l-1.43 1.46A6.98 6.98 0 0019 12c0-3.87-3.13-7-7-7zM6 12c0-1.61.61-3.09 1.61-4.24L6.18 6.32A6.98 6.98 0 005 12c0 3.87 3.13 7 7 7v3l5-5-5-5v3c-2.76 0-5-2.24-5-5z"/></svg>
+              Обновить
+            </div>
+            <div onclick="promptAddToHome(); toggleGlobalMenu();" style="padding: 10px 12px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; margin-bottom: 2px;" onmouseover="this.style.background='var(--card-inner)'" onmouseout="this.style.background='transparent'">
+              <svg style="width:16px;height:16px;fill:var(--accent-orange);" viewBox="0 0 24 24"><path d="M18 1.01L8 1c-1.1 0-2 .9-2 2v3h2V5h10v14H8v-1H6v3c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM10 15h2V8H5v2h3.59L3 15.59 4.41 17 10 11.41V15z"/></svg>
+              На экран Домой
             </div>
           </div>
         </div>
@@ -237,12 +233,16 @@
       <div class="home-banner-body" id="homeBannerBody"></div>
     </div>
 
-    <div class="qgrid">
-      <div class="qtile a" onclick="openQuickAdd(); setTimeout(function(){ qaOpen('shift'); }, 0)">Смена<small>Добавить выручку</small></div>
-      <div class="qtile c" onclick="openScreen('screenChange')">Сдача<small>Калькулятор</small></div>
-      <div class="qtile b" onclick="openQuickAdd(); setTimeout(function(){ qaOpen('order'); }, 0)">Заказать<small>Что кончилось</small></div>
-      <div class="qtile d" onclick="openQuickAdd(); setTimeout(function(){ qaOpen('note'); }, 0)">Заметка<small>Напоминание</small></div>
+    
+    <div class="hero" data-week-hero onclick="openScreen('screenShifts')"></div>
+
+    <div class="qrow">
+      <div class="qbtn a" onclick="openQuickAdd(); setTimeout(function(){ qaOpen('shift'); }, 0)"><span class="qi"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg></span>Смена</div>
+      <div class="qbtn c" onclick="openScreen('screenChange')"><span class="qi"><svg viewBox="0 0 24 24"><path d="M19 14V6c0-1.1-.9-2-2-2H7c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2zm-9-1c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm13-6v11c0 1.1-.9 2-2 2H4v-2h17V7h2z"/></svg></span>Сдача</div>
+      <div class="qbtn b" onclick="openQuickAdd(); setTimeout(function(){ qaOpen('order'); }, 0)"><span class="qi"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0020 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg></span>Заказ</div>
+      <div class="qbtn d" onclick="openQuickAdd(); setTimeout(function(){ qaOpen('note'); }, 0)"><span class="qi"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></span>Заметка</div>
     </div>
+
     <div class="supply-card" id="supplyCard">
       <div class="supply-head">С последней поставки</div>
       <div class="supply-row">
@@ -263,112 +263,19 @@
 
     <div class="supply-card" id="fineCard" style="display:none;"></div>
 
-    <div class="menu-item" onclick="openScreen('screenShifts')">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-blue">
-          <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Учет недельной</h3>
-          <p>Расчет смен и выгрузка</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    <div class="hl-card">
+      <div class="hl" onclick="openScreen('screenShifts')"><span class="menu-icon icon-blue"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg></span><div class="hl-t"><b>Учёт недельной</b><span>Смены, вычеты, выгрузка</span></div><svg class="hl-ar" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+      <div class="hl" onclick="openScreen('screenNotes')"><span class="menu-icon icon-orange"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></span><div class="hl-t"><b>Заметки смены</b><span>Напоминания и отложки</span></div><svg class="hl-ar" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+      <div class="hl" onclick="openScreen('screenStats')"><span class="menu-icon icon-blue"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg></span><div class="hl-t"><b>Архив и статистика</b><span>Прошлые недели</span></div><svg class="hl-ar" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+      <div class="hl" onclick="openScreen('screenSalary')"><span class="menu-icon icon-green"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></span><div class="hl-t"><b>Зарплата</b><span>Итоги по месяцам</span></div><svg class="hl-ar" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+      <div class="hl dim" onclick="openScreen('screenPayQr')"><span class="menu-icon icon-blue"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm12-2h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 0h2v6h-6v-2h2v-2h2v-2zm-4 4h2v2h-2v-2z"/></svg></span><div class="hl-t"><b>Мой QR</b><span>В разработке</span></div><svg class="hl-ar" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
 
-    <div class="menu-item" onclick="openScreen('screenNotes')">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-orange">
-          <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Заметки смены</h3>
-          <p>Напоминания и отложки</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+    <div class="hl-card ai">
+      <div class="hl" onclick="openScreen('screenAI')"><span class="menu-icon icon-ai"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/><path d="M19 14L19.7 16.8L22.5 17.5L19.7 18.2L19 21L18.3 18.2L15.5 17.5L18.3 16.8L19 14Z" opacity="0.7"/></svg></span><div class="hl-t"><b>Помощь AI</b><span>Спроси что угодно по работе</span></div><svg class="hl-ar" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
     </div>
 
-    <div class="menu-item" onclick="openScreen('screenChange')">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-green">
-          <svg viewBox="0 0 24 24"><path d="M19 14V6c0-1.1-.9-2-2-2H7c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2zm-9-1c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm13-6v11c0 1.1-.9 2-2 2H4v-2h17V7h2z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Расчет сдачи</h3>
-          <p>Калькулятор для кассы</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
-    </div>
-
-    <div class="menu-item" onclick="openScreen('screenPayQr')">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-blue">
-          <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm12-2h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 0h2v6h-6v-2h2v-2h2v-2zm-4 4h2v2h-2v-2z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Мой QR</h3>
-          <p>В разработке</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
-    </div>
-
-    <div class="menu-item" onclick="openScreen('screenStats')">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-blue">
-          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Статистика и архив</h3>
-          <p>Итоги и прошлые недели</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
-    </div>
-
-    <div class="menu-item" onclick="openScreen('screenSalary')">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-green">
-          <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Зарплата</h3>
-          <p>Итоги по месяцам</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
-    </div>
-
-    <div class="menu-item" onclick="openScreen('screenOrder')">
-      <div class="menu-item-left">
-        <div class="menu-icon icon-orange">
-          <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0020 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Заказать</h3>
-          <p>Что кончилось на точке</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
-    </div>
-
-    <div class="menu-item ai-highlight" onclick="openScreen('screenAI')">
-      <div class="menu-item-left">
-        <div class="menu-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"/><path d="M19 14L19.7 16.8L22.5 17.5L19.7 18.2L19 21L18.3 18.2L15.5 17.5L18.3 16.8L19 14Z" opacity="0.7"/></svg>
-        </div>
-        <div class="menu-text">
-          <h3>Помощь AI</h3>
-          <p>Спроси что угодно по работе</p>
-        </div>
-      </div>
-      <div class="arrow-icon"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
-    </div>
-
-
-    <div style="height: 80px;"></div>
+    <div style="height: 110px;"></div>
   </div>
 
   <!-- УЧЕТ СМЕН -->
@@ -381,7 +288,10 @@
         <h1>Учет недельной</h1>
         <p>Смены и отчет</p>
       </div>
-      <div class="icon-btn" onclick="openSettingsModal()"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
+      <div class="header-actions">
+        <div data-flame-mini onclick="openFlame()" title="Серия смен"></div>
+        <div class="icon-btn" onclick="openSettingsModal()"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
+      </div>
     </div>
 
     <div class="card">
@@ -391,12 +301,12 @@
       <button class="btn btn-blue" onclick="addShift()">Добавить смену</button>
     </div>
 
-    <div class="card">
-      <div class="card-title">Вычет / Штраф</div>
+    <details class="card fold" id="deductionFold">
+      <summary class="card-title">Вычет / штраф</summary>
       <div class="input-group"><label>Причина</label><input type="text" id="deductionReason" placeholder="Штраф или Товар"></div>
       <div class="input-group"><label>Сумма (₽)</label><input type="text" inputmode="decimal" id="deductionAmount" placeholder="2000"></div>
       <button class="btn btn-red-soft" onclick="addDeduction()">Добавить вычет</button>
-    </div>
+    </details>
 
     <div class="card" id="shiftsListCard" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
@@ -1035,6 +945,11 @@
             <div class="rt-al">Админка</div>
             <div class="rt-as">открыть панель управления</div>
           </div>
+          <div class="rt-act rt-g" onclick="openFlameGrant()">
+            <div class="rt-ai" style="--c:var(--accent-orange)"><svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg></div>
+            <div class="rt-al">Огонёк</div>
+            <div class="rt-as">выдать серию смен</div>
+          </div>
           <div class="rt-act rt-g" onclick="changeCreatorPasswordPrompt()">
             <div class="rt-ai" style="--c:var(--accent-purple)"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div>
             <div class="rt-al">Пароль root</div>
@@ -1661,5 +1576,8 @@
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/streak.js"></script>
+  <script src="js/redesign.js"></script>
+  <script src="js/whatsnew.js"></script>
 </body>
 </html>
