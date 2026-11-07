@@ -1,12 +1,40 @@
 /* Мультитул service worker */
-const SW_VER = 'mt-sw-1';
+const SW_VER = 'mt-sw-3';
+const STATIC_CACHE = 'mt-static-3';
 
 self.addEventListener('install', function(e) {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', function(e) {
-  e.waitUntil(self.clients.claim());
+  e.waitUntil(
+    caches.keys().then(function(keys) {
+      return Promise.all(keys.filter(function(k) { return k.indexOf('mt-static-') === 0 && k !== STATIC_CACHE; })
+        .map(function(k) { return caches.delete(k); }));
+    }).then(function() { return self.clients.claim(); })
+  );
+});
+
+// Сеть в приоритете (всегда свежая версия); если сеть тупит > 3 с или её нет — отдаём из кэша.
+self.addEventListener('fetch', function(e) {
+  var r = e.request;
+  if (r.method !== 'GET') return;
+  var u = new URL(r.url);
+  if (u.origin !== self.location.origin) return;
+  if (!/(\.html|\.css|\.js|\.png|\.svg|\.json)$|\/$/.test(u.pathname)) return;
+  e.respondWith(
+    caches.open(STATIC_CACHE).then(function(cache) {
+      return Promise.race([
+        fetch(r),
+        new Promise(function(_, rej) { setTimeout(rej, 3000); })
+      ]).then(function(res) {
+        if (res && res.ok) cache.put(r, res.clone());
+        return res;
+      }).catch(function() {
+        return cache.match(r).then(function(hit) { return hit || fetch(r); });
+      });
+    })
+  );
 });
 
 self.addEventListener('push', function(e) {
