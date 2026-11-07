@@ -1,0 +1,110 @@
+/* Редизайн (тест): меньше шума, та же функциональность.
+ * Отключается удалением <link href="css/redesign.css"> из index.html. */
+
+/* ---------- плавающий мусор убран ---------- */
+.reload-fab, .add-home-fab { display: none !important; }              /* «Обновить» и «На экран Домой» теперь в меню шестерёнки */
+body:has(#screenMenu.active) .fab-plus,
+body:has(#screenShifts.active) .fab-plus { display: none !important; }  /* на главной и в учёте «+» дублирует кнопки на экране */
+
+/* ---------- шапка ---------- */
+#screenMenu .header { margin-bottom: 14px; }
+.home-chips { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.home-chips .online-bar {
+  position: static; transform: none; bottom: auto; left: auto;
+  padding: 0; border: 0; background: none; box-shadow: none;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  font-size: 12px; gap: 6px; color: var(--text-sec);
+}
+body.has-tabs .home-chips .online-bar { bottom: auto; }
+body.liquid-glass .home-chips .online-bar { background: none !important; border: 0 !important; box-shadow: none !important; }
+
+/* ---------- быстрые действия: один ряд вместо четырёх плиток ---------- */
+.qrow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 0 0 14px; }
+.qbtn {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 12px 4px 11px; border-radius: 20px;
+  background: var(--card-bg); border: 1px solid rgba(255, 255, 255, .08);
+  font-size: 13px; font-weight: 600; color: var(--text, #fff);
+  cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .15s;
+}
+.qbtn:active { transform: scale(.95); }
+.qbtn .qi { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.qbtn .qi svg { width: 24px; height: 24px; fill: currentColor; }
+.qbtn.a .qi { background: rgba(10, 132, 255, .18); color: var(--accent-blue); }
+.qbtn.b .qi { background: rgba(255, 159, 10, .18); color: var(--accent-orange); }
+.qbtn.c .qi { background: rgba(48, 209, 88, .18); color: var(--accent-green); }
+.qbtn.d .qi { background: rgba(191, 90, 242, .18); color: var(--accent-purple); }
+
+/* ---------- поставки: компактнее ---------- */
+#screenMenu .supply-card { padding: 12px 16px; margin-bottom: 14px; border-radius: 22px; }
+#screenMenu .supply-head { font-size: 12px; margin-bottom: 4px; }
+#screenMenu .supply-row { padding: 8px 0; align-items: center; }
+#screenMenu .supply-name { font-size: 14px; }
+#screenMenu .supply-meta { font-size: 11.5px; }
+#screenMenu .supply-ago { font-size: 17px; }
+
+/* ---------- разделы: один сгруппированный список вместо 8 карточек ---------- */
+.hl-card {
+  border-radius: 22px; background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, .08); overflow: hidden; margin-bottom: 14px;
+}
+.hl { display: flex; align-items: center; gap: 14px; padding: 12px 16px; cursor: pointer; position: relative; -webkit-tap-highlight-color: transparent; }
+.hl + .hl::before { content: ''; position: absolute; left: 66px; right: 0; top: 0; height: .5px; background: rgba(255, 255, 255, .1); }
+.hl:active { background: rgba(255, 255, 255, .06); }
+.hl .menu-icon { width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin: 0; }
+.hl .menu-icon svg { width: 22px; height: 22px; }
+.hl-t { flex: 1; min-width: 0; }
+.hl-t b { display: block; font-size: 16px; font-weight: 600; line-height: 1.2; }
+.hl-t span { display: block; font-size: 12.5px; color: var(--text-sec); margin-top: 2px; }
+.hl-ar { width: 18px; height: 18px; fill: var(--text-sec); opacity: .55; flex-shrink: 0; }
+.hl.dim { opacity: .5; }
+.hl-card.ai { border-color: rgba(191, 90, 242, .32); background: linear-gradient(135deg, rgba(191, 90, 242, .12), var(--card-bg) 60%); }
+.icon-ai { background: rgba(191, 90, 242, .2); color: var(--accent-purple); }
+body.liquid-glass .qbtn, body.liquid-glass .hl-card {
+  background: rgba(255, 255, 255, .06) !important; border: .5px solid rgba(255, 255, 255, .14) !important;
+}
+
+/* ---------- учёт недельной: вычет сворачивается ---------- */
+.fold > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin: 0; -webkit-tap-highlight-color: transparent; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary::after { content: '+'; font-size: 22px; font-weight: 400; line-height: 1; color: var(--text-sec); }
+.fold[open] > summary::after { content: '−'; }
+.fold[open] > summary { margin-bottom: 12px; }
+
+/* ---------- без «N в сети» и без постоянной иконки чата ---------- */
+#onlineBar { display: none !important; }                       /* элемент остаётся для счётчика, но не виден */
+#chatHeaderBtn { display: none !important; }                   /* чат живёт в меню шестерёнки... */
+#chatHeaderBtn:has(.chat-badge.on) { display: flex !important; } /* ...а на главной появляется только когда есть непрочитанное */
+#brandTitle { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+/* ---------- производительность: blur только там, где он реально виден (таббар, окна, тосты) ---------- */
+body.liquid-glass .btn, .swipe-btn, .rt-g, .rt-ic, .ah-g, body.liquid-glass .adm-tile, body.liquid-glass .adm-stat,
+body.liquid-glass .car, #screenCreator .rt-panel .key-item, .home-banner-timer {
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+.supply-ago, .shift-val, .hl-t b, .fg-n, .fo-num { font-variant-numeric: tabular-nums; }
+
+/* ---------- карточка «Неделя» ---------- */
+.hero {
+  border-radius: 26px; padding: 16px 18px 14px; margin-bottom: 12px; color: #fff; cursor: pointer;
+  background: linear-gradient(135deg, rgba(10, 132, 255, .34), rgba(94, 92, 230, .22) 62%, rgba(28, 28, 30, .4));
+  border: 1px solid rgba(255, 255, 255, .14); position: relative; overflow: hidden;
+  -webkit-tap-highlight-color: transparent; transition: transform .15s;
+}
+.hero:active { transform: scale(.985); }
+.hero-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .7); }
+.hero-dots { display: flex; gap: 6px; }
+.hero-dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255, 255, 255, .2); transition: background .4s, transform .4s cubic-bezier(.3, 1.6, .5, 1); }
+.hero-dots i.on { background: var(--accent-green); transform: scale(1.15); }
+.hero-main { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 10px; }
+.hero-sum { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.hero-sum b { font-size: 40px; font-weight: 800; letter-spacing: -.5px; line-height: 1; font-variant-numeric: tabular-nums; }
+.hero-sum i { font-style: normal; font-size: 22px; font-weight: 700; color: rgba(255, 255, 255, .6); }
+.hero-bot { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13.5px; color: rgba(255, 255, 255, .78); }
+.hero-cta { height: 36px; padding: 0 16px; border-radius: 12px; border: 0; font-size: 14px; font-weight: 700; cursor: pointer; background: #fff; color: #0a2a52; white-space: nowrap; }
+.hero-cta:active { transform: scale(.95); }
+.hero-cta.done { background: rgba(48, 209, 88, .22); color: var(--accent-green); cursor: default; }
+@media (prefers-reduced-motion: reduce) { .hero, .hero-dots i { transition: none; } }
+
+/* чтобы заголовок «Учёт недельной» не упирался в огонёк */
+#screenShifts .header h1 { font-size: 27px; letter-spacing: -.4px; }
