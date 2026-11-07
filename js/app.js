@@ -2041,6 +2041,7 @@
           store = getData();
         } else return;
       }
+      const _flBefore = (typeof flameSnapshot === 'function') ? flameSnapshot() : null;
       store.shifts.push({ date: day + '.' + month + '.' + year, total: total });
       saveData(store);
       document.getElementById('shiftTotal').value = '';
@@ -2049,7 +2050,7 @@
       triggerSuccessFlash();
       showToast('Смена добавлена', true);
       const n = rebuildStreakFromShifts();
-      if (n) showToast(n + ' дней подряд', true);
+      try { flameAfterAdd(_flBefore); } catch (e) { if (n) showToast(n + ' смен подряд', true); }
       const btn = document.querySelector('#screenShifts .btn-blue');
       if (btn) { btn.classList.remove('success-pulse'); void btn.offsetWidth; btn.classList.add('success-pulse'); }
     }
@@ -4092,6 +4093,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           store = getData();
         } else return;
       }
+      const _flBefore = (typeof flameSnapshot === 'function') ? flameSnapshot() : null;
       store.shifts.push({ date: day + '.' + month + '.' + year, total: total });
       saveData(store);
       try { render(); } catch (e) {}
@@ -4101,6 +4103,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       try { rebuildStreakFromShifts(); } catch (e) {}
       closeSheet('quickAddModal');
       showToast('Смена добавлена', true);
+      try { setTimeout(function(){ flameAfterAdd(_flBefore); }, 350); } catch (e) {}
     }
     function qaSaveNote() {
       const val = ((document.getElementById('qaNoteText') || {}).value || '').trim();
@@ -4246,6 +4249,7 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
             if (a === 'off' || a === '0') { setGateEnabled(false); return 'вход: открытый'; }
             return 'gate on | gate off';
           case 'admin': openScreen('screenAdmin'); return '';
+          case 'flame': case 'огонь': case 'огонёк': openFlameGrant(); return '';
           case 'exit': case 'quit': creatorGoBack(); return '';
           default: return 'неизвестная команда: ' + c + ' (help)';
         }
@@ -6403,6 +6407,8 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
             }
           }
         } catch (e) {}
+        // выданный рутом огонёк не затираем (ios_flame_grant живёт только в облаке)
+        try { const _rm = await pullKeyDataFromCloud(session.code); if (_rm && _rm.ios_flame_grant) payload.ios_flame_grant = _rm.ios_flame_grant; } catch (e) {}
         // ios_notice не из localStorage — только из remote merge выше
         await sbFetch('key_data?on_conflict=code', {
           method: 'POST',
@@ -7692,8 +7698,16 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
     }
-    const APP_VERSION = '2.6.6';
+    const APP_VERSION = '2.7.0';
     const CHANGELOG = [
+      { v: '2.7.0', d: '08.11.2026', t: 'Огонёк серии смен, новая спокойная главная с карточкой недели, быстрее запуск и работа без сети.',
+        items: [
+          { i: 'flame', h: 'Огонёк серии', p: 'Вноси смены — огонь растёт и меняет уровень. Забыл — слабеет и гаснет.' },
+          { i: 'home', h: 'Новая главная', p: 'Карточка недели с суммой и кнопкой «Внести смену», быстрые кнопки в один ряд, разделы одним списком.' },
+          { i: 'edit', h: 'Удобнее в учёте', p: 'Вычет прячется под плюсом, а Enter в поле выручки сразу добавляет смену.' },
+          { i: 'chat', h: 'Чат в меню', p: 'Сообщения теперь в меню шестерёнки, а значок на главной появляется, когда пришло новое.' },
+          { i: 'bolt', h: 'Быстрее и без сети', p: 'Приложение запускается шустрее и открывается даже без интернета.' }
+        ] },
       { v: '2.6.6', d: '22.10.2026', t: 'График учитывает месяц и выходные (сб/вс).' },
       { v: '2.6.5', d: '22.10.2026', t: 'ИИ умеет добавлять смены, ставить график 2/2 и менять календарь по команде.' },
       { v: '2.6.4', d: '22.10.2026', t: 'Жидкое стекло всегда включено. «Мои смены» в таббаре. Настройки обновлены, режим разработчика убран из меню.' },
