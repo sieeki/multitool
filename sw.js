@@ -1,6 +1,6 @@
 /* Мультитул service worker */
-const SW_VER = 'mt-sw-4';
-const STATIC_CACHE = 'mt-static-4';
+const SW_VER = 'mt-sw-5';
+const STATIC_CACHE = 'mt-static-5';
 
 self.addEventListener('install', function(e) {
   self.skipWaiting();
@@ -25,8 +25,8 @@ self.addEventListener('fetch', function(e) {
   e.respondWith(
     caches.open(STATIC_CACHE).then(function(cache) {
       return Promise.race([
-        fetch(r),
-        new Promise(function(_, rej) { setTimeout(rej, 3000); })
+        fetch(r, { cache: 'no-cache' }),
+        new Promise(function(_, rej) { setTimeout(rej, 6000); })
       ]).then(function(res) {
         if (res && res.ok) cache.put(r, res.clone());
         return res;
