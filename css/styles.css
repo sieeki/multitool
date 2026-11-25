@@ -2347,9 +2347,6 @@
       animation: bootSpin 0.8s linear infinite;
     }
     @keyframes bootSpin { to { transform: rotate(360deg); } }
-    .tiktok-flame { display:block; width:18px; height:22px; flex-shrink:0; transform: rotate(-16deg); transform-origin: 50% 80%; }
-    #streakBtn { display:inline-flex; align-items:center; gap:5px; line-height:1; }
-    #streakBadge { font-size:17px; font-weight:800; line-height:22px; }
     .boot-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
     .boot-sub { font-size: 13px; color: var(--text-sec); }
 
