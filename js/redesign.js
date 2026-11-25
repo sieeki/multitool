@@ -56,13 +56,12 @@
         el.innerHTML =
           '<div class="hero-top"><span>Эта неделя</span><span class="hero-dots">' + dots + '</span></div>' +
           '<div class="hero-main"><div class="hero-sum"><b>' + fmt(prev) + '</b><i>₽</i></div>' +
-          '<div data-flame-mini="medal" onclick="event.stopPropagation(); openFlame()" title="Серия смен"></div></div>' +
+          '</div>' +
           '<div class="hero-bot"><span>' + (n ? (n <= 5 ? n + ' из 5 смен' : n + ' ' + plural(n, ['смена', 'смены', 'смен'])) : 'Смен пока нет') + '</span>' +
           (done ? '<button class="hero-cta done" onclick="event.stopPropagation()">Сегодня внесена</button>'
                 : '<button class="hero-cta" onclick="event.stopPropagation(); openQuickAdd(); setTimeout(function(){ qaOpen(\'shift\'); }, 0)">Внести смену</button>') +
           '</div>';
         el.setAttribute('data-sig', sig);
-        try { renderStreak(); } catch (e) {}
       }
       var b = el.querySelector('.hero-sum b');
       if (b) countUp(b, prev, sum);
