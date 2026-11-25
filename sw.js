@@ -1,6 +1,6 @@
 /* Мультитул service worker */
-const SW_VER = 'mt-sw-3';
-const STATIC_CACHE = 'mt-static-3';
+const SW_VER = 'mt-sw-4';
+const STATIC_CACHE = 'mt-static-4';
 
 self.addEventListener('install', function(e) {
   self.skipWaiting();
