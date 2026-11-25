@@ -285,7 +285,7 @@
       if (screenId === 'screenAdminKeys') renderAdminKeysScreen();
       if (screenId === 'screenAdmin') { try { refreshAccessKeysList(true); } catch (e) {} }
       if (screenId === 'screenAI') initAiScreen();
-      if (screenId === 'screenMenu') { renderSupplyCard(); pullSupplyDates(); renderStreak(); }
+      if (screenId === 'screenMenu') { renderSupplyCard(); pullSupplyDates(); }
       if (screenId === 'screenPayQr') fillPayQrForm();
       if (screenId === 'screenOrder') { fillOrderPoints(); renderOrderCats(); pullOrderList(); pullOrderArchive(); }
       if (screenId === 'screenAdminOrders') { selectedAdminOrderPoint = null; pullOrderList(); }
@@ -1976,57 +1976,6 @@
       const d = String(dt.getDate()).padStart(2,'0');
       return y + '-' + m + '-' + d;
     }
-    function countWeekStreak() {
-      const days = allShiftIsoDays();
-      if (!days.length) return 0;
-      const have = {};
-      days.forEach(function(d){ have[d] = true; });
-      const today = todayIsoLocal();
-      const yest = addDaysIso(today, -1);
-      let cursor = null;
-      if (have[today]) cursor = today;
-      else if (have[yest]) cursor = yest;
-      else return 0;
-      let n = 0;
-      while (have[cursor]) {
-        n++;
-        cursor = addDaysIso(cursor, -1);
-      }
-      return n;
-    }
-    function getStreak() { return { count: countWeekStreak() }; }
-    function persistStreakToCloudLocal() {
-      const n = countWeekStreak();
-      const last = (function(){
-        try {
-          const arr = (getData().shifts || []).map(function(s){ return shiftDateToIso(s.date); }).filter(Boolean).sort();
-          return arr[arr.length-1] || '';
-        } catch (e) { return ''; }
-      })();
-      localStorage.setItem('ios_shift_streak', JSON.stringify({ count: n, last: last, at: new Date().toISOString() }));
-      renderStreak();
-      return n;
-    }
-    function rebuildStreakFromShifts() {
-      return persistStreakToCloudLocal();
-    }
-    function bumpShiftStreak() { return rebuildStreakFromShifts(); }
-    function renderStreak() {
-      return;
-      const n = countWeekStreak();
-      const btn = document.getElementById('streakBtn');
-      if (!btn) return;
-      btn.style.display = 'inline-flex';
-      btn.innerHTML = '<svg class="tiktok-flame" viewBox="25 0 290 533.333" width="18" height="22"><path fill="currentColor" d="M165.494,533.333c-35.545-73.962-16.616-116.343,10.703-156.272c29.917-43.728,37.627-87.013,37.627-87.013s23.518,30.573,14.11,78.39c41.548-46.25,49.389-119.938,43.115-148.159c93.914,65.63,134.051,207.737,79.96,313.054c287.695-162.776,71.562-406.339,33.934-433.775c12.543,27.435,14.922,73.88-10.416,96.42C331.635,33.333,225.583,0,225.583,0c12.543,83.877-45.466,175.596-101.404,244.13c-1.965-33.446-4.053-56.525-21.641-88.531C98.59,216.357,52.157,265.884,39.583,326.76C22.551,409.2,52.341,469.562,165.494,533.333z"/></svg><span id="streakBadge">' + n + '</span>';
-      btn.style.color = n ? '#ff7a18' : '#8e8e93';
-      btn.classList.toggle('streak-on', n > 0);
-    }
-    function showStreakToast() {
-      const n = countWeekStreak();
-      if (!n) return showToast('Поставь смену сегодня — огонёк зажжётся');
-      showToast(n + ' дней подряд', true);
-    }
-
     function addShift() {
       try { logAction('добавил смену'); } catch (e) {}
       const dateInput = document.getElementById('shiftDate').value;
@@ -2041,7 +1990,6 @@
           store = getData();
         } else return;
       }
-      const _flBefore = (typeof flameSnapshot === 'function') ? flameSnapshot() : null;
       store.shifts.push({ date: day + '.' + month + '.' + year, total: total });
       saveData(store);
       document.getElementById('shiftTotal').value = '';
@@ -2049,8 +1997,6 @@
       playAppStoreSound();
       triggerSuccessFlash();
       showToast('Смена добавлена', true);
-      const n = rebuildStreakFromShifts();
-      try { flameAfterAdd(_flBefore); } catch (e) { if (n) showToast(n + ' смен подряд', true); }
       const btn = document.querySelector('#screenShifts .btn-blue');
       if (btn) { btn.classList.remove('success-pulse'); void btn.offsetWidth; btn.classList.add('success-pulse'); }
     }
@@ -2074,7 +2020,6 @@
     function deleteDeduction(idx) { let store = getData(); store.deductions.splice(idx, 1); saveData(store); render(); }
 
     function render() {
-      try { rebuildStreakFromShifts(); } catch (e) {}
       const store = getData();
       const listCard = document.getElementById('shiftsListCard');
       const reportCard = document.getElementById('reportCard');
@@ -2110,7 +2055,64 @@
       });
       store.deductions.forEach(d => { text += '-' + d.amount + ' (' + d.reason + ')\n'; totalRemaining -= d.amount; });
       text += '\nОстаток к выплате: ' + totalRemaining;
-      document.getElementById('reportText').innerText = text;
+      document.getElementById('reportText').textContent = text;
+      try { renderReportPretty(store, currentPaid, totalRemaining); } catch (e) {}
+    }
+
+    function renderReportPretty(store, paid, totalRemaining) {
+      const box = document.getElementById('reportPretty');
+      if (!box) return;
+      const fmt = function(n) { return Math.round(n).toLocaleString('ru-RU'); };
+      const esc = function(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+      const MON = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+      const DOW = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+      const shifts = store.shifts || [];
+      const deds = store.deductions || [];
+      const maxT = shifts.reduce(function(m, x) { return Math.max(m, Number(x.total) || 0); }, 1);
+      let sumRev = 0, sumPay = 0;
+      shifts.forEach(function(x) { sumRev += Number(x.total) || 0; sumPay += 2300 + Math.round(x.total * 0.03); });
+      const sumDed = deds.reduce(function(m, d) { return m + (Number(d.amount) || 0); }, 0);
+
+      let html = '<div class="rp-top"><div class="rp-title">Недельная</div>';
+      if (shifts.length) html += '<div class="rp-range">' + esc(shifts[0].date.slice(0, 5)) + (shifts.length > 1 ? ' — ' + esc(shifts[shifts.length - 1].date.slice(0, 5)) : '') + '</div>';
+      html += '</div>';
+      html += '<div class="rp-stats">' +
+        '<div><span>Выручка</span><b>' + fmt(sumRev) + ' ₽</b></div>' +
+        '<div><span>К выплате</span><b>' + fmt(sumPay) + ' ₽</b></div>' +
+        '<div><span>Выплачено</span><b>' + fmt(paid * shifts.length) + ' ₽</b></div></div>';
+
+      shifts.forEach(function(sh) {
+        const percent = Math.round(sh.total * 0.03);
+        const toPay = 2300 + percent;
+        const remain = toPay - paid;
+        const p = String(sh.date).split('.');
+        let day = p[0] || '', sub = '';
+        try {
+          const dt = new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0]));
+          sub = MON[dt.getMonth()] + ' · ' + DOW[dt.getDay()];
+        } catch (e) {}
+        const w = Math.max(6, Math.round((Number(sh.total) || 0) / maxT * 100));
+        html += '<div class="rp-s">' +
+          '<div class="rp-s-top"><div class="rp-day"><i>' + esc(day) + '</i><div><span>' + esc(sub) + '</span><em>2 300 + ' + fmt(percent) + ' (3%)</em></div></div>' +
+          '<div class="rp-rem"><small>остаток</small><b>' + fmt(remain) + ' ₽</b></div></div>' +
+          '<div class="rp-bar"><u style="width:' + w + '%"></u></div>' +
+          '<div class="rp-g">' +
+          '<div><span>Итог</span><b>' + fmt(sh.total) + ' ₽</b></div>' +
+          '<div><span>К выплате</span><b>' + fmt(toPay) + ' ₽</b></div>' +
+          '<div><span>Выплачено</span><b>' + fmt(paid) + ' ₽</b></div>' +
+          '</div></div>';
+      });
+
+      deds.forEach(function(d) {
+        html += '<div class="rp-s rp-neg"><div class="rp-s-top"><div class="rp-day"><i>−</i><span>вычет</span></div>' +
+          '<div class="rp-rem"><small>' + esc(d.reason) + '</small><b>−' + fmt(d.amount) + ' ₽</b></div></div></div>';
+      });
+
+      html += '<div class="rp-total"><div><span>Остаток к выплате</span>' +
+        '<small>' + shifts.length + ' ' + (shifts.length === 1 ? 'смена' : (shifts.length >= 2 && shifts.length <= 4 ? 'смены' : 'смен')) +
+        (sumDed ? ' · вычеты −' + fmt(sumDed) + ' ₽' : '') + '</small></div>' +
+        '<b>' + fmt(totalRemaining) + ' ₽</b></div>';
+      box.innerHTML = html;
     }
 
     function copyReport() {
@@ -2325,7 +2327,6 @@
       render();
       playAppStoreSound();
       triggerSuccessFlash();
-      persistStreakToCloudLocal();
       showToast('Неделя сохранена в архив', true);
     }
 
@@ -3006,13 +3007,11 @@
         });
         saveData(store);
         try { render(); } catch (e) {}
-        try { rebuildStreakFromShifts(); } catch (e) {}
         return 'Обновил смену ' + dateStr + ' → ' + total.toLocaleString('ru-RU') + ' ₽';
       }
       store.shifts.push({ date: dateStr, total: total });
       saveData(store);
       try { render(); } catch (e) {}
-      try { rebuildStreakFromShifts(); } catch (e) {}
       return 'Добавил смену ' + dateStr + ' · ' + total.toLocaleString('ru-RU') + ' ₽';
     }
     function aiDoRemoveShift(dateStr) {
@@ -3418,10 +3417,61 @@
       'ios_groq_key',
                                                       'ios_pay_qr',
       'ios_theme',
-      'ios_shift_streak',
       'ios_my_role',
       'ios_liquid'
     ];
+
+    // Метки времени по каждому ключу: свежие локальные данные не затираются старой облачной копией.
+    ['ios_shift_streak', 'ios_flame_best', 'ios_flame_grant'].forEach(function(k) { try { localStorage.removeItem(k); } catch (e) {} });
+    const KEY_TS_STORE = 'ios_key_ts';
+    let _applyingRemote = false;
+    function readKeyTs() {
+      try { return JSON.parse(localStorage.getItem(KEY_TS_STORE) || '{}') || {}; } catch (e) { return {}; }
+    }
+    function writeKeyTs(m) {
+      try { localStorage.setItem(KEY_TS_STORE, JSON.stringify(m)); } catch (e) {}
+    }
+    function markKeyChanged(k) {
+      if (_applyingRemote || USER_DATA_KEYS.indexOf(k) < 0) return;
+      const m = readKeyTs();
+      m[k] = Date.now();
+      writeKeyTs(m);
+    }
+    (function patchStorageForTs() {
+      if (Storage.prototype.__tsPatched) return;
+      const setI = Storage.prototype.setItem, remI = Storage.prototype.removeItem;
+      Storage.prototype.setItem = function(k, v) { setI.call(this, k, v); if (this === localStorage) markKeyChanged(k); };
+      Storage.prototype.removeItem = function(k) { remI.call(this, k); if (this === localStorage) markKeyChanged(k); };
+      Storage.prototype.__tsPatched = true;
+    })();
+    function remoteKeyTs(p, k) {
+      const m = p && p._ts && Number(p._ts[k]);
+      if (m) return m;
+      const t = Date.parse((p && p._savedAt) || '');
+      return isNaN(t) ? 0 : t;
+    }
+    function mergeUserJson(k, a, b) {
+      try {
+        const A = JSON.parse(a), B = JSON.parse(b);
+        if (k === 'ios_multitool_data') {
+          // без меток времени побеждает та копия, где самая свежая смена
+          const last = function(o) {
+            let m = '';
+            ((o && o.shifts) || []).forEach(function(x) { let i = ''; try { i = shiftDateToIso(x.date) || ''; } catch (e) {} if (i > m) m = i; });
+            return m;
+          };
+          return last(B) > last(A) ? b : a;
+        }
+        if (k === 'ios_multitool_archive') {
+          const out = A.slice(), ids = {};
+          out.forEach(function(x) { ids[x.id] = 1; });
+          B.forEach(function(x) { if (!ids[x.id]) out.push(x); });
+          out.sort(function(x, y) { return (y.id || 0) - (x.id || 0); });
+          return JSON.stringify(out);
+        }
+      } catch (e) {}
+      return null;
+    }
 
     const SUPABASE_SQL = `-- Выполни в Supabase → SQL Editor\ncreate table if not exists access_keys (\n  code text primary key,\n  name text not null,\n  expires_at timestamptz,\n  active boolean default true,\n  created_at timestamptz default now()\n);\ncreate table if not exists key_data (\n  code text primary key references access_keys(code) on delete cascade,\n  payload jsonb not null default '{}'::jsonb,\n  updated_at timestamptz default now()\n);\nalter table access_keys enable row level security;\nalter table key_data enable row level security;\ncreate policy "anon_all_keys" on access_keys for all using (true) with check (true);\ncreate policy "anon_all_data" on key_data for all using (true) with check (true);
 create table if not exists device_sessions (
@@ -3738,25 +3788,62 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
 
     function collectUserPayload() {
       const payload = {};
+      const ts = readKeyTs();
+      const outTs = {};
       USER_DATA_KEYS.forEach(function(k) {
         payload[k] = localStorage.getItem(k);
+        if (ts[k]) outTs[k] = ts[k];
       });
+      payload._ts = outTs;
       payload._savedAt = new Date().toISOString();
       return payload;
     }
 
     function applyUserPayload(payload) {
-      if (!payload || typeof payload !== 'object') return;
-      USER_DATA_KEYS.forEach(function(k) {
-        if (!Object.prototype.hasOwnProperty.call(payload, k)) return;
-        if (payload[k] === null || payload[k] === undefined) return;
-        var val = payload[k];
-        if (typeof val !== 'string') {
-          try { val = JSON.stringify(val); } catch (e) { val = String(val); }
-        }
-        localStorage.setItem(k, val);
-      });
-      try { persistStreakToCloudLocal(); } catch (e) {}
+      if (!payload || typeof payload !== 'object') return false;
+      const ts = readKeyTs();
+      let localNewer = false;
+      _applyingRemote = true;
+      try {
+        USER_DATA_KEYS.forEach(function(k) {
+          if (!Object.prototype.hasOwnProperty.call(payload, k)) return;
+          const rts = remoteKeyTs(payload, k);
+          const lts = ts[k] || 0;
+          let val = payload[k];
+          if (val === null || val === undefined) {
+            // удаление принимаем только с честной меткой времени
+            if (payload._ts && payload._ts[k] && rts > lts && localStorage.getItem(k) !== null) {
+              localStorage.removeItem(k);
+              ts[k] = rts;
+            }
+            return;
+          }
+          if (typeof val !== 'string') {
+            try { val = JSON.stringify(val); } catch (e) { val = String(val); }
+          }
+          const cur = localStorage.getItem(k);
+          if (cur === val) { if (rts > lts) ts[k] = rts; return; }
+          // локальная версия свежее облачной — не трогаем, облако потом обновится само
+          if (lts && lts >= rts) { localNewer = true; return; }
+          // старая установка без меток: смены и архив объединяем, ничего не теряем
+          if (cur !== null && !lts && (k === 'ios_multitool_data' || k === 'ios_multitool_archive')) {
+            const merged = mergeUserJson(k, cur, val);
+            if (merged !== null) {
+              localStorage.setItem(k, merged);
+              ts[k] = Date.now();
+              localNewer = true;
+              return;
+            }
+          }
+          localStorage.setItem(k, val);
+          ts[k] = rts || Date.now();
+        });
+      } finally {
+        _applyingRemote = false;
+      }
+      writeKeyTs(ts);
+      if (localNewer) { try { scheduleCloudSave(); } catch (e) {} }
+      return true;
     }
     function refreshAfterCloud() {
       try { applyLiquid(); } catch (e) {}
@@ -3766,7 +3853,6 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       try { renderNotes(); } catch (e) {}
       try { renderSupplyCard(); } catch (e) {}
       try { applyRoleBadge(JSON.parse(localStorage.getItem('ios_my_role')||'null')); } catch (e) {}
-      try { persistStreakToCloudLocal(); } catch (e) {}
     }
     async function syncUserFromCloud() {
       const sess = getSession();
@@ -4093,17 +4179,14 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
           store = getData();
         } else return;
       }
-      const _flBefore = (typeof flameSnapshot === 'function') ? flameSnapshot() : null;
       store.shifts.push({ date: day + '.' + month + '.' + year, total: total });
       saveData(store);
       try { render(); } catch (e) {}
       try { playAppStoreSound(); } catch (e) {}
       try { triggerSuccessFlash(); } catch (e) {}
       try { logAction('добавил смену (быстро)'); } catch (e) {}
-      try { rebuildStreakFromShifts(); } catch (e) {}
       closeSheet('quickAddModal');
       showToast('Смена добавлена', true);
-      try { setTimeout(function(){ flameAfterAdd(_flBefore); }, 350); } catch (e) {}
     }
     function qaSaveNote() {
       const val = ((document.getElementById('qaNoteText') || {}).value || '').trim();
@@ -4249,7 +4332,6 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
             if (a === 'off' || a === '0') { setGateEnabled(false); return 'вход: открытый'; }
             return 'gate on | gate off';
           case 'admin': openScreen('screenAdmin'); return '';
-          case 'flame': case 'огонь': case 'огонёк': openFlameGrant(); return '';
           case 'exit': case 'quit': creatorGoBack(); return '';
           default: return 'неизвестная команда: ' + c + ' (help)';
         }
@@ -6397,19 +6479,34 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       if (!session || !cfg) return;
       try {
         const payload = collectUserPayload();
-        // не затирать входящее сообщение от создателя
-        try {
-          const remote = await pullKeyDataFromCloud(session.code);
-          if (remote && remote.ios_notice && remote.ios_notice.id) {
+        let remote = null;
+        try { remote = await pullKeyDataFromCloud(session.code); } catch (e) {}
+        if (remote) {
+          // не затирать входящее сообщение от создателя
+          if (remote.ios_notice && remote.ios_notice.id) {
             const seen = localStorage.getItem('ios_notice_seen_id');
             if (seen !== String(remote.ios_notice.id)) {
               payload.ios_notice = remote.ios_notice;
             }
           }
-        } catch (e) {}
-        // выданный рутом огонёк не затираем (ios_flame_grant живёт только в облаке)
-        try { const _rm = await pullKeyDataFromCloud(session.code); if (_rm && _rm.ios_flame_grant) payload.ios_flame_grant = _rm.ios_flame_grant; } catch (e) {}
-        // ios_notice не из localStorage — только из remote merge выше
+          // более свежие данные из облака (с другого устройства) не затираем старыми
+          const outTs = payload._ts || {};
+          USER_DATA_KEYS.forEach(function(k) {
+            if (!Object.prototype.hasOwnProperty.call(remote, k)) return;
+            const rts = remoteKeyTs(remote, k);
+            const lts = outTs[k] || 0;
+            const rv = remote[k];
+            if (rv === null || rv === undefined) return;
+            const rvs = typeof rv === 'string' ? rv : JSON.stringify(rv);
+            if (rvs === payload[k]) return;
+            if (!lts && payload[k] && (k === 'ios_multitool_data' || k === 'ios_multitool_archive')) {
+              const merged = mergeUserJson(k, payload[k], rvs);
+              if (merged !== null) { payload[k] = merged; outTs[k] = Date.now(); return; }
+            }
+            if (rts > lts) { payload[k] = rvs; outTs[k] = rts; }
+          });
+          payload._ts = outTs;
+        }
         await sbFetch('key_data?on_conflict=code', {
           method: 'POST',
           headers: {
@@ -6745,7 +6842,6 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       clearSession();
       showToast('Вы вышли');
       applyTheme(getTheme());
-    rebuildStreakFromShifts();
     try { registerMultitoolSW(); } catch (e) {}
     bootAccessGate();
     (function(){
@@ -7327,8 +7423,6 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
         hideBoot();
         setTimeout(hideBoot, 50);
         setTimeout(hideBoot, 500);
-        setTimeout(renderStreak, 50);
-        setTimeout(renderStreak, 400);
       }
     }
 
@@ -7698,11 +7792,15 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
       document.body.classList.toggle('dev-hud', !!d.hud);
       document.body.classList.toggle('dev-slow', !!d.slow);
     }
-    const APP_VERSION = '2.7.0';
+    const APP_VERSION = '2.7.1';
     const CHANGELOG = [
-      { v: '2.7.0', d: '08.11.2026', t: 'Огонёк серии смен, новая спокойная главная с карточкой недели, быстрее запуск и работа без сети.',
+      { v: '2.7.1', d: '26.11.2026', t: 'Красивый отчёт недели, смены больше не откатываются на старые.',
         items: [
-          { i: 'flame', h: 'Огонёк серии', p: 'Вноси смены — огонь растёт и меняет уровень. Забыл — слабеет и гаснет.' },
+          { i: 'edit', h: 'Отчёт недели', p: 'Блок «Текст для копирования» стал аккуратной карточкой: смены, вычеты и остаток к выплате. Копируется всё тем же текстом.' },
+          { i: 'shield', h: 'Смены не пропадают', p: 'После обновления сайта свежие смены больше не заменяются старыми из облака.' }
+        ] },
+      { v: '2.7.0', d: '08.11.2026', t: 'Новая спокойная главная с карточкой недели, быстрее запуск и работа без сети.',
+        items: [
           { i: 'home', h: 'Новая главная', p: 'Карточка недели с суммой и кнопкой «Внести смену», быстрые кнопки в один ряд, разделы одним списком.' },
           { i: 'edit', h: 'Удобнее в учёте', p: 'Вычет прячется под плюсом, а Enter в поле выручки сразу добавляет смену.' },
           { i: 'chat', h: 'Чат в меню', p: 'Сообщения теперь в меню шестерёнки, а значок на главной появляется, когда пришло новое.' },
@@ -9140,7 +9238,6 @@ create policy "anon_all_devices" on device_sessions for all using (true) with ch
     pullMyRole();
     applyTheme(getTheme());
     applyLiquid();
-    rebuildStreakFromShifts();
     bootAccessGate();
     (function(){
       const ta = document.getElementById('keyChatInput');
